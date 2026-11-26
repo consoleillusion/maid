@@ -9,7 +9,7 @@ summary: >
   How maid calculates the 0-100 score of an attempt from tests, lines of code,
   dependencies, complexity and benchmarks. The score ranks passing attempts and
   sets the review band. It never replaces the acceptance rule.
-links: [acceptance, presets, ADR-0003]
+links: [acceptance, profiles, ADR-0003]
 ---
 
 # Score
@@ -39,8 +39,8 @@ maid shall calculate the score of an attempt as a number from 0 to 100.
 ### REQ-SC-002 Transparency
 The score report shall list each component with its raw value, its normalised value, its weight and its contribution.
 
-### REQ-SC-003 Weights from the preset
-maid shall read the component weights and the review band from the preset decision of the project.
+### REQ-SC-003 Weights from the profile
+maid shall read the component weights and the review band from the profile decision of the project.
 
 ### REQ-SC-004 Score does not accept
 maid shall not accept a submission because of its score. The acceptance rule in REQ-ACC-007 is the only condition for acceptance.
@@ -55,7 +55,7 @@ If a submission adds a dependency that is on the deny list of the project, then 
 maid shall receive metrics from a metrics adapter in a common format, and shall not contain language-specific metric logic.
 
 ### REQ-SC-008 Docs work items
-Where a work item has kind `docs`, maid shall score it with the docs component set from the preset, without lines-of-code and dependency penalties.
+Where a work item has kind `docs`, maid shall score it with the docs component set from the profile, without lines-of-code and dependency penalties.
 
 ### REQ-SC-009 History
 maid shall store the score of each attempt with the agent, the model name reported by the agent, and the work item.
@@ -63,7 +63,8 @@ maid shall store the score of each attempt with the agent, the model name report
 ### REQ-SC-010 Agent comparison
 When a human asks for agent performance, maid shall report acceptance rate, mean score and mean attempts for each agent and model.
 
-## Open issues
+### REQ-SC-011 Calibration benchmark
+The maid repository shall contain a benchmark set of work items, each with known good and known bad solutions.
 
-- Weight calibration: TBD (Q-005).
-- Normalisation functions for each component: TBD (Q-005).
+### REQ-SC-012 Calibrated weights
+Each built-in weight set shall rank every known good solution of the benchmark set above every known bad solution of the same work item.

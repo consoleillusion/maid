@@ -43,7 +43,7 @@ links: []
 | [work-items](02-method/02-work-items.md) | draft | ears | Work item fields, claims, leases, escalation, context packets. |
 | [acceptance](02-method/03-acceptance.md) | draft | ears | The merge queue and the acceptance rule. |
 | [scoring](02-method/04-scoring.md) | draft | ears | The 0–100 score that ranks passing attempts. |
-| [presets](02-method/05-presets.md) | draft | ears | Versioned defaults, and default decisions that the user can change. |
+| [profiles](02-method/05-profiles.md) | draft | ears | Recommended defaults that agents can accept, customise or ignore. |
 
 ### 03 Specification
 
@@ -96,4 +96,4 @@ New decisions use [the template](decisions/template.md).
 
 ### Open questions
 
-See [questions.md](questions.md). 13 open.
+See [questions.md](questions.md). All 13 are resolved.

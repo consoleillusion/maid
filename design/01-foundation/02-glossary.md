@@ -34,7 +34,7 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 
 **decision**: an **item** in `design/decisions/` that records a choice, its context and its consequences.
 
-**default decision**: a **decision** that maid makes from a **preset** because the user did not make the choice.
+**default decision**: a **decision** that maid makes from a **profile** because the user did not make the choice.
 
 **question**: an **item** in `questions.md` that records missing information.
 
@@ -44,7 +44,7 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 
 **validator**: a program that checks text against a **style**.
 
-**preset**: a named, versioned set of defaults for **decisions**, **styles**, tools and **score** weights.
+**profile**: a named, versioned set of defaults for **decisions**, **styles**, tools and **score** weights.
 
 **phase**: a stage of the progression of a **project**.
 
@@ -92,7 +92,7 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 - **agent** _holds_ **claim** _on_ **work item**
 - **attempt** _is for_ **work item**
 - **submission** _is of_ **attempt**
-- **default decision** _comes from_ **preset**
+- **default decision** _comes from_ **profile**
 
 ## Business rules
 
@@ -103,5 +103,5 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 - It is prohibited that a **build agent** changes an **acceptance test** of the **work item** that the **build agent** implements.
 - It is obligatory that maid rejects each **submission** that causes a **regression**.
 - It is prohibited that two **work items** that run at the same time _own_ the same file path.
-- It is obligatory that each **default decision** states the **preset** that it _comes from_.
+- It is obligatory that each **default decision** states the **profile** that it _comes from_.
 - It is obligatory that an agent records a **question** instead of a guess when information is missing.

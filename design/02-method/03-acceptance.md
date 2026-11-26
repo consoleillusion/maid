@@ -45,7 +45,7 @@ If all checks pass and no test that passed on the main branch fails, then the me
 If a check fails, then the merge queue shall reject the submission and shall keep the main branch unchanged.
 
 ### REQ-ACC-009 Rejection report
-When the merge queue rejects a submission, it shall return a rejection report that contains the failed check, the failed tests with their output truncated to a limit from the preset, the regressions, and the score.
+When the merge queue rejects a submission, it shall return a rejection report that contains the failed check, the failed tests with their output truncated to a limit from the profile, the regressions, and the score.
 
 ### REQ-ACC-010 Protected acceptance tests
 If a submission changes, deletes or skips an acceptance test of its own work item, then the merge queue shall reject the submission.
@@ -63,10 +63,16 @@ When maid marks a test as flaky, maid shall add a question for the design agent 
 Where more than one attempt on the same work item passes all checks, the merge queue shall accept the attempt with the highest score and shall reject the others as superseded.
 
 ### REQ-ACC-014 Review band
-Where the preset defines a review band, if the score of a passing submission is inside the review band, then the merge queue shall hold the submission for human approval.
+Where the depth level is rigorous, if the score of a passing submission is inside the review band of the profile, then the merge queue shall hold the submission for human approval.
 
 ### REQ-ACC-015 Record
 When the merge queue accepts or rejects a submission, maid shall record the work item, the attempt, the agent, the checks, the score and the commit IDs in the state store.
+
+### REQ-ACC-017 Attempt environment
+When maid runs the tests of an attempt, maid shall set the environment variables `MAID_ATTEMPT_ID`, `MAID_PORT_BASE` and `MAID_TMPDIR` to values that are unique to that attempt.
+
+### REQ-ACC-018 Serial tests
+Where the project decisions mark a test suite as serial, maid shall not run that suite for two attempts at the same time.
 
 ## Examples
 

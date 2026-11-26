@@ -24,7 +24,7 @@ links: [chapter-format, ADR-0006]
 | `gherkin` | Gherkin | acceptance criteria, examples | `styles/gherkin.md` | Gherkin parser | error |
 | `ace` | Attempto Controlled English | statements that need logical precision | `styles/ace.md` | external: APE parser | advice until the adapter exists |
 
-Formalized English (Martin 2002) is not registered. It has no validator that maid can run. See Q-007.
+Formalized English (Martin 2002) is not registered, because it has no validator that maid can run (Q-007).
 
 ## Requirements
 

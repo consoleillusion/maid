@@ -18,14 +18,14 @@ links: [vision, work-items, acceptance, mcp-interface]
 
 | # | Phase | Main agent | Outputs | Gate |
 |---|---|---|---|---|
-| 0 | Bootstrap | design | project mode, depth, preset, `AGENTS.md`, `design/index.md` | REQ-PH-010 |
+| 0 | Bootstrap | design | project mode, depth, profile, `AGENTS.md`, `design/index.md` | REQ-PH-010 |
 | 1 | Intent | design + user | vision, glossary, constraints | REQ-PH-011 |
 | 2 | Requirements | design | requirement chapters | REQ-PH-012 |
 | 3 | Architecture | design | component chapters, decisions | REQ-PH-013 |
 | 4 | Interfaces | design | contracts and schemas | REQ-PH-014 |
 | 5 | Plan | design | work items with acceptance tests | REQ-PH-015 |
 | 6 | Build | build | accepted submissions | REQ-PH-016 |
-| 7 | Verify | design | updated item states, generated `docs/` | REQ-PH-017 |
+| 7 | Verify | design | updated item states, generated `docs/` where configured | REQ-PH-017 |
 
 Phases 6 and 7 repeat for each work item. A change to the specification during phase 6 goes back to the phase that owns the changed item.
 
@@ -56,10 +56,10 @@ When all gate conditions of a phase are met, maid shall mark the phase ready and
 When maid starts in a project without a design, maid shall detect whether the project is new, has existing code, or has an existing design in another format.
 
 ### REQ-PH-009 Existing code
-Where the project has existing code, maid shall generate `docs/` from the code and shall instruct the design agent to write draft design items from `docs/` for human acceptance.
+Where the project has existing code, maid shall instruct the design agent to write draft design items from the code, and from `docs/` where a generator exists, for human acceptance.
 
 ### REQ-PH-010 Gate 0
-The bootstrap gate shall require a project mode, a depth level and a preset.
+The bootstrap gate shall require a project mode, a depth level and a profile.
 
 ### REQ-PH-011 Gate 1
 The intent gate shall require an accepted vision with at least one goal and at least one non-goal, and a glossary.
@@ -80,7 +80,7 @@ The plan gate shall require that each accepted requirement is linked to a work i
 The build gate for a work item shall be the acceptance rule of the merge queue. See REQ-ACC-007.
 
 ### REQ-PH-017 Gate 7
-The verify gate shall require that each requirement in the work item traces to code, to passing tests and to generated documentation.
+The verify gate shall require that each requirement in the work item traces to code and to passing tests.
 
 ### REQ-PH-018 Questions do not block unrelated work
 While a question is open, maid shall block only the items that link to the question.

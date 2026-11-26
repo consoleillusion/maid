@@ -17,7 +17,7 @@ Agents: read [`AGENTS.md`](AGENTS.md).
 ```text
 AGENTS.md   instructions for agents
 design/     specification (source of truth)
-docs/       generated documentation of the code (not yet present)
+docs/       generated documentation of the code (optional)
 spikes/     experiments that support design decisions
 ```
 

@@ -25,14 +25,14 @@ links: [phases, acceptance, task-store, ADR-0004, ADR-0005]
 | `owns` | yes | File path patterns that this work item can change. |
 | `reads` | no | File path patterns that the agent can read but not change. |
 | `depends_on` | no | Work item IDs. |
-| `budget` | yes | Maximum attempts and maximum changed lines. From the preset. |
+| `budget` | yes | Maximum attempts and maximum changed lines. From the profile. |
 | `kind` | yes | `code` or `docs`. |
 | `status` | yes | `open`, `claimed`, `submitted`, `accepted`, `rejected`, `escalated`, `closed`. |
 
 ## Requirements
 
 ### REQ-WI-001 Size
-The design agent shall create work items that a build agent can complete in one session, with a changed-line budget from the preset.
+The design agent shall create work items that a build agent can complete in one session, with a changed-line budget from the profile.
 
 ### REQ-WI-002 Acceptance tests first
 The task store shall not offer a work item as ready until its acceptance tests exist on the main branch and fail.
@@ -62,10 +62,13 @@ If a work item has the number of rejected attempts that its budget allows, then 
 When a design agent takes an escalated work item, the design agent shall split the work item, clarify the linked items, or correct the acceptance tests through a proposal.
 
 ### REQ-WI-011 Parallel attempts
-Where the preset enables parallel attempts, maid shall allow up to N attempts on the same work item at the same time, and the merge queue shall accept only the attempt with the highest score.
+Where the profile enables parallel attempts, maid shall allow up to N attempts on the same work item at the same time, and the merge queue shall accept only the attempt with the highest score.
 
 ### REQ-WI-012 Docs work items
 Where a work item has kind `docs`, its acceptance tests shall be the style validator, the required sections and the link check of the target chapter.
+
+### REQ-WI-016 Cost record
+When an agent submits an attempt, maid shall record the attempt count, the elapsed time and any cost that the agent reports, and maid shall limit work items by attempts only.
 
 ## Context packet
 

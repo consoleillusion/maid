@@ -9,7 +9,7 @@ maid is an MCP server and CLI. You install it in a software project. It guides a
 ## Source of truth
 
 - `design/` is the specification. It says what maid must be. It is the source of truth.
-- `docs/` is generated from code. It says what maid is now. Do not edit it by hand.
+- `docs/`, where present, is generated from code. It says what maid is now. Do not edit it by hand.
 - The code is the present state. If the code and `design/` disagree, `design/` is correct, or `design/` must change first.
 
 ## How to start

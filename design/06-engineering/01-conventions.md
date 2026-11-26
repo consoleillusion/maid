@@ -8,8 +8,8 @@ owner: paul
 summary: >
   How maid's own code is written, tested and committed. These are the rules for
   agents that build maid. They are not the defaults that maid applies to other
-  projects; those are in presets.
-links: [ADR-0001, presets]
+  projects; those are in profiles.
+links: [ADR-0001, profiles]
 ---
 
 # Engineering conventions for maid
@@ -18,7 +18,7 @@ links: [ADR-0001, presets]
 
 | Item | Rule |
 |---|---|
-| Language | Go. Version TBD (Q-009). |
+| Language | Go. maid builds and passes its tests with the two newest Go releases, as Go's release policy supports. |
 | Module path | `github.com/consoleillusion/maid` |
 | Formatter | `gofmt` |
 | Linter | `golangci-lint` with the configuration in the repository |

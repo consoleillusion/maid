@@ -67,7 +67,7 @@ Each MCP client starts its own maid process over stdio. A client can also connec
 | Attempts, scores, baselines, queue, log | `.maid/state.db` | no |
 | Worktrees | `.maid/worktrees/` | no |
 
-## Open issues
+## Scope decisions
 
-- Process model for `maid serve` with remote agents: TBD (Q-003).
-- Whether the state store and the task store merge into one store later: TBD (Q-008).
+- In v1, `maid serve` accepts connections only from the same machine. Agents on other machines are out of scope for v1 (Q-003).
+- The state store and the task store stay separate, so that the task port can use another adapter (Q-008).

@@ -18,7 +18,7 @@ ACE is a subset of English that the APE parser translates into first-order logic
 
 ## Status
 
-This card is a stub. The APE adapter is TBD (Q-007). Until it exists, findings for this style are advice only.
+This card is a stub. The APE adapter is planned after v1 (Q-007). Until it exists, findings for this style are advice only.
 
 ## Basic rules
 

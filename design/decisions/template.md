@@ -6,7 +6,7 @@ status: draft            # stub | draft | review | accepted | superseded
 style: ste
 owner: <person who accepts>
 origin: user             # user | default | agent
-preset: null             # name@version when origin is default
+profile: null             # name@version when origin is default
 date: YYYY-MM-DD
 decision-makers: []
 supersedes: null

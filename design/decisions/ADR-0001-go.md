@@ -6,7 +6,7 @@ status: review
 style: ste
 owner: paul
 origin: user
-preset: null
+profile: null
 date: 2026-11-27
 decision-makers: [paul]
 supersedes: null

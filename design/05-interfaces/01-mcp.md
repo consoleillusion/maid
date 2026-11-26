@@ -31,7 +31,7 @@ links: [phases, work-items, acceptance, chapter-format]
 
 | Tool | Input | Output |
 |---|---|---|
-| `design_scaffold` | `depth`, `preset?`, `answers?` (free text or fields) | Created stubs and the questions that remain. |
+| `design_scaffold` | `depth`, `profile?`, `answers?` (free text or fields) | Created stubs and the questions that remain. |
 | `design_write` | `id`, `section`, `content`, `base_version`, `reason` | New version, or a conflict with the current text. |
 | `design_propose` | `id`, `section`, `content`, `base_version`, `reason` | Proposal ID. |
 | `design_review` | `proposal_id`, `decision` (`accept`, `reject`), `reason` | Result. |
@@ -84,6 +84,9 @@ Each tool call that changes state shall record an agent ID that the client suppl
 
 ### REQ-MCP-006 Transports
 The MCP server shall support stdio and streamable HTTP.
+
+### REQ-MCP-007 Local HTTP only
+While maid runs in HTTP mode, the MCP server shall accept connections only on the loopback interface.
 
 ## maid_next contract
 

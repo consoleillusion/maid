@@ -75,6 +75,7 @@ maid v1 ships several built-in profiles. The proposed set:
 |---|---|---|
 | `go-cli` | CLI tool | Go, gofmt, golangci-lint, `go test`, gomarkdoc |
 | `web-local` | web service | Bun, TypeScript, SQLite, Biome, `bun test`, TypeDoc |
+| `rust-perf` | performance-critical service, library or tool | Rust, rustfmt, clippy, `cargo test`, criterion benchmarks, rustdoc |
 | `script-python` | script or tool | Python, uv, pytest, ruff, no docs generator |
 | `generic` | any | No stack defaults. The design agent makes every decision. |
 

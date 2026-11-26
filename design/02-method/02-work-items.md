@@ -26,7 +26,9 @@ links: [phases, acceptance, task-store, ADR-0004, ADR-0005]
 | `reads` | no | File path patterns that the agent can read but not change. |
 | `depends_on` | no | Work item IDs. |
 | `budget` | yes | Maximum attempts and maximum changed lines. From the profile. |
-| `kind` | yes | `code` or `docs`. |
+| `kind` | yes | `code`, `tests` or `docs`. |
+| `criteria` | for `code` | Gherkin scenarios written by the design agent. |
+| `tests_for` | for `tests` | The `code` work item whose acceptance tests this item writes. |
 | `status` | yes | `open`, `claimed`, `submitted`, `accepted`, `rejected`, `escalated`, `closed`. |
 
 ## Requirements
@@ -69,6 +71,21 @@ Where a work item has kind `docs`, its acceptance tests shall be the style valid
 
 ### REQ-WI-016 Cost record
 When an agent submits an attempt, maid shall record the attempt count, the elapsed time and any cost that the agent reports, and maid shall limit work items by attempts only.
+
+### REQ-WI-017 Test work item
+When the design agent creates a work item of kind `code`, maid shall create a work item of kind `tests` that writes its acceptance tests from its acceptance criteria.
+
+### REQ-WI-018 Order
+The task store shall make each `code` work item depend on its `tests` work item.
+
+### REQ-WI-019 Independence
+If an agent held the claim on a `tests` work item, then maid shall not give that agent a claim on the `code` work item that it tests.
+
+### REQ-WI-020 Tests acceptance
+Where a work item has kind `tests`, its acceptance checks shall be: the tests compile, each test fails on the main branch, and each acceptance criterion is covered by at least one test that carries the criterion tag.
+
+### REQ-WI-021 Review of tests
+Where the depth level is rigorous, the merge queue shall hold each accepted `tests` submission for review by the design agent or a human.
 
 ## Context packet
 

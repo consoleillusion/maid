@@ -1,6 +1,6 @@
 ---
 id: ADR-0004
-title: The design agent writes complete acceptance tests before build work
+title: Acceptance criteria from the design agent, tests from a separate test agent
 part: decisions
 status: review
 style: ste
@@ -11,47 +11,50 @@ date: 2026-11-27
 decision-makers: [paul]
 supersedes: null
 superseded-by: null
-revisit-when: ["design agents cannot write useful acceptance tests for a class of work items"]
+revisit-when: ["test agents often write tests that pass wrong implementations", "the extra work item per code item costs more than it saves"]
 summary: >
-  For each work item, the design agent writes complete, failing acceptance
-  tests before any build agent can claim it. Build agents cannot change those
-  tests. Build agents can add their own tests, which protect against
-  regressions but do not count for acceptance.
+  The design agent writes short Gherkin acceptance criteria for each work
+  item. A separate, cheap test agent turns them into failing tests. A third
+  agent implements the work item and cannot change those tests. Small models do
+  the volume of test code; independence keeps acceptance honest.
 links: [work-items, acceptance, phases]
 ---
 
-# ADR-0004 The design agent writes complete acceptance tests before build work
+# ADR-0004 Acceptance criteria from the design agent, tests from a separate test agent
 
 ## Context and problem statement
 
-Acceptance is automatic. If the build agent writes the tests that decide acceptance, it grades its own work. Should the design agent write complete tests, or only test stubs?
+Acceptance is automatic, so the tests decide what is accepted. Test code is often as large as the implementation. Small models can write tests well. But if the agent that implements a work item also writes its acceptance tests, it grades its own work. Who writes the acceptance tests?
 
 ## Decision drivers
 
-- Small agents are cheap but unreliable. Acceptance must not depend on their judgement.
-- Tests are usually cheaper to write than the implementation.
-- A human can review tests more quickly than code.
+- The implementer must not define its own acceptance.
+- Large models are expensive, so they should write as little code as possible.
+- Small models can write test code reliably from a precise scenario.
 
 ## Considered options
 
-- Design agent writes complete, failing acceptance tests.
-- Design agent writes test stubs. The build agent writes the assertions.
-- Build agent writes all tests.
+- The design agent writes complete acceptance tests.
+- The design agent writes Gherkin acceptance criteria. A separate test agent writes the tests. A different build agent implements.
+- The build agent writes its own tests.
 
 ## Decision outcome
 
-Chosen option: "Design agent writes complete, failing acceptance tests", because with stubs, the build agent writes the assertions and so decides its own acceptance.
+Chosen option: "The design agent writes Gherkin acceptance criteria. A separate test agent writes the tests. A different build agent implements."
+
+The large agent writes only what needs judgement: the scenarios, which are short. A cheap agent writes the test code. Independence comes from the separation of agents, not from the size of the model.
 
 Rules:
 
-- A work item is ready only when its acceptance tests exist on the main branch and fail (REQ-WI-002).
-- A submission that changes its own acceptance tests is rejected (REQ-ACC-010).
-- Build agents can add tests. After merge, these tests protect against regressions.
-- A human reviews the acceptance tests at the plan gate (phase 5).
+- Each `code` work item has a `tests` work item, and depends on it (REQ-WI-017, REQ-WI-018).
+- The agent that wrote the tests cannot implement the work item (REQ-WI-019).
+- A `tests` submission is accepted when the tests compile, each test fails on the main branch, and each scenario is covered by a tagged test (REQ-WI-020).
+- A build submission that changes its acceptance tests is rejected (REQ-ACC-010).
+- At the rigorous depth level, the design agent or a human reviews the tests (REQ-WI-021).
 
 ### Consequences
 
-- Good, because acceptance does not depend on the build agent.
-- Good, because the plan gate gives the human one clear review point.
-- Bad, because the design agent does more work, at a higher price per token.
-- Bad, because a wrong acceptance test blocks the work item. Escalation handles this (REQ-WI-009, REQ-WI-010).
+- Good, because the large agent writes much less code.
+- Good, because acceptance does not depend on the implementer.
+- Bad, because each `code` work item adds a `tests` work item and one more merge.
+- Bad, because a test that passes a wrong implementation is not caught mechanically. Scenario tags and rigorous review reduce this risk.

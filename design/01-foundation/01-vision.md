@@ -31,7 +31,7 @@ maid is an MCP server and a CLI. You install maid in a software project. Then yo
 maid guides the agent through a fixed progression:
 
 1. The agent writes the design with the user. The design is in `design/`.
-2. A large agent divides the design into small work items. It writes the acceptance tests for each work item.
+2. A large agent divides the design into small work items. It writes short acceptance criteria for each work item. A separate small agent turns the criteria into failing tests.
 3. Small agents take work items and implement them. They can work in parallel.
 4. maid accepts each commit automatically when its acceptance tests pass and no other test breaks.
 

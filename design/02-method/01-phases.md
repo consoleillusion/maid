@@ -23,7 +23,7 @@ links: [vision, work-items, acceptance, mcp-interface]
 | 2 | Requirements | design | requirement chapters | REQ-PH-012 |
 | 3 | Architecture | design | component chapters, decisions | REQ-PH-013 |
 | 4 | Interfaces | design | contracts and schemas | REQ-PH-014 |
-| 5 | Plan | design | work items with acceptance tests | REQ-PH-015 |
+| 5 | Plan | design, then test | work items with acceptance criteria, then acceptance tests | REQ-PH-015 |
 | 6 | Build | build | accepted submissions | REQ-PH-016 |
 | 7 | Verify | design | updated item states, generated `docs/` where configured | REQ-PH-017 |
 
@@ -41,7 +41,7 @@ The MCP server shall end the response of each tool with a one-line hint that nam
 The MCP server shall derive the current phase from the design store, the task store and the state store, and shall not depend on memory of a previous session.
 
 ### REQ-PH-004 Tool exposure by phase
-While the project is in a phase before phase 6, the MCP server shall not list the build tools.
+While the project is in a phase before phase 5, the MCP server shall not list the work item tools.
 
 ### REQ-PH-005 Tool list notification
 When the phase changes, the MCP server shall send a `tools/list_changed` notification to each connected client that supports it.

@@ -50,7 +50,9 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 
 **gate**: a set of conditions that maid checks before a **project** leaves a **phase**.
 
-**design agent**: an agent that writes the **design**, the **work items** and the **acceptance tests**.
+**design agent**: an agent that writes the **design**, the **work items** and the **acceptance criteria**.
+
+**test agent**: an agent that writes the **acceptance tests** of a **work item** from its **acceptance criteria**.
 
 **build agent**: an agent that implements a **work item**.
 
@@ -68,7 +70,9 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 
 **merge queue**: the maid component that tests each **submission** on the latest main branch and merges or rejects it.
 
-**acceptance test**: a test that a **design agent** writes for a **work item** before any **attempt**.
+**acceptance criterion**: a Gherkin scenario that a **design agent** writes for a **work item**.
+
+**acceptance test**: a test that a **test agent** writes from an **acceptance criterion** before any **attempt** on the **work item**.
 
 **regression**: a test that passed on the main branch and fails after a **submission**.
 
@@ -86,6 +90,8 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 - **item** _is in_ **chapter**
 - **chapter** _uses_ **style**
 - **work item** _implements_ **requirement**
+- **work item** _has_ **acceptance criterion**
+- **acceptance test** _implements_ **acceptance criterion**
 - **work item** _has_ **acceptance test**
 - **work item** _depends on_ **work item**
 - **work item** _owns_ file path
@@ -100,6 +106,7 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 - It is obligatory that each **work item** _implements_ at least one **requirement**.
 - It is obligatory that each **work item** _has_ at least one **acceptance test** before a **build agent** _holds_ a **claim** _on_ that **work item**.
 - It is prohibited that two **agents** _hold_ a **claim** _on_ the same **work item** at the same time.
+- It is prohibited that the **test agent** that writes the **acceptance tests** of a **work item** _holds_ a **claim** _on_ that **work item**.
 - It is prohibited that a **build agent** changes an **acceptance test** of the **work item** that the **build agent** implements.
 - It is obligatory that maid rejects each **submission** that causes a **regression**.
 - It is prohibited that two **work items** that run at the same time _own_ the same file path.

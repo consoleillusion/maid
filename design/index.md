@@ -88,8 +88,8 @@ links: []
 | [ADR-0001](decisions/ADR-0001-go.md) | review | user | Write maid in Go and restart from the design |
 | [ADR-0002](decisions/ADR-0002-pull-model.md) | review | user | Agents pull work from maid; maid does not start agents |
 | [ADR-0003](decisions/ADR-0003-merge-queue.md) | review | user | Accept submissions automatically through a local merge queue |
-| [ADR-0004](decisions/ADR-0004-acceptance-tests-first.md) | review | agent | The design agent writes complete acceptance tests before build work |
-| [ADR-0005](decisions/ADR-0005-beads-task-store.md) | review | agent | Use Beads as the v1 task store, through its CLI, behind a port |
+| [ADR-0004](decisions/ADR-0004-acceptance-tests-first.md) | review | agent | Acceptance criteria from the design agent, tests from a separate test agent |
+| [ADR-0005](decisions/ADR-0005-beads-task-store.md) | accepted | agent | Use Beads as the v1 task store, through its CLI, behind a port |
 | [ADR-0006](decisions/ADR-0006-chapters-and-styles.md) | review | user | Organise the design as parts and chapters, each with a declared style |
 
 New decisions use [the template](decisions/template.md).

@@ -2,7 +2,7 @@
 id: ADR-0005
 title: Use Beads as the v1 task store, through its CLI, behind a port
 part: decisions
-status: review
+status: accepted
 style: ste
 owner: paul
 origin: agent

@@ -18,6 +18,8 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 
 ## Terms
 
+**maid**: the tool that this design specifies. Its name is always written in lowercase.
+
 **project**: a software repository in which maid is installed.
 
 **design**: the set of all **chapters** in the `design/` folder of a **project**.

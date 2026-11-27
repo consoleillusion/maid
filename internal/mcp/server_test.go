@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/consoleillusion/maid/internal/config"
+	"github.com/consoleillusion/maid/internal/guide"
 	"github.com/consoleillusion/maid/internal/tasks"
 	"github.com/consoleillusion/maid/internal/work"
 )
@@ -165,5 +166,30 @@ func TestStatusSurvivesTaskStoreError(t *testing.T) {
 	txt := r["content"].([]map[string]any)[0]["text"].(string)
 	if r["isError"] == true || !strings.Contains(txt, "task store unavailable") {
 		t.Fatalf("maid_status = %s", txt)
+	}
+}
+
+// REQ-PH-001
+func TestNextGivesReadyCalls(t *testing.T) {
+	// Purpose: maid_next returns calls with arguments that work as they are.
+	root, _ := filepath.Abs(filepath.Join("..", ".."))
+	tl := &Tools{Svc: work.New(root, config.Default(), tasks.NewMemory())}
+	ctx := context.Background()
+	n, err := guide.Compute(ctx, tl.Svc, "", "a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(n.Calls) == 0 || len(n.AskUser) == 0 {
+		t.Fatalf("no calls or questions: %+v", n)
+	}
+	first, _ := json.Marshal(n.Calls[0].Arguments)
+	r := tl.Call(ctx, n.Calls[0].Tool, first, "a")
+	if r["isError"] == true {
+		t.Fatalf("suggested call %s %s failed: %v", n.Calls[0].Tool, first, r)
+	}
+	r = tl.Call(ctx, "design_read", json.RawMessage(`{"refs":["design/01-foundation/01-vision.md","visoin"]}`), "a")
+	txt := r["content"].([]map[string]any)[0]["text"].(string)
+	if !strings.Contains(txt, "G-001") || !strings.Contains(txt, `"did_you_mean"`) || !strings.Contains(txt, "vision") {
+		t.Fatalf("design_read with a path and a typo = %s", txt)
 	}
 }

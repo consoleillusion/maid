@@ -52,7 +52,7 @@ Native Beads fields that maid uses: `spec_id` (first linked requirement), `accep
 
 ### Initialisation
 
-maid runs `bd init --non-interactive --skip-agents --skip-hooks --quiet`. `--skip-agents` is required because `bd init` otherwise writes `AGENTS.md` and `CLAUDE.md`, and maid owns those files.
+maid runs `bd init --non-interactive --skip-agents --skip-hooks --stealth --quiet`. `--skip-agents` is required because `bd init` otherwise writes `AGENTS.md` and `CLAUDE.md`, and maid owns those files. `--stealth` keeps the database local: bd adds no Dolt remote and excludes `.beads/` from git, so the database never syncs (C-004).
 
 ## Spike findings
 

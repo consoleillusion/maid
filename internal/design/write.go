@@ -60,10 +60,11 @@ func (s *Store) WriteSection(ref, content, baseVersion string) (WriteResult, err
 // AppendSection adds content at the end of a chapter.
 func (s *Store) AppendSection(chapterID, content string) (WriteResult, error) {
 	// Purpose: add a new section to a chapter that is not accepted.
-	ch := s.byID[chapterID]
-	if ch == nil {
-		return WriteResult{}, fmt.Errorf("unknown chapter %q", chapterID)
+	ch, err := s.ResolveChapter(chapterID)
+	if err != nil {
+		return WriteResult{}, err
 	}
+	chapterID = ch.ID
 	if err := writable(ch); err != nil {
 		return WriteResult{}, err
 	}
@@ -76,10 +77,11 @@ func (s *Store) AppendSection(chapterID, content string) (WriteResult, error) {
 // chapter is accepted (REQ-DOC-011).
 func (s *Store) Propose(chapterID, title, content, agent string) (WriteResult, error) {
 	// Purpose: record a proposed change without changing accepted text.
-	ch := s.byID[chapterID]
-	if ch == nil {
-		return WriteResult{}, fmt.Errorf("unknown chapter %q", chapterID)
+	ch, err := s.ResolveChapter(chapterID)
+	if err != nil {
+		return WriteResult{}, err
 	}
+	chapterID = ch.ID
 	block := fmt.Sprintf("## Proposal: %s\n\nstatus: proposed · by %s · %s\n\n%s",
 		strings.TrimSpace(title), agent, time.Now().UTC().Format("2006-01-02"), strings.TrimSpace(content))
 	body := strings.TrimRight(ch.Body, "\n") + "\n\n" + block + "\n"
@@ -93,15 +95,16 @@ var statusLine = regexp.MustCompile(`(?m)^status:[^\n]*$`)
 // superseded needs the name of the person who approved it (REQ-PH-007).
 func (s *Store) SetStatus(chapterID, status, approvedBy string) (WriteResult, error) {
 	// Purpose: record a status change, such as a human accepting a chapter.
-	ch := s.byID[chapterID]
-	if ch == nil {
-		return WriteResult{}, fmt.Errorf("unknown chapter %q", chapterID)
+	ch, err := s.ResolveChapter(chapterID)
+	if err != nil {
+		return WriteResult{}, err
 	}
+	chapterID = ch.ID
 	if !Statuses[status] {
 		return WriteResult{}, fmt.Errorf("invalid status %q", status)
 	}
 	if (status == "accepted" || status == "superseded") && strings.TrimSpace(approvedBy) == "" {
-		return WriteResult{}, errors.New("accepting a chapter needs approved_by: the person who approved it")
+		return WriteResult{}, fmt.Errorf("approved_by is missing. Ask the user whether they accept %q. If they say yes, call design_set_status again with approved_by set to their name", chapterID)
 	}
 	if status == "accepted" {
 		var errs []string
@@ -236,6 +239,11 @@ func quoteIfNeeded(s string) string {
 
 func (s *Store) locate(ref string) (*Chapter, *Section, error) {
 	// Purpose: find the chapter and section that a ref names.
+	if canonical, err := s.Resolve(ref); err == nil {
+		ref = canonical
+	} else {
+		return nil, nil, err
+	}
 	if it, ok := s.items[ref]; ok && it.Section != nil {
 		return it.Chapter, it.Section, nil
 	}

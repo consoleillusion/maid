@@ -25,6 +25,14 @@ type Next struct {
 	AskUser  []string `json:"ask_user,omitempty"`
 	Blocked  []string `json:"blocked,omitempty"`
 	Warnings []string `json:"warnings,omitempty"`
+	Calls    []Call   `json:"calls,omitempty"` // ready-to-run tool calls for this step
+}
+
+// Call is a tool call that the agent can make as it is.
+type Call struct {
+	Tool      string         `json:"tool"`
+	Arguments map[string]any `json:"arguments"`
+	When      string         `json:"when,omitempty"`
 }
 
 // Roles.
@@ -56,14 +64,14 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 		return buildNext(ctx, s, agent, items), nil
 	}
 	n := designNext(ds, items)
-	n.AskUser = questions
+	n.AskUser = append(n.AskUser, questions...)
 	n.Warnings = warnings
 	if taskErr != nil && n.Phase >= "5" {
 		n.Step = "Ask the user to fix the task store, then call maid_next again. " + n.Step
 	}
 	if n.Phase >= "6" {
 		if b := buildNext(ctx, s, agent, items); b.Step != "" && role == "" {
-			b.AskUser = questions
+			b.AskUser = append(b.AskUser, questions...)
 			return b, nil
 		}
 	}
@@ -71,57 +79,81 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 }
 
 func designNext(ds *design.Store, items []tasks.WorkItem) Next {
-	// Purpose: find the first unmet design gate.
+	// Purpose: find the first unmet design gate and give ready-to-run calls.
 	if len(ds.Chapters) == 0 {
 		return Next{
-			Phase: "0-bootstrap", Step: "Ask the user what the project is for, then create a vision chapter (01-foundation/01-vision.md, id vision, style ste) and a glossary chapter with design_create.",
+			Phase: "0-bootstrap", Step: "Ask the user what the project is for and what it must not do. Then create the vision chapter from the answers.",
 			Why:   "The project has no design. The design is the source of truth.",
 			Tools: []string{"design_create", "design_check"}, DoneWhen: []string{"design/ contains a vision chapter with at least one goal and one non-goal"},
+			AskUser: []string{"What is this project for, and what is out of scope?"},
+			Calls: []Call{{Tool: "design_create", When: "after the user answers; replace the goal and non-goal text with theirs",
+				Arguments: map[string]any{"path": "01-foundation/01-vision.md", "id": "vision", "title": "Vision", "style": "ste",
+					"summary": "Why the project exists and what it must and must not do.",
+					"body":    "# Vision\n\n## Goals\n\n### G-001 <goal>\n<one or two sentences>\n\n## Non-goals\n\n### NG-001 <non-goal>\n<one or two sentences>\n"}}},
 		}
 	}
 	if errs := errorFindings(ds); len(errs) > 0 {
+		f := errs[0]
 		return Next{
-			Phase: phaseOf(ds, items), Step: fmt.Sprintf("Fix %d design check errors.", len(errs)),
+			Phase: phaseOf(ds, items), Step: fmt.Sprintf("Fix %d design check errors. The first is %s line %d: %s", len(errs), f.Path, f.Line, f.Message),
 			Why: "Each gate requires a design that passes its checks (REQ-PH-006).", Read: refsOf(errs),
 			Tools: []string{"design_check", "design_read", "design_write"}, DoneWhen: []string{"design_check reports no errors"},
+			Calls: []Call{{Tool: "design_check", Arguments: map[string]any{}, When: "to see every finding"},
+				{Tool: "design_read", Arguments: map[string]any{"refs": []string{f.Path}}, When: "to get the text and version before design_write"}},
 		}
 	}
 	if v := ds.Chapter("vision"); v == nil || v.FM.String("status") != "accepted" {
 		return Next{
-			Phase: "1-intent", Step: "Complete the vision chapter with the user. When the user explicitly accepts it, call design_set_status with status accepted and approved_by set to their name.",
+			Phase: "1-intent", Step: "Show the user the vision chapter and ask whether they accept it. If they ask for changes, make them with design_write. When they accept, record it.",
 			Why: "The intent gate requires an accepted vision (REQ-PH-011).", Read: []string{"vision", "glossary"},
 			Tools: []string{"design_read", "design_write", "design_question", "design_set_status"}, DoneWhen: []string{"vision has status accepted"},
+			AskUser: []string{"Do you accept the vision chapter (design/01-foundation/01-vision.md)?"},
+			Calls: []Call{{Tool: "design_read", Arguments: map[string]any{"refs": []string{"vision"}}, When: "first, to show the user the vision"},
+				{Tool: "design_set_status", Arguments: map[string]any{"id": "vision", "status": "accepted", "approved_by": "<the user's name>"},
+					When: "only after the user says they accept it"}},
 		}
 	}
 	if pending := notAccepted(ds); len(pending) > 0 && len(items) == 0 {
 		return Next{
-			Phase: "2-4-design", Step: "Finish these chapters and ask the user to accept them: " + strings.Join(pending, ", ") + ". Record each acceptance with design_set_status.",
+			Phase: "2-4-design", Step: fmt.Sprintf("Review the %d chapters that are not accepted yet with the user, one at a time, starting with %s. Record each acceptance.", len(pending), pending[0]),
 			Why: "Work items can only implement accepted requirements.", Read: pending,
 			Tools: []string{"design_read", "design_write", "design_append", "design_create", "design_question", "design_set_status"}, DoneWhen: []string{"each chapter that the plan needs has status accepted"},
+			AskUser: []string{fmt.Sprintf("Do you accept the %s chapter?", pending[0])},
+			Calls: []Call{{Tool: "design_read", Arguments: map[string]any{"refs": []string{pending[0]}}, When: "to show the user the chapter"},
+				{Tool: "design_set_status", Arguments: map[string]any{"id": pending[0], "status": "accepted", "approved_by": "<the user's name>"},
+					When: "only after the user says they accept it"}},
 		}
 	}
 	if len(items) == 0 {
 		return Next{
-			Phase: "5-plan", Step: "Write a work plan: small items with Gherkin criteria, named acceptance tests and owned paths. Submit it with work_plan.",
+			Phase: "5-plan", Step: "Write a work plan: small items with Gherkin criteria, named acceptance tests and owned paths. The test files must not be inside owns.",
 			Why: "The design is accepted and there are no work items.", Read: []string{"work-items"},
 			Tools: []string{"work_plan"}, DoneWhen: []string{"each accepted requirement is linked to a work item"},
+			Calls: []Call{{Tool: "work_plan", When: "with one item for each small piece of work",
+				Arguments: map[string]any{"plan": map[string]any{"items": []map[string]any{{
+					"key": "short-key", "title": "What the item delivers", "implements": []string{"REQ-XX-001"},
+					"criteria":         "Scenario: <behaviour>\n  Given <state>\n  When <action>\n  Then <result>",
+					"acceptance_tests": []map[string]any{{"file": "pkg/thing_test.go", "names": []string{"TestThing"}}},
+					"owns":             []string{"pkg/thing.go"}}}}}}},
 		}
 	}
 	if esc := escalated(items); len(esc) > 0 {
 		return Next{
 			Phase: "6-build", Step: "Resolve escalated work items: split them, clarify the requirements, or correct the acceptance tests.",
 			Why: "These items used their attempt budget (REQ-WI-009, REQ-WI-010).", Blocked: esc,
-			Tools: []string{"maid_status", "work_plan", "design_read"},
+			Tools: []string{"maid_status", "work_result", "work_plan", "design_read"},
+			Calls: []Call{{Tool: "work_result", Arguments: map[string]any{"id": esc[0]}, When: "to see why the attempts were rejected"}},
 		}
 	}
 	if allClosed(items) {
 		return Next{
 			Phase: "7-verify", Step: "Check that each requirement traces to code and passing tests, then plan the next milestone.",
 			Why: "All work items are closed.", Tools: []string{"maid_status", "design_check", "work_plan"},
+			Calls: []Call{{Tool: "maid_status", Arguments: map[string]any{"detail": true}}},
 		}
 	}
 	return Next{Phase: "6-build", Step: "Build agents are working. Wait, or plan more work.", Why: "Work items are open or in progress.",
-		Tools: []string{"maid_status", "work_plan"}}
+		Tools: []string{"maid_status", "work_plan"}, Calls: []Call{{Tool: "maid_status", Arguments: map[string]any{"detail": true}}}}
 }
 
 func buildNext(ctx context.Context, s *work.Service, agent string, items []tasks.WorkItem) Next {
@@ -132,6 +164,8 @@ func buildNext(ctx context.Context, s *work.Service, agent string, items []tasks
 				Phase: "6-build", Step: fmt.Sprintf("Continue work item %s (%s). Commit in your worktree, then call work_submit.", it.ID, it.Title),
 				Why: "You hold the claim on this item.", Tools: []string{"work_claim", "work_heartbeat", "work_submit", "work_release"},
 				DoneWhen: []string{"the merge queue accepts your submission"},
+				Calls: []Call{{Tool: "work_claim", Arguments: map[string]any{"id": it.ID}, When: "to get your context packet and worktree again"},
+					{Tool: "work_submit", Arguments: map[string]any{"id": it.ID}, When: "after you commit in the worktree"}},
 			}
 		}
 	}
@@ -142,6 +176,7 @@ func buildNext(ctx context.Context, s *work.Service, agent string, items []tasks
 				return Next{
 					Phase: "6-build", Step: "Call work_claim to take the next ready work item. Its context packet has everything you need.",
 					Why: "There is ready work.", Tools: []string{"work_claim"},
+					Calls: []Call{{Tool: "work_claim", Arguments: map[string]any{}}},
 				}
 			}
 		}

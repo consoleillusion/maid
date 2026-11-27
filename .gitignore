@@ -21,3 +21,4 @@ coverage.*
 # Nix
 /.bin/
 /result
+apply-commits.sh

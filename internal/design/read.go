@@ -94,8 +94,43 @@ func (s *Store) Read(refs []string, summaryOnly bool) ([]Excerpt, error) {
 	return out, nil
 }
 
+// ReadAll is like Read but never fails as a whole: refs that do not
+// resolve are returned in the second result with suggestions.
+func (s *Store) ReadAll(refs []string, summaryOnly bool) ([]Excerpt, []NotFound) {
+	// Purpose: give agents every excerpt it can, and hints for the rest.
+	var out []Excerpt
+	var missing []NotFound
+	for _, ref := range refs {
+		ex, err := s.read(ref, summaryOnly)
+		var nf NotFound
+		switch {
+		case err == nil:
+			out = append(out, ex)
+		case asNotFound(err, &nf):
+			missing = append(missing, nf)
+		default:
+			missing = append(missing, NotFound{Ref: ref})
+		}
+	}
+	return out, missing
+}
+
+func asNotFound(err error, nf *NotFound) bool {
+	// Purpose: extract a NotFound from an error.
+	v, ok := err.(NotFound)
+	if ok {
+		*nf = v
+	}
+	return ok
+}
+
 func (s *Store) read(ref string, summaryOnly bool) (Excerpt, error) {
 	// Purpose: resolve one ref to an excerpt.
+	canonical, err := s.Resolve(ref)
+	if err != nil {
+		return Excerpt{}, err
+	}
+	ref = canonical
 	if ch := s.byID[ref]; ch != nil {
 		text := strings.TrimSpace(ch.Body)
 		if summaryOnly {

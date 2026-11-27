@@ -53,7 +53,9 @@ var defs = []def{
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
 			n, err := guide.Compute(ctx, t.Svc, sArg(a, "role"), agent)
 			hint := "follow the step"
-			if len(n.Tools) > 0 {
+			if len(n.Calls) > 0 {
+				hint = "make the calls in \"calls\" in order; their arguments are ready to use"
+			} else if len(n.Tools) > 0 {
 				hint = "call " + n.Tools[0]
 			}
 			return n, hint, err
@@ -74,16 +76,24 @@ var defs = []def{
 			return ds.Index(design.Filter{Part: sArg(a, "part"), Status: sArg(a, "status"), Style: sArg(a, "style"), Link: sArg(a, "link")}),
 				"call design_read with the IDs you need", nil
 		}},
-	{tool: Tool{"design_read", "Read design text by ref: a chapter ID, an item ID such as REQ-WI-004, or chapter#anchor. Returns the smallest text that answers each ref, with its version.",
-		obj(map[string]any{"refs": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+	{tool: Tool{"design_read", "Read design text. Each ref can be a chapter ID (vision), a file path (design/01-foundation/01-vision.md), a chapter title, an item ID (REQ-WI-004, any case), or chapter#heading. Returns the smallest text for each ref with its version; refs that match nothing come back in not_found with suggestions. Example: {\"refs\": [\"vision\", \"REQ-WI-004\"]}",
+		obj(map[string]any{"refs": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "chapter IDs, paths, titles, item IDs or chapter#heading"},
 			"detail": map[string]any{"type": "string", "enum": []string{"summary", "full"}, "description": "summary returns only chapter summaries"}}, "refs")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, _ string) (any, string, error) {
 			ds, err := t.Svc.Design()
 			if err != nil {
 				return nil, "", err
 			}
-			ex, err := ds.Read(lArg(a, "refs"), sArg(a, "detail") == "summary")
-			return ex, "call maid_next when you have what you need", err
+			refs := lArg(a, "refs")
+			if len(refs) == 0 {
+				return nil, "", errors.New(`refs is empty; pass chapter IDs or paths, for example {"refs": ["vision"]}. Call design_index to list chapters`)
+			}
+			ex, missing := ds.ReadAll(refs, sArg(a, "detail") == "summary")
+			hint := "call maid_next when you have what you need"
+			if len(missing) > 0 {
+				hint = "some refs matched nothing; use a suggestion from not_found, or call design_index"
+			}
+			return map[string]any{"excerpts": ex, "not_found": missing}, hint, nil
 		}},
 	{tool: Tool{"design_check", "Check the design: frontmatter, IDs, links and writing styles. Errors fail gates; advice does not.", obj(map[string]any{})},
 		run: func(ctx context.Context, t *Tools, a map[string]any, _ string) (any, string, error) {
@@ -128,7 +138,7 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_set_status", "Change a chapter's status. Use status accepted ONLY when the user has explicitly approved the chapter in this conversation, and pass their name in approved_by. maid refuses to accept a chapter that has check errors.",
+	{tool: Tool{"design_set_status", "Change a chapter's status. id can be the chapter ID or its file path. Use status accepted ONLY after the user explicitly approves the chapter in this conversation, and pass their name in approved_by. maid refuses to accept a chapter that has check errors. Example: {\"id\": \"vision\", \"status\": \"accepted\", \"approved_by\": \"Paul\"}",
 		obj(map[string]any{"id": str("chapter ID"), "status": map[string]any{"type": "string", "enum": []string{"stub", "draft", "review", "accepted", "superseded"}},
 			"approved_by": str("the person who approved; required for accepted and superseded"), "reason": str("why"), "agent": agentProp}, "id", "status")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {

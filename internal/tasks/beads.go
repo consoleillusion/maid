@@ -17,10 +17,12 @@ type Beads struct {
 	Bin string // path to bd; "bd" when empty
 }
 
-// Init initialises Beads in the project without touching AGENTS.md.
+// Init initialises Beads in the project without touching AGENTS.md. Stealth
+// mode keeps the database local: no Dolt remote, and .beads/ is excluded
+// from git through .git/info/exclude (C-004).
 func (b *Beads) Init(ctx context.Context) error {
 	// Purpose: run bd init with the flags maid requires.
-	_, err := b.run(ctx, "", "init", "--non-interactive", "--skip-agents", "--skip-hooks", "--quiet")
+	_, err := b.run(ctx, "", "init", "--non-interactive", "--skip-agents", "--skip-hooks", "--stealth", "--quiet")
 	return err
 }
 

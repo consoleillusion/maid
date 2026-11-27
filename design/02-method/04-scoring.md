@@ -2,7 +2,7 @@
 id: scoring
 title: Score
 part: 02-method
-status: draft
+status: accepted
 style: ears
 owner: paul
 summary: >

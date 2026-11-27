@@ -2,7 +2,7 @@
 id: ADR-0001
 title: Write maid in Go and restart from the design
 part: decisions
-status: review
+status: accepted
 style: ste
 owner: paul
 origin: user

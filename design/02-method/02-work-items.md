@@ -131,3 +131,19 @@ Where the code that the acceptance tests call does not exist on the main branch,
 
 ### REQ-WI-023 Tests item ownership
 When maid creates a tests work item, maid shall give it ownership of its test files and of the owned files of its code item.
+
+## Work through maid only
+
+An agent can complete a work item with maid's tools alone. It does not need file or shell access on the machine that runs maid.
+
+### REQ-WI-024 Read worktree files
+When an agent that holds the claim on a work item asks for a file in its worktree, maid shall return the file content.
+
+### REQ-WI-025 Write owned files
+When an agent that holds the claim on a work item writes a file, maid shall write the file in the agent's worktree only if the work item owns the path.
+
+### REQ-WI-026 Run checks
+When an agent that holds the claim on a work item asks to run the tests, the format check or the lint, maid shall run the configured command in the agent's worktree and return the result.
+
+### REQ-WI-027 Commit
+When an agent that holds the claim on a work item asks to commit, maid shall commit every change in the agent's worktree on its attempt branch.

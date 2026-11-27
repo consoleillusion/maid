@@ -43,7 +43,10 @@ The score report shall list each component with its raw value, its normalised va
 maid shall read the component weights and the review band from the profile decision of the project.
 
 ### REQ-SC-004 Score does not accept
-maid shall not accept a submission because of its score. The acceptance rule in REQ-ACC-007 is the only condition for acceptance.
+maid shall not accept a submission because of its score. A submission is accepted only when it meets the acceptance rule in REQ-ACC-007 and its score is not below the minimum score (REQ-SC-016).
+
+### REQ-SC-016 Minimum score
+If the score of a submission that meets the acceptance rule is below the minimum score of the profile, then the merge queue shall reject the submission.
 
 ### REQ-SC-005 Relative size
 maid shall normalise the lines-of-code penalty by the changed-line budget of the work item, so that a work item with a larger budget is not penalised for the same relative size.

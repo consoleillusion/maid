@@ -21,7 +21,7 @@ links: [vision, ADR-0001, ADR-0002, ADR-0005]
 | C-001 | maid is written in Go and ships as one binary for each platform. | ADR-0001 |
 | C-002 | maid uses the MCP pull model. maid does not start agents. | ADR-0002 |
 | C-003 | maid must work with any MCP client that supports tools. Prompts, resources and elicitation are optional enhancements. | G-008 |
-| C-004 | maid must not require a network service to run. All state is in the project folder. | G-009, NG-002 |
+| C-004 | maid must not require a network service to run. All state is in the project repository. Tasks are shared through the project's git remote. | G-009, NG-002 |
 | C-005 | maid v1 runs on Linux and macOS. The design must not prevent Windows support later. | Q-002 |
 | C-006 | maid's own license is MIT. Linked dependencies must have licenses that are compatible with MIT. | README |
 | C-007 | Each MCP client can start its own maid process. All shared state must be safe for many processes at the same time. | ADR-0002 |

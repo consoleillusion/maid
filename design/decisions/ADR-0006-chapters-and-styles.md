@@ -2,7 +2,7 @@
 id: ADR-0006
 title: Organise the design as parts and chapters, each with a declared style
 part: decisions
-status: review
+status: accepted
 style: ste
 owner: paul
 origin: user

@@ -2,7 +2,7 @@
 id: roadmap
 title: Roadmap
 part: 07-delivery
-status: draft
+status: accepted
 style: ste
 owner: paul
 summary: >

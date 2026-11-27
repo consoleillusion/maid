@@ -2,7 +2,7 @@
 id: ADR-0008
 title: Everything is a task, and checks guide instead of block
 part: decisions
-status: draft
+status: accepted
 style: ste
 owner: paul
 summary: >

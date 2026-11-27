@@ -1,0 +1,14 @@
+{
+  "main_branch": "main",
+  "test": {
+    "adapter": "go",
+    "command": ["go", "test", "-json", "./..."]
+  },
+  "format_check": ["gofmt", "-l", "."],
+  "lint": ["go", "vet", "./..."],
+  "budget": {
+    "attempts": 2,
+    "max_changed_lines": 300
+  },
+  "port_range": 100
+}

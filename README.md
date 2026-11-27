@@ -8,7 +8,31 @@ maid is an MCP server and CLI that you install in a software project. When you p
 
 ## Status
 
-maid is in the design phase. The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md).
+Milestone 1 is implemented: the design store and checks, plans with separate tests items, claims with isolated worktrees and context packets, the merge queue, `maid_next`, and an MCP server (stdio, tools). See [`design/07-delivery/01-roadmap.md`](design/07-delivery/01-roadmap.md).
+
+The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md).
+
+## Install and run
+
+Requires Go, git and [Beads](https://github.com/steveyegge/beads) (`npm install -g @beads/bd`).
+
+```sh
+go install github.com/consoleillusion/maid/cmd/maid@latest
+cd your-project
+maid init          # maid.json, .maid/, Beads
+maid check         # check design/
+maid status
+```
+
+Add maid to your MCP client as a stdio server with the command `maid mcp`, run in the project root. Then tell the agent to call `maid_next`.
+
+## Development
+
+```sh
+go test ./...                       # set MAID_BD=/path/to/bd to include the Beads contract test
+go build -o maid ./cmd/maid
+test/e2e/run.sh ./maid              # full loop with the real binary and Beads
+```
 
 Agents: read [`AGENTS.md`](AGENTS.md).
 
@@ -16,9 +40,12 @@ Agents: read [`AGENTS.md`](AGENTS.md).
 
 ```text
 AGENTS.md   instructions for agents
+cmd/maid/   CLI and MCP server entry point
+internal/   implementation, one package for each architecture component
 design/     specification (source of truth)
 docs/       generated documentation of the code (optional)
 spikes/     experiments that support design decisions
+test/e2e/   end-to-end test
 ```
 
 ## License

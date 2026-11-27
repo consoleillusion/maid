@@ -9,7 +9,7 @@ summary: >
   How maid's own code is written, tested and committed. These are the rules for
   agents that build maid. They are not the defaults that maid applies to other
   projects; those are in profiles.
-links: [ADR-0001, profiles]
+links: [ADR-0001, ADR-0007, profiles]
 ---
 
 # Engineering conventions for maid
@@ -23,9 +23,9 @@ links: [ADR-0001, profiles]
 | Formatter | `gofmt` |
 | Linter | `golangci-lint` with the configuration in the repository |
 | Tests | `go test ./...` |
-| SQLite | A pure-Go driver, so that builds do not need cgo. |
+| Dependencies | The Go standard library only, until a decision adds a module (ADR-0007). |
 | Git | Call the `git` CLI. Do not use a Go git library. |
-| MCP | The official Go SDK, `github.com/modelcontextprotocol/go-sdk`. |
+| MCP | `internal/mcp`, stdio and tools only (ADR-0007). The official Go SDK replaces it when HTTP or elicitation is needed. |
 
 ## Code
 

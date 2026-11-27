@@ -71,6 +71,12 @@ links: []
 |---|---|---|---|
 | [conventions](06-engineering/01-conventions.md) | draft | ste | How maid's own code is written, tested and committed. |
 
+### 07 Delivery
+
+| Chapter | Status | Style | Summary |
+|---|---|---|---|
+| [roadmap](07-delivery/01-roadmap.md) | draft | ste | Milestones, their requirements, and what is implemented now. |
+
 ### Styles
 
 | Card | Status | Summary |
@@ -91,6 +97,7 @@ links: []
 | [ADR-0004](decisions/ADR-0004-acceptance-tests-first.md) | review | agent | Acceptance criteria from the design agent, tests from a separate test agent |
 | [ADR-0005](decisions/ADR-0005-beads-task-store.md) | accepted | agent | Use Beads as the v1 task store, through its CLI, behind a port |
 | [ADR-0006](decisions/ADR-0006-chapters-and-styles.md) | review | user | Organise the design as parts and chapters, each with a declared style |
+| [ADR-0007](decisions/ADR-0007-stdlib-only.md) | review | agent | Build milestone 1 on the Go standard library only |
 
 New decisions use [the template](decisions/template.md).
 

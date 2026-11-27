@@ -2,7 +2,7 @@
 id: style-registry
 title: Style registry
 part: 03-specification
-status: draft
+status: accepted
 style: ears
 owner: paul
 summary: >

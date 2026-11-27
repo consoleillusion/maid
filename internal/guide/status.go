@@ -17,6 +17,7 @@ type Status struct {
 	Items     []ItemStatus    `json:"items,omitempty"`
 	Baseline  BaselineSummary `json:"baseline"`
 	Recent    []state.Event   `json:"recent_activity"`
+	Warnings  []string        `json:"warnings,omitempty"`
 }
 
 // ItemStatus is one work item in the status report.
@@ -54,9 +55,10 @@ func Report(ctx context.Context, s *work.Service, detail bool) (Status, error) {
 	for _, ch := range ds.Chapters {
 		st.Chapters[ch.FM.String("status")]++
 	}
+	st.Warnings = n.Warnings
 	items, err := s.Tasks.List(ctx, true)
 	if err != nil {
-		return st, err
+		items = nil // reported in Warnings
 	}
 	for _, it := range items {
 		if it.Maid.Kind == "" {

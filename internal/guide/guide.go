@@ -24,6 +24,7 @@ type Next struct {
 	DoneWhen []string `json:"done_when,omitempty"`
 	AskUser  []string `json:"ask_user,omitempty"`
 	Blocked  []string `json:"blocked,omitempty"`
+	Warnings []string `json:"warnings,omitempty"`
 }
 
 // Roles.
@@ -40,9 +41,15 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 	if err != nil {
 		return Next{}, err
 	}
-	items, err := s.Tasks.List(ctx, true)
-	if err != nil {
-		return Next{}, err
+	items, taskErr := s.Tasks.List(ctx, true)
+	var warnings []string
+	if taskErr != nil {
+		// The design phases do not need the task store, so report the
+		// problem instead of failing.
+		warnings = append(warnings, "task store unavailable: "+taskErr.Error())
+		if role == RoleBuild {
+			return Next{Phase: "6-build", Why: "The task store cannot be read.", Tools: []string{"maid_status"}, Warnings: warnings}, nil
+		}
 	}
 	questions := openQuestions(ds)
 	if role == RoleBuild {
@@ -50,6 +57,10 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 	}
 	n := designNext(ds, items)
 	n.AskUser = questions
+	n.Warnings = warnings
+	if taskErr != nil && n.Phase >= "5" {
+		n.Step = "Ask the user to fix the task store, then call maid_next again. " + n.Step
+	}
 	if n.Phase >= "6" {
 		if b := buildNext(ctx, s, agent, items); b.Step != "" && role == "" {
 			b.AskUser = questions

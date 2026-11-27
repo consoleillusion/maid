@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"os/exec"
 	"path/filepath"
@@ -133,5 +134,36 @@ func TestDesignFlowOverMCP(t *testing.T) {
 	log, _ := exec.Command("git", "-C", root, "log", "--format=%s").Output()
 	if !strings.Contains(string(log), "design(vision): accepted (approved by paul)") {
 		t.Fatalf("git log = %s", log)
+	}
+}
+
+type brokenTasks struct{ tasks.Port }
+
+func (brokenTasks) List(context.Context, bool) ([]tasks.WorkItem, error) {
+	// Purpose: simulate a task store that cannot be read.
+	return nil, errors.New("schema v66, bd expects v74")
+}
+
+// REQ-PH-003
+func TestNextSurvivesTaskStoreError(t *testing.T) {
+	// Purpose: design phases still work when the task store fails.
+	root, _ := filepath.Abs(filepath.Join("..", ".."))
+	svc := work.New(root, config.Default(), brokenTasks{tasks.NewMemory()})
+	r := (&Tools{Svc: svc}).Call(context.Background(), "maid_next", json.RawMessage(`{}`), "a")
+	txt := r["content"].([]map[string]any)[0]["text"].(string)
+	if r["isError"] == true || !strings.Contains(txt, "1-intent") || !strings.Contains(txt, "task store unavailable") {
+		t.Fatalf("maid_next = %s", txt)
+	}
+}
+
+// G-007
+func TestStatusSurvivesTaskStoreError(t *testing.T) {
+	// Purpose: maid_status reports a task store error instead of failing.
+	root, _ := filepath.Abs(filepath.Join("..", ".."))
+	svc := work.New(root, config.Default(), brokenTasks{tasks.NewMemory()})
+	r := (&Tools{Svc: svc}).Call(context.Background(), "maid_status", json.RawMessage(`{}`), "a")
+	txt := r["content"].([]map[string]any)[0]["text"].(string)
+	if r["isError"] == true || !strings.Contains(txt, "task store unavailable") {
+		t.Fatalf("maid_status = %s", txt)
 	}
 }

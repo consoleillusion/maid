@@ -61,9 +61,9 @@ Each MCP client starts its own maid process over stdio. A client can also connec
 
 | State | Location | In git |
 |---|---|---|
-| Specification | `design/` | yes |
-| Generated documentation | `docs/` | yes |
-| Work items, claims, leases | task store (`.beads/`) | Beads syncs through its own git refs |
+| Specification, with current and target state | `design/` | yes |
+| Generated documentation | `docs/` | yes, where a generator is configured |
+| Work items, claims, leases | Beads database in `.beads/` | synced with `bd dolt push`; exported to `.beads/issues.jsonl` and committed |
 | Attempts, scores, baselines, queue, log | `.maid/*.json`, `.maid/activity.jsonl` | no |
 | Worktrees | `.maid/worktrees/` | no |
 

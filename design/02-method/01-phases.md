@@ -128,3 +128,19 @@ ask_user:
 ## Clients that do not reload the tool list
 
 Some MCP clients load the tool list once and ignore `tools/list_changed`. So maid lists every tool in every phase. Tools that the current phase does not allow refuse the call and return the next step (REQ-PH-004).
+
+## Phases as tasks
+
+The phases in this chapter are the order of the tasks that `maid init` seeds. They guide agents. They do not block work. See ADR-0008.
+
+### REQ-PH-024 Task list
+When an agent calls maid_next, maid shall list every task that is ready for the agent, which can be none, one or several.
+
+### REQ-PH-025 Plain prompts
+The MCP server shall instruct agents to call maid_next whenever the user asks them to work on the project.
+
+### REQ-PH-026 Seeded tasks
+When maid initialises a project, maid shall create tasks to record the current state, record the target state, write the design, plan the tasks and set up the project.
+
+### REQ-PH-027 Design tasks
+When an agent submits a task of kind design, the merge queue shall accept it when the design check reports no errors and the chapters that the task names exist.

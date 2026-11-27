@@ -2,7 +2,7 @@
 id: phases
 title: Phases and gates
 part: 02-method
-status: draft
+status: accepted
 style: ears
 owner: paul
 summary: >

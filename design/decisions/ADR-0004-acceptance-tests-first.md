@@ -48,7 +48,7 @@ Rules:
 
 - Each `code` work item has a `tests` work item, and depends on it (REQ-WI-017, REQ-WI-018).
 - The agent that wrote the tests cannot implement the work item (REQ-WI-019).
-- A `tests` submission is accepted when the tests compile, each test fails on the main branch, and each scenario is covered by a tagged test (REQ-WI-020).
+- A `tests` submission is accepted when its tests compile and fail on the main branch, and a tagged test covers each scenario (REQ-WI-020).
 - A build submission that changes its acceptance tests is rejected (REQ-ACC-010).
 - At the rigorous depth level, the design agent or a human reviews the tests (REQ-WI-021).
 

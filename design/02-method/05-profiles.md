@@ -108,7 +108,7 @@ maid shall run the formatter and the linter that the decisions select, as checks
 When the user does not give enough information for a decision, maid shall recommend the profile that best matches the project kind, with the reason for the match.
 
 ### REQ-PR-011 Agent choice
-When maid recommends a profile, the design agent shall accept it, customise it, or ignore it, and shall record each resulting choice as a decision.
+The design agent shall make each choice freely, with the user or alone when the user delegates it, and shall record each choice as a decision.
 
 ### REQ-PR-012 Origin of a customised value
 If the design agent changes a profile value, then the decision for that value shall have `origin: agent` and shall name the profile value that it replaces.

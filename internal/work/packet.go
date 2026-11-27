@@ -52,6 +52,25 @@ func (s *Service) packet(ctx context.Context, it tasks.WorkItem, att state.Attem
 	if conv, err := ds.Read([]string{"conventions"}, false); err == nil {
 		p.Conventions = conv[0].Text
 	}
+	// Each token of the criteria is tried as a design ref. Refs that do not
+	// resolve are skipped, and each key is the ref as the criteria wrote it.
+	const refPunct = "`\"'()[]{}<>,;:.!?"
+	p.References = map[string]string{}
+	for _, tok := range strings.Fields(it.Maid.Criteria) {
+		ref := strings.Trim(tok, refPunct)
+		if ref == "" {
+			continue
+		}
+		if _, seen := p.References[ref]; seen {
+			continue
+		}
+		if ex, err := ds.Read([]string{ref}, false); err == nil && len(ex) > 0 {
+			p.References[ref] = ex[0].Text
+		}
+	}
+	if len(p.References) == 0 {
+		p.References = nil
+	}
 	switch it.Maid.Kind {
 	case tasks.KindTests:
 		p.Instructions = testsInstructions(it, att, s.Cfg.MainBranch)

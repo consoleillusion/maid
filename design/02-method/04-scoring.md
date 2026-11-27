@@ -149,3 +149,8 @@ func ComplexityAdded(oldFuncs, newFuncs map[string]int) int
 "score": { "weights": {"size": 0.4, "deps": 0.3, "complexity": 0.3, "reduction": 0.2, "bench": 0.2},
            "review_band": [50, 70], "deny_deps": ["example.com/banned"] }
 ```
+
+## Any language
+
+### REQ-SC-017 Language-independent measures
+Where no metrics adapter exists for a language, the scorer shall use the changed lines from git and the dependency changes from the manifest files go.mod, package.json, Cargo.toml, pyproject.toml and requirements.txt.

@@ -17,13 +17,7 @@ links: [scoring, chapter-format, style-registry, ADR-0006]
 
 ## Purpose
 
-A profile is a recommendation, not a rule. When the user does not give enough information for a decision, maid recommends a profile that fits the project. The design agent then does one of these:
-
-- accepts the profile as it is,
-- customises some of its values,
-- ignores it and makes the decisions itself.
-
-In every case, each choice is recorded as a decision.
+A profile is only a hint. The design agent decides every choice with the user, or alone when the user delegates the choice. The agent can use a profile, change it, or ignore it. Each choice is recorded as a decision.
 
 ## Layers
 

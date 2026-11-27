@@ -2,7 +2,7 @@
 id: glossary
 title: Glossary and business rules
 part: 01-foundation
-status: draft
+status: accepted
 style: sbvr-se
 owner: paul
 summary: >

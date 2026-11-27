@@ -97,3 +97,11 @@ Feature: Merge queue acceptance
     When the build agent submits an attempt that changes "TestClaimIsAtomic"
     Then the merge queue rejects the attempt
 ```
+
+## Environment errors
+
+### REQ-ACC-019 Missing tools
+If a check cannot run because its command does not exist or cannot start, then the merge queue shall report an environment error with the command and the system error, and shall not count the attempt.
+
+### REQ-ACC-020 Tool check at start
+When maid starts, maid shall check that the configured test, format and lint commands exist, and maid_next and maid_status shall report each missing command as a warning.

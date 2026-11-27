@@ -23,7 +23,8 @@ type Packet struct {
 	Reads        []string          `json:"reads,omitempty"`
 	Conventions  string            `json:"conventions,omitempty"`
 	Commands     map[string]string `json:"commands"`
-	Tokens       int               `json:"tokens"` // estimate (REQ-WI-014)
+	References   map[string]string `json:"references,omitempty"` // design text named in the criteria (REQ-WI-030)
+	Tokens       int               `json:"tokens"`               // estimate (REQ-WI-014)
 }
 
 func (s *Service) packet(ctx context.Context, it tasks.WorkItem, att state.Attempt) (Packet, error) {

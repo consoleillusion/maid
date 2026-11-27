@@ -2,7 +2,7 @@
 id: ADR-0007
 title: Build milestone 1 on the Go standard library only
 part: decisions
-status: review
+status: accepted
 style: ste
 owner: paul
 origin: agent

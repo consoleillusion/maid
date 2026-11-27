@@ -49,8 +49,14 @@ When the phase changes, the MCP server shall send a `tools/list_changed` notific
 ### REQ-PH-006 Deterministic gates
 The MCP server shall evaluate each gate condition with a deterministic check, and shall not accept a statement from an agent as evidence that a condition is met.
 
-### REQ-PH-007 Human approval of phase transitions
-When all gate conditions of a phase are met, maid shall mark the phase ready and shall wait for a human approval before the project enters the next phase.
+### REQ-PH-007 One approval for each phase
+When all gate conditions of a phase are met, maid shall ask the user for one approval that covers every chapter of the phase, and shall record the approval as soon as the user gives it.
+
+### REQ-PH-020 No repeated questions
+When the user has answered a question or given an approval, maid shall record it, and agents shall not ask it again.
+
+### REQ-PH-021 One message for all questions
+The MCP server shall instruct agents to ask the user every question of a step in one message.
 
 ### REQ-PH-008 Project mode
 When maid starts in a project without a design, maid shall detect whether the project is new, has existing code, or has an existing design in another format.

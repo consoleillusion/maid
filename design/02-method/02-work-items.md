@@ -150,3 +150,6 @@ When an agent that holds the claim on a work item asks to commit, maid shall com
 
 ### REQ-WI-028 Submit a patch
 When an agent submits a work item with a patch or a set of files, maid shall apply them in the agent's worktree, commit them and run the merge queue, and shall refuse a patch that changes a path that the work item does not own.
+
+### REQ-WI-030 Referenced sections
+When the criteria of a work item name a design chapter or section, maid shall include the text of each named section in the context packet.

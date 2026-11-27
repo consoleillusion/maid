@@ -18,14 +18,16 @@ links: [phases, work-items, acceptance, chapter-format]
 
 ### Always available
 
+maid has no roles. Any agent can call any tool. `maid_next` returns the next step from the state of the project: design work while the design or the plan is incomplete, and work items when tasks are ready. The documentation recommends a capable agent for the first session, which records the current state, the target state and the tasks.
+
 | Tool | Input | Output |
 |---|---|---|
-| `maid_next` | `role?` (`design`, `build`, `review`) | The next step. See the contract below. |
-| `design_index` | `type?`, `status?`, `part?`, `link?`, `path?` | Chapters and items with summaries only. |
-| `design_read` | `ids[]`, `sections[]?`, `detail` (`summary`, `full`) | Text and version of each requested section. |
-| `design_question` | `action` (`add`, `answer`, `resolve`), question fields | The question and the items that it blocks or unblocks. |
-| `design_check` | `ids[]?` | Findings: style, links, required sections, stale items. |
-| `maid_status` | `detail` | Phase, item states, work item states, queue, recent activity. |
+| `maid_next` | none | The next step. See the contract below. |
+| `design_index` | `part?`, `status?`, `style?`, `link?` | Chapters with summaries only. |
+| `design_read` | `refs[]`, `detail?` (`summary`, `full`) | Text and version of each requested section. |
+| `design_question` | `question`, `blocks?` | The new question ID. |
+| `design_check` | none | Findings: style, links, required sections. |
+| `maid_status` | `detail?` | Phase, chapter and work item states, test baseline, recent activity. |
 
 ### Design phases (0–5) and review
 

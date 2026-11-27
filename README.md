@@ -14,11 +14,19 @@ The specification is in [`design/`](design/index.md). Start with [`design/index.
 
 ## Install and run
 
-Requires Go, git and [Beads](https://github.com/steveyegge/beads) (`npm install -g @beads/bd`).
+With Nix:
 
 ```sh
-go install github.com/consoleillusion/maid/cmd/maid@latest
-cd your-project
+nix develop                 # go, gopls, golangci-lint, git, python3 and bd on PATH
+go install ./cmd/maid       # installs to .bin/, which the dev shell puts on PATH
+cd your-project && maid init
+```
+
+Or run maid without installing it: `nix run github:consoleillusion/maid -- init`.
+
+Without Nix, you need Go, git and [Beads](https://github.com/gastownhall/beads). `go install ./cmd/maid` puts the binary in `$(go env GOPATH)/bin` (usually `~/go/bin`). Add that folder to your `PATH`, or run maid with its full path.
+
+```sh
 maid init          # maid.json, .maid/, Beads
 maid check         # check design/
 maid status

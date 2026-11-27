@@ -2,7 +2,7 @@
 id: ADR-0002
 title: Agents pull work from maid; maid does not start agents
 part: decisions
-status: review
+status: accepted
 style: ste
 owner: paul
 origin: user

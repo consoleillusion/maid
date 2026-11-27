@@ -31,7 +31,8 @@ Usage:
   maid check  [-json]               check the design; exit 1 on errors
   maid index  [-json]
   maid read   [-summary] REF...     REF is a chapter ID, item ID or chapter#anchor
-  maid accept [-by NAME] CHAPTER    record that you accept a chapter (default NAME: git user.name)
+  maid accept [-by NAME] CHAPTER... record that you accept chapters (default NAME: git user.name)
+  maid accept [-by NAME] -pending   accept every chapter that waits for approval
   maid plan   FILE.json             create work items from a plan
   maid claim  -agent ID [WORK_ITEM]
   maid submit -agent ID [-model M] WORK_ITEM
@@ -85,6 +86,7 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 	model := fs.String("model", "", "model name")
 	reason := fs.String("reason", "", "reason")
 	by := fs.String("by", "", "name of the person who approves")
+	pending := fs.Bool("pending", false, "accept every chapter that waits for approval")
 	if err := fs.Parse(args); err != nil {
 		return 2, err
 	}
@@ -137,21 +139,38 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 		printStatus(st)
 		return 0, nil
 	case "accept":
-		if len(rest) != 1 {
-			return 2, errors.New("usage: maid accept [-by NAME] CHAPTER")
+		ids := rest
+		if *pending {
+			ds, err := svc.Design()
+			if err != nil {
+				return 1, err
+			}
+			ids = guide.Pending(ds)
+		}
+		if len(ids) == 0 {
+			return 2, errors.New("usage: maid accept [-by NAME] CHAPTER... or maid accept -pending")
 		}
 		name := *by
 		if name == "" {
 			out, _ := exec.Command("git", "-C", root, "config", "user.name").Output()
 			name = strings.TrimSpace(string(out))
 		}
-		res, err := svc.DesignOp(ctx, "human:"+name, "status", "accepted (approved by "+name+")", func(ds *design.Store) (design.WriteResult, error) {
-			return ds.SetStatus(rest[0], "accepted", name)
-		})
+		res, err := svc.SetStatusBatch(ctx, "human:"+name, ids, "accepted", name)
 		if err != nil {
 			return 1, err
 		}
-		fmt.Printf("%s accepted by %s and committed.\n", res.Ref, name)
+		failed := 0
+		for _, r := range res {
+			if r.OK {
+				fmt.Printf("accepted  %s\n", r.ID)
+			} else {
+				failed++
+				fmt.Printf("refused   %s: %s\n", r.ID, r.Error)
+			}
+		}
+		if failed > 0 {
+			return 1, nil
+		}
 		return 0, nil
 	case "plan":
 		if len(rest) != 1 {

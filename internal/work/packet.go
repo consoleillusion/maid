@@ -80,6 +80,7 @@ func codeInstructions(it tasks.WorkItem, att state.Attempt) []string {
 		"Do not change, delete or skip the acceptance test files.",
 		"Do not break any test that passes now.",
 		fmt.Sprintf("Keep the change under %d changed lines.", it.Maid.Budget.MaxChangedLines),
+		"If you have no file access, use work_files, work_read, work_write, work_run and work_commit; they act on this worktree.",
 		"Commit your work on the branch, then call work_submit with id " + it.ID + ".",
 		"Call work_heartbeat if you work for longer than a few minutes.",
 	}
@@ -95,8 +96,10 @@ func testsInstructions(it tasks.WorkItem, att state.Attempt, mainBranch string) 
 		"Work only in the worktree " + att.Worktree + " on branch " + att.Branch + ".",
 		"Write acceptance tests from the criteria. Create exactly these tests: " + strings.Join(want, "; ") + ".",
 		"Each test must compile and must fail on " + mainBranch + ", because the feature does not exist yet.",
+		"If the code the tests call does not exist, add a stub in the owned non-test files: the exact names and signatures from the criteria, with bodies that return zero values. The stub must not implement the behaviour.",
 		"Tag each test with the requirement and scenario it covers, in a comment above the test.",
-		"Change only the test files listed above. Do not implement the feature.",
+		"Change only the owned files: " + strings.Join(it.Maid.Owns, ", ") + ".",
+		"If you have no file access, use work_files, work_read, work_write, work_run and work_commit; they act on this worktree.",
 		"Commit your work on the branch, then call work_submit with id " + it.ID + ".",
 	}
 }

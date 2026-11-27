@@ -23,12 +23,23 @@ type Submission struct {
 	ID    string
 	Model string // reported by the agent (REQ-SC-009)
 	Cost  string // reported by the agent (REQ-WI-016)
+
+	// Optional changes that maid applies and commits before the merge
+	// queue runs, for agents without file access (REQ-WI-028).
+	Patch   string            // unified diff, relative to the repository root
+	Files   map[string]string // path -> complete new content
+	Message string            // commit message for the applied changes
 }
 
 // Submit runs the merge queue for one submission and returns its report.
 // Submissions are processed one at a time across all maid processes.
 func (s *Service) Submit(ctx context.Context, sub Submission) (state.Report, error) {
 	// Purpose: rebase, check, test and merge or reject one attempt (REQ-ACC-001 to REQ-ACC-009).
+	if sub.Patch != "" || len(sub.Files) > 0 {
+		if err := s.applyChanges(ctx, sub); err != nil {
+			return state.Report{}, err
+		}
+	}
 	lock, err := s.State.Lock("queue")
 	if err != nil {
 		return state.Report{}, err
@@ -169,7 +180,11 @@ func (s *Service) evaluate(ctx context.Context, it tasks.WorkItem, att state.Att
 	}
 	if len(res.BuildFailed) > 0 {
 		rep.FailedTests = res.Failures
-		return fail("build", "does not compile: "+strings.Join(res.BuildFailed, ", "))
+		msg := "does not compile: " + strings.Join(res.BuildFailed, ", ")
+		if it.Maid.Kind == tasks.KindTests {
+			msg += ". Add stubs with the names and signatures from the criteria in the owned non-test files, so the tests compile and fail"
+		}
+		return fail("build", msg)
 	}
 	rep.Regressions = regressions(base, res)
 	if len(rep.Regressions) > 0 {

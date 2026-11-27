@@ -80,8 +80,8 @@ func TestProtocol(t *testing.T) {
 		names = append(names, tl.(map[string]any)["name"].(string))
 	}
 	joined := strings.Join(names, ",")
-	if !strings.Contains(joined, "maid_next") || strings.Contains(joined, "work_claim") {
-		t.Fatalf("tools before phase 5 = %s", joined)
+	if !strings.Contains(joined, "maid_next") || !strings.Contains(joined, "work_claim") {
+		t.Fatalf("every tool must be listed in every phase: %s", joined)
 	}
 	if read := text(t, out[2]); !strings.Contains(read, "REQ-WI-004 Atomic claim") || !strings.Contains(read, "\nnext: ") {
 		t.Fatalf("design_read = %s", read)
@@ -133,7 +133,7 @@ func TestDesignFlowOverMCP(t *testing.T) {
 		t.Fatalf("maid_next after accept = %s", txt)
 	}
 	log, _ := exec.Command("git", "-C", root, "log", "--format=%s").Output()
-	if !strings.Contains(string(log), "design(vision): accepted (approved by paul)") {
+	if !strings.Contains(string(log), "design: accepted vision (approved by paul)") {
 		t.Fatalf("git log = %s", log)
 	}
 }
@@ -191,5 +191,61 @@ func TestNextGivesReadyCalls(t *testing.T) {
 	txt := r["content"].([]map[string]any)[0]["text"].(string)
 	if !strings.Contains(txt, "G-001") || !strings.Contains(txt, `"did_you_mean"`) || !strings.Contains(txt, "vision") {
 		t.Fatalf("design_read with a path and a typo = %s", txt)
+	}
+}
+
+// REQ-PH-007
+func TestBatchAccept(t *testing.T) {
+	// Purpose: one call accepts many chapters in one commit and reports refusals.
+	root := t.TempDir()
+	for _, args := range [][]string{{"init", "-q", "-b", "main"}, {"config", "user.email", "t@example.invalid"}, {"config", "user.name", "t"}, {"commit", "-q", "--allow-empty", "-m", "init"}} {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = root
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %s", args, out)
+		}
+	}
+	tl := &Tools{Svc: work.New(root, config.Default(), tasks.NewMemory())}
+	ctx := context.Background()
+	for _, c := range []string{
+		`{"path":"01-a/01-vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nIt adds.\n"}`,
+		`{"path":"01-a/02-glossary.md","id":"glossary","title":"Glossary","style":"sbvr-se","summary":"Terms.","body":"# Glossary\n\n## Terms\n\n**sum**: a total.\n"}`,
+	} {
+		if r := tl.Call(ctx, "design_create", json.RawMessage(c), "a"); r["isError"] == true {
+			t.Fatalf("create: %v", r)
+		}
+	}
+	n, _ := guide.Compute(ctx, tl.Svc, "", "a")
+	if len(n.AskUser) != 1 || !strings.Contains(n.AskUser[0], "vision, glossary") {
+		t.Fatalf("expected one question listing both chapters: %+v", n.AskUser)
+	}
+	r := tl.Call(ctx, "design_set_status", json.RawMessage(`{"ids":["vision","glossary","nope"],"status":"accepted","approved_by":"paul"}`), "a")
+	txt := r["content"].([]map[string]any)[0]["text"].(string)
+	if strings.Count(txt, `"ok": true`) != 2 || !strings.Contains(txt, `nothing in the design matches \"nope\"`) {
+		t.Fatalf("batch result = %s", txt)
+	}
+	log, _ := exec.Command("git", "-C", root, "log", "-1", "--format=%s").Output()
+	if !strings.Contains(string(log), "accepted vision, glossary (approved by paul)") {
+		t.Fatalf("last commit = %s", log)
+	}
+	if n, _ = guide.Compute(ctx, tl.Svc, "", "a"); n.Phase != "5-plan" {
+		t.Fatalf("phase = %s", n.Phase)
+	}
+}
+
+// REQ-PH-004
+func TestWorkToolsRefusedBeforePlan(t *testing.T) {
+	// Purpose: work tools are listed but refuse calls before phase 5, with the next step.
+	root, _ := filepath.Abs(filepath.Join("..", ".."))
+	tl := &Tools{Svc: work.New(root, config.Default(), tasks.NewMemory())}
+	ctx := context.Background()
+	n, _ := guide.Compute(ctx, tl.Svc, guide.RoleDesign, "a")
+	if n.Phase >= "5" {
+		t.Skip("maid's own design is past phase 4")
+	}
+	r := tl.Call(ctx, "work_claim", json.RawMessage(`{}`), "a")
+	txt := r["content"].([]map[string]any)[0]["text"].(string)
+	if r["isError"] != true || !strings.Contains(txt, "next step:") {
+		t.Fatalf("work_claim before phase 5 = %s", txt)
 	}
 }

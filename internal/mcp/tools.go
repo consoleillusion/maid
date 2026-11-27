@@ -138,18 +138,29 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_set_status", "Change a chapter's status. id can be the chapter ID or its file path. Use status accepted ONLY after the user explicitly approves the chapter in this conversation, and pass their name in approved_by. maid refuses to accept a chapter that has check errors. Example: {\"id\": \"vision\", \"status\": \"accepted\", \"approved_by\": \"Paul\"}",
-		obj(map[string]any{"id": str("chapter ID"), "status": map[string]any{"type": "string", "enum": []string{"stub", "draft", "review", "accepted", "superseded"}},
-			"approved_by": str("the person who approved; required for accepted and superseded"), "reason": str("why"), "agent": agentProp}, "id", "status")},
+	{tool: Tool{"design_set_status", "Change the status of one or more chapters in one call and one commit. Pass ids (a list of chapter IDs or file paths). Use status accepted ONLY for chapters the user explicitly approved in this conversation, and pass their name in approved_by. Chapters with check errors are refused and listed; the others still change. Example: {\"ids\": [\"vision\", \"glossary\"], \"status\": \"accepted\", \"approved_by\": \"Paul\"}",
+		obj(map[string]any{"ids": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "chapter IDs or paths"},
+			"id": str("one chapter ID; use ids for several"), "status": map[string]any{"type": "string", "enum": []string{"stub", "draft", "review", "accepted", "superseded"}},
+			"approved_by": str("the person who approved; required for accepted and superseded"), "agent": agentProp}, "status")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
-			reason := sArg(a, "status") + strings.TrimSpace(" "+sArg(a, "reason"))
-			if by := sArg(a, "approved_by"); by != "" {
-				reason += " (approved by " + by + ")"
+			ids := lArg(a, "ids")
+			if id := sArg(a, "id"); id != "" {
+				ids = append(ids, id)
 			}
-			res, err := t.Svc.DesignOp(ctx, agent, "status", reason, func(ds *design.Store) (design.WriteResult, error) {
-				return ds.SetStatus(sArg(a, "id"), sArg(a, "status"), sArg(a, "approved_by"))
-			})
-			return res, "call maid_next", err
+			if len(ids) == 0 {
+				return nil, "", errors.New(`pass ids, for example {"ids": ["vision"], "status": "accepted", "approved_by": "Paul"}`)
+			}
+			if st := sArg(a, "status"); (st == "accepted" || st == "superseded") && sArg(a, "approved_by") == "" {
+				return nil, "", fmt.Errorf("approved_by is missing. Ask the user whether they accept %s. If they say yes, call design_set_status again with approved_by set to their name", strings.Join(ids, ", "))
+			}
+			res, err := t.Svc.SetStatusBatch(ctx, agent, ids, sArg(a, "status"), sArg(a, "approved_by"))
+			hint := "call maid_next"
+			for _, r := range res {
+				if !r.OK {
+					hint = "some chapters did not change; read their errors, fix them, and retry only those"
+				}
+			}
+			return map[string]any{"results": res}, hint, err
 		}},
 	{tool: Tool{"design_propose", "Propose a change to a chapter, including an accepted one. The proposal is appended as a section for the owner to review.",
 		obj(map[string]any{"chapter": str("chapter ID"), "title": str("short title"), "content": str("the proposed change and its reason"), "agent": agentProp}, "chapter", "title", "content")},
@@ -191,6 +202,46 @@ var defs = []def{
 			}
 			return p, "work in the worktree, commit, then call work_submit", err
 		}},
+	{tool: Tool{"work_files", "List the files in your worktree for a claimed work item. owned=true marks the files you may change.",
+		obj(map[string]any{"id": str("work item ID"), "agent": agentProp}, "id")},
+		buildOK: true,
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			f, err := t.Svc.Files(ctx, agent, sArg(a, "id"))
+			return f, "read files with work_read, change owned files with work_write", err
+		}},
+	{tool: Tool{"work_read", "Read a file from your worktree. path is relative to the repository root, for example internal/score/score.go.",
+		obj(map[string]any{"id": str("work item ID"), "path": str("file path"), "agent": agentProp}, "id", "path")},
+		buildOK: true,
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			c, err := t.Svc.ReadFile(ctx, agent, sArg(a, "id"), sArg(a, "path"))
+			return map[string]any{"path": sArg(a, "path"), "content": c}, "change owned files with work_write", err
+		}},
+	{tool: Tool{"work_write", "Create or replace a file in your worktree with the full new content. Only files your work item owns can be written. Set remove to delete the file.",
+		obj(map[string]any{"id": str("work item ID"), "path": str("file path"), "content": str("the complete file content"),
+			"remove": map[string]any{"type": "boolean"}, "agent": agentProp}, "id", "path")},
+		buildOK: true,
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			err := t.Svc.WriteFile(ctx, agent, sArg(a, "id"), sArg(a, "path"), rawArg(a, "content"), bArg(a, "remove"))
+			return map[string]any{"written": sArg(a, "path")}, "call work_run with check test, then work_commit", err
+		}},
+	{tool: Tool{"work_run", "Run the project's tests, format check or lint in your worktree, so you can check your work before you submit.",
+		obj(map[string]any{"id": str("work item ID"), "check": map[string]any{"type": "string", "enum": []string{"test", "format", "lint"}}, "agent": agentProp}, "id")},
+		buildOK: true,
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			r, err := t.Svc.Run(ctx, agent, sArg(a, "id"), sArg(a, "check"))
+			hint := "call work_commit, then work_submit"
+			if !r.Passed {
+				hint = "fix the failures with work_write and run again"
+			}
+			return r, hint, err
+		}},
+	{tool: Tool{"work_commit", "Commit all changes in your worktree with a one-line message.",
+		obj(map[string]any{"id": str("work item ID"), "message": str("one line"), "agent": agentProp}, "id", "message")},
+		buildOK: true,
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			c, err := t.Svc.Commit(ctx, agent, sArg(a, "id"), sArg(a, "message"))
+			return map[string]any{"commit": c}, "call work_submit", err
+		}},
 	{tool: Tool{"work_heartbeat", "Renew your claim lease on a work item.", obj(map[string]any{"id": str("work item ID"), "agent": agentProp}, "id")},
 		buildOK: true,
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
@@ -201,11 +252,23 @@ var defs = []def{
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
 			return map[string]any{"released": true}, "call maid_next", t.Svc.Release(ctx, agent, sArg(a, "id"), sArg(a, "reason"))
 		}},
-	{tool: Tool{"work_submit", "Submit your committed work. The merge queue rebases it on main, runs the checks and the tests, and merges it or returns a rejection report.",
-		obj(map[string]any{"id": str("work item ID"), "model": str("your model name, for scoring history"), "cost": str("cost you observed, if known"), "agent": agentProp}, "id")},
+	{tool: Tool{"work_submit", "Submit your work. Either commit in your worktree first, or send the changes here as patch (a unified diff) or files (path to complete content) and maid commits them. The merge queue then rebases on main, runs the checks and the tests, and merges the work or returns a rejection report.",
+		obj(map[string]any{"id": str("work item ID"), "patch": str("optional unified diff relative to the repository root"),
+			"files":   map[string]any{"type": "object", "additionalProperties": map[string]any{"type": "string"}, "description": "optional map of path to complete new file content"},
+			"message": str("commit message for the patch or files"),
+			"model":   str("your model name, for scoring history"), "cost": str("cost you observed, if known"), "agent": agentProp}, "id")},
 		buildOK: true,
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
-			rep, err := t.Svc.Submit(ctx, work.Submission{Agent: agent, ID: sArg(a, "id"), Model: sArg(a, "model"), Cost: sArg(a, "cost")})
+			files := map[string]string{}
+			if m, ok := a["files"].(map[string]any); ok {
+				for k, v := range m {
+					if sv, ok := v.(string); ok {
+						files[k] = sv
+					}
+				}
+			}
+			rep, err := t.Svc.Submit(ctx, work.Submission{Agent: agent, ID: sArg(a, "id"), Model: sArg(a, "model"), Cost: sArg(a, "cost"),
+				Patch: rawArg(a, "patch"), Files: files, Message: sArg(a, "message")})
 			hint := "accepted; call maid_next for more work"
 			if !rep.Accepted {
 				hint = "rejected; read the report, then call maid_next"
@@ -230,16 +293,13 @@ func (t *Tools) Phase(ctx context.Context) string {
 	return n.Phase
 }
 
-// List returns the tools for the current phase (REQ-PH-004).
+// List returns every tool. Clients may not reload the list when the phase
+// changes, so phase rules are applied when a tool is called (REQ-PH-004).
 func (t *Tools) List(ctx context.Context) []Tool {
-	// Purpose: hide work tools until the project reaches the plan phase.
-	phase := t.Phase(ctx)
-	build := phase >= "5" || phase == "unknown"
-	var out []Tool
+	// Purpose: list all tools in every phase.
+	out := make([]Tool, 0, len(defs))
 	for _, d := range defs {
-		if !d.buildOK || build {
-			out = append(out, d.tool)
-		}
+		out = append(out, d.tool)
 	}
 	return out
 }
@@ -260,6 +320,11 @@ func (t *Tools) Call(ctx context.Context, name string, raw json.RawMessage, defa
 	for _, d := range defs {
 		if d.tool.Name != name {
 			continue
+		}
+		if d.buildOK {
+			if n, err := guide.Compute(ctx, t.Svc, guide.RoleDesign, agent); err == nil && n.Phase < "5" {
+				return errorResult(fmt.Sprintf("%s is for the plan and build phases; the project is in phase %s.\nnext step: %s\nnext: call maid_next", name, n.Phase, n.Step))
+			}
 		}
 		v, hint, err := d.run(ctx, t, args, agent)
 		if err != nil {

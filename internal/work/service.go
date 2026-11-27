@@ -106,8 +106,10 @@ func (s *Service) CreatePlan(ctx context.Context, p Plan) (Planned, error) {
 			testsID, err = s.Tasks.Create(ctx, tasks.NewItem{
 				Title: "Tests: " + it.Title, DependsOn: deps,
 				Maid: tasks.Meta{Key: it.Key + ".tests", Kind: tasks.KindTests, Implements: it.Implements,
-					Criteria: it.Criteria, AcceptanceTests: it.AcceptanceTests, Owns: testFiles,
-					Reads: append(append([]string{}, it.Owns...), it.Reads...), Budget: budget},
+					Criteria: it.Criteria, AcceptanceTests: it.AcceptanceTests,
+					// The test agent may add stubs in the code item's files so the tests compile (REQ-WI-022).
+					Owns:  append(append([]string{}, testFiles...), it.Owns...),
+					Reads: append([]string{}, it.Reads...), Budget: budget},
 			})
 			if err != nil {
 				return out, err

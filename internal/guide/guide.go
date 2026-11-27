@@ -102,26 +102,27 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 				{Tool: "design_read", Arguments: map[string]any{"refs": []string{f.Path}}, When: "to get the text and version before design_write"}},
 		}
 	}
-	if v := ds.Chapter("vision"); v == nil || v.FM.String("status") != "accepted" {
-		return Next{
-			Phase: "1-intent", Step: "Show the user the vision chapter and ask whether they accept it. If they ask for changes, make them with design_write. When they accept, record it.",
-			Why: "The intent gate requires an accepted vision (REQ-PH-011).", Read: []string{"vision", "glossary"},
-			Tools: []string{"design_read", "design_write", "design_question", "design_set_status"}, DoneWhen: []string{"vision has status accepted"},
-			AskUser: []string{"Do you accept the vision chapter (design/01-foundation/01-vision.md)?"},
-			Calls: []Call{{Tool: "design_read", Arguments: map[string]any{"refs": []string{"vision"}}, When: "first, to show the user the vision"},
-				{Tool: "design_set_status", Arguments: map[string]any{"id": "vision", "status": "accepted", "approved_by": "<the user's name>"},
-					When: "only after the user says they accept it"}},
+	visionOK := ds.Chapter("vision") != nil && ds.Chapter("vision").FM.String("status") == "accepted"
+	if pending := Pending(ds); (!visionOK || len(pending) > 0) && len(items) == 0 {
+		phase, why := "2-4-design", "Work items can only implement accepted requirements."
+		if !visionOK {
+			phase, why = "1-intent", "The intent gate requires an accepted vision (REQ-PH-011)."
 		}
-	}
-	if pending := notAccepted(ds); len(pending) > 0 && len(items) == 0 {
+		if len(pending) == 0 {
+			pending = []string{"vision"}
+		}
 		return Next{
-			Phase: "2-4-design", Step: fmt.Sprintf("Review the %d chapters that are not accepted yet with the user, one at a time, starting with %s. Record each acceptance.", len(pending), pending[0]),
-			Why: "Work items can only implement accepted requirements.", Read: pending,
-			Tools: []string{"design_read", "design_write", "design_append", "design_create", "design_question", "design_set_status"}, DoneWhen: []string{"each chapter that the plan needs has status accepted"},
-			AskUser: []string{fmt.Sprintf("Do you accept the %s chapter?", pending[0])},
-			Calls: []Call{{Tool: "design_read", Arguments: map[string]any{"refs": []string{pending[0]}}, When: "to show the user the chapter"},
-				{Tool: "design_set_status", Arguments: map[string]any{"id": pending[0], "status": "accepted", "approved_by": "<the user's name>"},
-					When: "only after the user says they accept it"}},
+			Phase: phase,
+			Step: fmt.Sprintf("Ask the user ONE question that lists all %d chapters waiting for approval (with their one-line summaries from design_index): "+
+				"do they accept all of them, or which do they want changed? Then record every accepted chapter with ONE design_set_status call. "+
+				"Change only the chapters they name, with design_write.", len(pending)),
+			Why: why, Read: []string{"index"},
+			Tools:    []string{"design_index", "design_set_status", "design_read", "design_write", "design_question"},
+			DoneWhen: []string{"every chapter that the plan needs has status accepted"},
+			AskUser:  []string{"Do you accept these chapters, or which do you want changed? " + strings.Join(pending, ", ")},
+			Calls: []Call{{Tool: "design_index", Arguments: map[string]any{}, When: "first, to get the summary of each chapter for the question"},
+				{Tool: "design_set_status", Arguments: map[string]any{"ids": pending, "status": "accepted", "approved_by": "<the user's name>"},
+					When: "after the user answers; remove any chapter they did not accept"}},
 		}
 	}
 	if len(items) == 0 {
@@ -165,7 +166,8 @@ func buildNext(ctx context.Context, s *work.Service, agent string, items []tasks
 				Why: "You hold the claim on this item.", Tools: []string{"work_claim", "work_heartbeat", "work_submit", "work_release"},
 				DoneWhen: []string{"the merge queue accepts your submission"},
 				Calls: []Call{{Tool: "work_claim", Arguments: map[string]any{"id": it.ID}, When: "to get your context packet and worktree again"},
-					{Tool: "work_submit", Arguments: map[string]any{"id": it.ID}, When: "after you commit in the worktree"}},
+					{Tool: "work_files", Arguments: map[string]any{"id": it.ID}, When: "if you have no file access: then work_read, work_write, work_run and work_commit"},
+					{Tool: "work_submit", Arguments: map[string]any{"id": it.ID}, When: "after you commit"}},
 			}
 		}
 	}
@@ -217,6 +219,21 @@ func refsOf(fs []design.Finding) []string {
 		}
 	}
 	return out
+}
+
+// Pending lists the chapters that wait for approval, vision first.
+func Pending(ds *design.Store) []string {
+	// Purpose: give the CLI and tools the same list that maid_next asks about.
+	var rest []string
+	for _, id := range notAccepted(ds) {
+		if id != "vision" {
+			rest = append(rest, id)
+		}
+	}
+	if v := ds.Chapter("vision"); v != nil && v.FM.String("status") != "accepted" {
+		return append([]string{"vision"}, rest...)
+	}
+	return rest
 }
 
 func notAccepted(ds *design.Store) []string {

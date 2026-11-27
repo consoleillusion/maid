@@ -214,6 +214,9 @@ func (b *Beads) run(ctx context.Context, actor string, args ...string) ([]byte, 
 		if msg == "" {
 			msg = strings.TrimSpace(stdout.String())
 		}
+		if msg == "" {
+			msg = err.Error()
+		}
 		return nil, fmt.Errorf("bd %s: %s", args[0], msg)
 	}
 	return stdout.Bytes(), nil

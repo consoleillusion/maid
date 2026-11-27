@@ -303,3 +303,35 @@ func (s *Service) WorkItemOwnsForTest(ctx context.Context, id string, owns []str
 		panic(err)
 	}
 }
+
+// REQ-WI-022
+func TestTestsItemMayAddStub(t *testing.T) {
+	// Purpose: tests for code that does not exist yet compile through a stub and are accepted.
+	s, root := project(t)
+	ctx := context.Background()
+	p := plan(t, s)
+	pk, err := s.Claim(ctx, "tester", p.Tests["add"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, pk.Worktree, "calc/add_test.go", addTest)
+	write(t, pk.Worktree, "calc/calc.go", "package calc\n\n// Add is a stub.\nfunc Add(a, b int) int { return 0 }\n")
+	commitAll(t, pk.Worktree, "tests and stub")
+	rep, err := s.Submit(ctx, Submission{Agent: "tester", ID: pk.WorkItem.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !rep.Accepted {
+		t.Fatalf("tests with stub rejected: %+v", rep)
+	}
+	pk, err = s.Claim(ctx, "builder", p.Code["add"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, pk.Worktree, "calc/calc.go", "package calc\n\n// Add returns a+b.\nfunc Add(a, b int) int { return a + b }\n")
+	commitAll(t, pk.Worktree, "impl")
+	if rep, err = s.Submit(ctx, Submission{Agent: "builder", ID: pk.WorkItem.ID}); err != nil || !rep.Accepted {
+		t.Fatalf("implementation rejected: %v %+v", err, rep)
+	}
+	_ = root
+}

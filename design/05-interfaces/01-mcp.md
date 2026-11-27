@@ -2,7 +2,7 @@
 id: mcp-interface
 title: MCP interface
 part: 05-interfaces
-status: accepted
+status: draft
 style: ears
 owner: paul
 summary: >

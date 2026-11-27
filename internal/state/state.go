@@ -126,6 +126,7 @@ type Report struct {
 	Commit       string            `json:"commit,omitempty"`
 	MainBefore   string            `json:"main_before,omitempty"`
 	Escalated    bool              `json:"escalated,omitempty"`
+	Environment  bool              `json:"environment,omitempty"` // a check could not run (REQ-ACC-019)
 	Finished     time.Time         `json:"finished"`
 }
 

@@ -2,7 +2,7 @@
 id: profiles
 title: Profiles and default decisions
 part: 02-method
-status: accepted
+status: draft
 style: ears
 owner: paul
 summary: >

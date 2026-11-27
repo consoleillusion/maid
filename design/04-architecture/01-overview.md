@@ -2,7 +2,7 @@
 id: architecture
 title: Architecture overview
 part: 04-architecture
-status: draft
+status: accepted
 style: ste
 owner: paul
 summary: >

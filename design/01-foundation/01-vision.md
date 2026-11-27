@@ -2,7 +2,7 @@
 id: vision
 title: Vision and scope
 part: 01-foundation
-status: draft
+status: accepted
 style: ste
 owner: paul
 summary: >

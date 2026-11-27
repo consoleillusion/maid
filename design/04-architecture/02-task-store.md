@@ -50,9 +50,17 @@ The adapter calls the `bd` CLI with `--json` and parses the result. It does not 
 
 Native Beads fields that maid uses: `spec_id` (first linked requirement), `acceptance_criteria`, `metadata`, `assignee`, dependencies.
 
-### Initialisation
+### Initialisation and sharing
 
-maid runs `bd init --non-interactive --skip-agents --skip-hooks --stealth --quiet`. `--skip-agents` is required because `bd init` otherwise writes `AGENTS.md` and `CLAUDE.md`, and maid owns those files. `--stealth` keeps the database local: bd adds no Dolt remote and excludes `.beads/` from git, so the database never syncs (C-004).
+maid runs `bd init --non-interactive --skip-agents --skip-hooks --quiet`. `--skip-agents` is required because `bd init` otherwise writes `AGENTS.md` and `CLAUDE.md`, and maid owns those files.
+
+Tasks are part of the project and are shared in two ways:
+
+- Beads syncs its database through the project's git remote with `bd dolt push` and `bd dolt pull`. Any clone with `bd` sees the same tasks.
+- maid writes `.beads/issues.jsonl` with `bd export` after each change to the tasks, and commits it. Humans and agents without `bd` can read the tasks in git.
+
+### REQ-WI-029 Tasks in git
+When maid creates, claims, closes or changes a work item, maid shall export the tasks to `.beads/issues.jsonl` and commit the file.
 
 ## Spike findings
 

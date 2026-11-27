@@ -113,10 +113,6 @@ ask_user:
   - Q-004: Should a human approve merges in the review band?
 ```
 
-## Proposal: List every tool in every phase
+## Clients that do not reload the tool list
 
-status: proposed · by claude-opus · 2026-11-27
-
-Change REQ-PH-004 to: "While the project is in a phase before phase 5, the MCP server shall refuse calls to the work item tools and shall return the step from maid_next."
-
-Reason: some MCP clients load the tool list once and ignore tools/list_changed. With REQ-PH-004 as written, those clients never get work_plan or work_claim after the phase changes. Refusing with guidance keeps agents on the progression and works with every client.
+Some MCP clients load the tool list once and ignore `tools/list_changed`. So maid lists every tool in every phase. Tools that the current phase does not allow refuse the call and return the next step (REQ-PH-004).

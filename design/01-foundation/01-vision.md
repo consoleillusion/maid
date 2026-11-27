@@ -91,3 +91,8 @@ v1 is for one developer and many agents on one machine. The design must not prev
 | SM-002 | Cost of a project built with maid, compared with a large agent alone | Set after the same benchmark project is built both ways (Q-001) |
 | SM-003 | Accepted commits that break a previously passing test | 0 |
 | SM-004 | Time for a new agent to start useful work after it connects | One `maid_next` call |
+
+## User time
+
+### G-010 Few user turns
+maid asks the user only for information that only the user has. It asks every question of a phase in one message. The design agent makes all other decisions and records them as decisions that the user can change. Each extra user turn costs the user time and costs an expensive model turn.

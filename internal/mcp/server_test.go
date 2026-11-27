@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -88,5 +89,49 @@ func TestProtocol(t *testing.T) {
 	}
 	if out[4]["error"] == nil {
 		t.Fatalf("unknown method did not error: %v", out[4])
+	}
+}
+
+// REQ-PH-007 REQ-DOC-010
+func TestDesignFlowOverMCP(t *testing.T) {
+	// Purpose: an agent with no file access can create, accept and advance the design.
+	root := t.TempDir()
+	for _, args := range [][]string{{"init", "-q", "-b", "main"}, {"config", "user.email", "t@example.invalid"}, {"config", "user.name", "t"}, {"commit", "-q", "--allow-empty", "-m", "init"}} {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = root
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %s", args, out)
+		}
+	}
+	svc := work.New(root, config.Default(), tasks.NewMemory())
+	tl := &Tools{Svc: svc}
+	ctx := context.Background()
+	call := func(name, args string) (string, bool) {
+		r := tl.Call(ctx, name, json.RawMessage(args), "haiku-1")
+		txt := r["content"].([]map[string]any)[0]["text"].(string)
+		return txt, r["isError"] == true
+	}
+	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "0-bootstrap") {
+		t.Fatalf("maid_next = %s", txt)
+	}
+	vision := `{"path":"01-foundation/01-vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nThe tool adds numbers.\n\n### NG-001 No floats\nThe tool does not add floats.\n"}`
+	if txt, isErr := call("design_create", vision); isErr {
+		t.Fatalf("design_create: %s", txt)
+	}
+	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "1-intent") || !strings.Contains(txt, "design_set_status") {
+		t.Fatalf("maid_next after create = %s", txt)
+	}
+	if _, isErr := call("design_set_status", `{"id":"vision","status":"accepted"}`); !isErr {
+		t.Fatal("accepted without approved_by")
+	}
+	if txt, isErr := call("design_set_status", `{"id":"vision","status":"accepted","approved_by":"paul"}`); isErr {
+		t.Fatalf("design_set_status: %s", txt)
+	}
+	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "5-plan") {
+		t.Fatalf("maid_next after accept = %s", txt)
+	}
+	log, _ := exec.Command("git", "-C", root, "log", "--format=%s").Output()
+	if !strings.Contains(string(log), "design(vision): accepted (approved by paul)") {
+		t.Fatalf("git log = %s", log)
 	}
 }

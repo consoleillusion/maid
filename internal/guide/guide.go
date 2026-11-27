@@ -63,30 +63,30 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 	// Purpose: find the first unmet design gate.
 	if len(ds.Chapters) == 0 {
 		return Next{
-			Phase: "0-bootstrap", Step: "Create design/ with a vision chapter and a glossary chapter.",
+			Phase: "0-bootstrap", Step: "Ask the user what the project is for, then create a vision chapter (01-foundation/01-vision.md, id vision, style ste) and a glossary chapter with design_create.",
 			Why:   "The project has no design. The design is the source of truth.",
-			Tools: []string{"design_check"}, DoneWhen: []string{"design/ contains a vision chapter with at least one goal and one non-goal"},
+			Tools: []string{"design_create", "design_check"}, DoneWhen: []string{"design/ contains a vision chapter with at least one goal and one non-goal"},
 		}
 	}
 	if errs := errorFindings(ds); len(errs) > 0 {
 		return Next{
 			Phase: phaseOf(ds, items), Step: fmt.Sprintf("Fix %d design check errors.", len(errs)),
 			Why: "Each gate requires a design that passes its checks (REQ-PH-006).", Read: refsOf(errs),
-			Tools: []string{"design_check", "design_read"}, DoneWhen: []string{"design_check reports no errors"},
+			Tools: []string{"design_check", "design_read", "design_write"}, DoneWhen: []string{"design_check reports no errors"},
 		}
 	}
 	if v := ds.Chapter("vision"); v == nil || v.FM.String("status") != "accepted" {
 		return Next{
-			Phase: "1-intent", Step: "Complete the vision chapter and ask the user to accept it.",
+			Phase: "1-intent", Step: "Complete the vision chapter with the user. When the user explicitly accepts it, call design_set_status with status accepted and approved_by set to their name.",
 			Why: "The intent gate requires an accepted vision (REQ-PH-011).", Read: []string{"vision", "glossary"},
-			Tools: []string{"design_read", "design_check"}, DoneWhen: []string{"vision has status accepted"},
+			Tools: []string{"design_read", "design_write", "design_question", "design_set_status"}, DoneWhen: []string{"vision has status accepted"},
 		}
 	}
 	if pending := notAccepted(ds); len(pending) > 0 && len(items) == 0 {
 		return Next{
-			Phase: "2-4-design", Step: "Finish these chapters and ask the user to accept them: " + strings.Join(pending, ", ") + ".",
+			Phase: "2-4-design", Step: "Finish these chapters and ask the user to accept them: " + strings.Join(pending, ", ") + ". Record each acceptance with design_set_status.",
 			Why: "Work items can only implement accepted requirements.", Read: pending,
-			Tools: []string{"design_read", "design_check"}, DoneWhen: []string{"each chapter that the plan needs has status accepted"},
+			Tools: []string{"design_read", "design_write", "design_append", "design_create", "design_question", "design_set_status"}, DoneWhen: []string{"each chapter that the plan needs has status accepted"},
 		}
 	}
 	if len(items) == 0 {

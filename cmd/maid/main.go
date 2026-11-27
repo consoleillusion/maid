@@ -31,6 +31,7 @@ Usage:
   maid check  [-json]               check the design; exit 1 on errors
   maid index  [-json]
   maid read   [-summary] REF...     REF is a chapter ID, item ID or chapter#anchor
+  maid accept [-by NAME] CHAPTER    record that you accept a chapter (default NAME: git user.name)
   maid plan   FILE.json             create work items from a plan
   maid claim  -agent ID [WORK_ITEM]
   maid submit -agent ID [-model M] WORK_ITEM
@@ -83,6 +84,7 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 	summary := fs.Bool("summary", false, "chapter summaries only")
 	model := fs.String("model", "", "model name")
 	reason := fs.String("reason", "", "reason")
+	by := fs.String("by", "", "name of the person who approves")
 	if err := fs.Parse(args); err != nil {
 		return 2, err
 	}
@@ -133,6 +135,23 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 			return 0, printJSON(st)
 		}
 		printStatus(st)
+		return 0, nil
+	case "accept":
+		if len(rest) != 1 {
+			return 2, errors.New("usage: maid accept [-by NAME] CHAPTER")
+		}
+		name := *by
+		if name == "" {
+			out, _ := exec.Command("git", "-C", root, "config", "user.name").Output()
+			name = strings.TrimSpace(string(out))
+		}
+		res, err := svc.DesignOp(ctx, "human:"+name, "status", "accepted (approved by "+name+")", func(ds *design.Store) (design.WriteResult, error) {
+			return ds.SetStatus(rest[0], "accepted", name)
+		})
+		if err != nil {
+			return 1, err
+		}
+		fmt.Printf("%s accepted by %s and committed.\n", res.Ref, name)
 		return 0, nil
 	case "plan":
 		if len(rest) != 1 {

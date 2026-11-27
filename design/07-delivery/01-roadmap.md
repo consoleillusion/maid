@@ -20,7 +20,7 @@ Goal: the smallest maid that can manage its own build with cheap agents.
 
 | Area | Requirements | State |
 |---|---|---|
-| Design store and checks | REQ-DOC-001 to REQ-DOC-013, REQ-DOC-015, REQ-STY-001, REQ-STY-003, REQ-STY-004, REQ-STY-006 | implemented |
+| Design store, checks and writes | REQ-DOC-001 to REQ-DOC-013, REQ-DOC-015, REQ-STY-001, REQ-STY-003, REQ-STY-004, REQ-STY-006 | implemented |
 | Style validators | STE length rules, EARS patterns, SBVR rule keywords, Gherkin structure | implemented |
 | Task port and Beads adapter | REQ-WI-003, REQ-WI-004, REQ-WI-005 | implemented |
 | Plans with tests items | REQ-WI-001, REQ-WI-017, REQ-WI-018 | implemented |
@@ -28,6 +28,7 @@ Goal: the smallest maid that can manage its own build with cheap agents.
 | Merge queue | REQ-ACC-001 to REQ-ACC-011, REQ-ACC-017, REQ-WI-008, REQ-WI-009, REQ-WI-020 | implemented |
 | Guide | REQ-PH-001, REQ-PH-002, REQ-PH-003, REQ-PH-004, REQ-PH-005 | basic version |
 | MCP server | REQ-MCP-001, REQ-MCP-002, REQ-MCP-005 | stdio, tools only |
+| Design tools | REQ-DOC-010 to REQ-DOC-013, REQ-PH-007 (approval recorded with design_set_status or `maid accept`) | implemented |
 | CLI and status | G-007 | implemented |
 
 Not in milestone 1: REQ-DOC-014 (generated index), REQ-WI-006 (lease expiry handling), REQ-WI-011 (parallel attempts), REQ-ACC-012 (flaky tests), REQ-ACC-013, REQ-ACC-014, REQ-MCP-003, REQ-MCP-004, REQ-MCP-006.
@@ -44,4 +45,4 @@ Not in milestone 1: REQ-DOC-014 (generated index), REQ-WI-006 (lease expiry hand
 1. Profiles and default decisions (REQ-PR-001 to REQ-PR-014).
 2. Design scaffolding for new projects, and the existing-code path (REQ-PH-008, REQ-PH-009).
 3. MCP resources, prompts, elicitation and HTTP (REQ-MCP-003, REQ-MCP-006).
-4. Proposals for accepted items (REQ-DOC-011, REQ-DOC-012) and the HTML report.
+4. Review of proposals (design_review) and the HTML report.

@@ -98,6 +98,68 @@ var defs = []def{
 			}
 			return map[string]any{"findings": f, "count": len(f)}, hint, nil
 		}},
+	{tool: Tool{"design_write", "Replace one design section (heading included). Pass base_version from design_read; the write fails if the section changed since. Accepted chapters cannot be written; use design_propose.",
+		obj(map[string]any{"ref": str("item ID or chapter#anchor"), "content": str("the new section text, starting with its heading"),
+			"base_version": str("version from design_read"), "reason": str("why, one line"), "agent": agentProp}, "ref", "content", "base_version", "reason")},
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			res, err := t.Svc.DesignOp(ctx, agent, "write", sArg(a, "reason"), func(ds *design.Store) (design.WriteResult, error) {
+				return ds.WriteSection(sArg(a, "ref"), rawArg(a, "content"), sArg(a, "base_version"))
+			})
+			return res, writeHint(res), err
+		}},
+	{tool: Tool{"design_append", "Add a new section at the end of a design chapter that is not accepted.",
+		obj(map[string]any{"chapter": str("chapter ID"), "content": str("section text, starting with a heading"), "reason": str("why, one line"), "agent": agentProp}, "chapter", "content")},
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			res, err := t.Svc.DesignOp(ctx, agent, "append", sArg(a, "reason"), func(ds *design.Store) (design.WriteResult, error) {
+				return ds.AppendSection(sArg(a, "chapter"), rawArg(a, "content"))
+			})
+			return res, writeHint(res), err
+		}},
+	{tool: Tool{"design_create", "Create a new design chapter with status draft. path is relative to design/, for example 01-foundation/01-vision.md. Read the style card in design/styles/ before you write the body.",
+		obj(map[string]any{"path": str("part/NN-name.md"), "id": str("chapter ID, lowercase"), "title": str("title"),
+			"style":   map[string]any{"type": "string", "enum": []string{"ste", "ears", "sbvr-se", "gherkin", "ace"}},
+			"summary": str("at most 60 words"), "links": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+			"body": str("Markdown body, starting with '# Title'"), "owner": str("person who accepts changes"), "agent": agentProp}, "path", "id", "title", "style", "summary", "body")},
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			spec := design.ChapterSpec{Path: sArg(a, "path"), ID: sArg(a, "id"), Title: sArg(a, "title"), Style: sArg(a, "style"),
+				Owner: sArg(a, "owner"), Summary: sArg(a, "summary"), Links: lArg(a, "links"), Body: rawArg(a, "body")}
+			res, err := t.Svc.DesignOp(ctx, agent, "create", "create chapter "+spec.ID, func(ds *design.Store) (design.WriteResult, error) {
+				return ds.CreateChapter(spec)
+			})
+			return res, writeHint(res), err
+		}},
+	{tool: Tool{"design_set_status", "Change a chapter's status. Use status accepted ONLY when the user has explicitly approved the chapter in this conversation, and pass their name in approved_by. maid refuses to accept a chapter that has check errors.",
+		obj(map[string]any{"id": str("chapter ID"), "status": map[string]any{"type": "string", "enum": []string{"stub", "draft", "review", "accepted", "superseded"}},
+			"approved_by": str("the person who approved; required for accepted and superseded"), "reason": str("why"), "agent": agentProp}, "id", "status")},
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			reason := sArg(a, "status") + strings.TrimSpace(" "+sArg(a, "reason"))
+			if by := sArg(a, "approved_by"); by != "" {
+				reason += " (approved by " + by + ")"
+			}
+			res, err := t.Svc.DesignOp(ctx, agent, "status", reason, func(ds *design.Store) (design.WriteResult, error) {
+				return ds.SetStatus(sArg(a, "id"), sArg(a, "status"), sArg(a, "approved_by"))
+			})
+			return res, "call maid_next", err
+		}},
+	{tool: Tool{"design_propose", "Propose a change to a chapter, including an accepted one. The proposal is appended as a section for the owner to review.",
+		obj(map[string]any{"chapter": str("chapter ID"), "title": str("short title"), "content": str("the proposed change and its reason"), "agent": agentProp}, "chapter", "title", "content")},
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			res, err := t.Svc.DesignOp(ctx, agent, "propose", sArg(a, "title"), func(ds *design.Store) (design.WriteResult, error) {
+				return ds.Propose(sArg(a, "chapter"), sArg(a, "title"), rawArg(a, "content"), agent)
+			})
+			return res, "tell the user that a proposal is waiting for review", err
+		}},
+	{tool: Tool{"design_question", "Record a question for the user instead of guessing. Returns the question ID; write TBD (Q-NNN) where the answer is needed.",
+		obj(map[string]any{"question": str("the question"), "blocks": str("IDs of the items that need the answer"), "agent": agentProp}, "question")},
+		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
+			var qid string
+			res, err := t.Svc.DesignOp(ctx, agent, "question", sArg(a, "question"), func(ds *design.Store) (design.WriteResult, error) {
+				id, r, err := ds.AddQuestion(sArg(a, "question"), sArg(a, "blocks"), "")
+				qid = id
+				return r, err
+			})
+			return map[string]any{"id": qid, "result": res}, "ask the user, or continue with unblocked work", err
+		}},
 	{tool: Tool{"work_plan", "Create work items from a plan. For each code item maid also creates a tests item that a different agent completes first. Each item needs key, title, implements (requirement IDs), criteria (Gherkin), acceptance_tests ([{file, names}]) and owns (path globs that must not include the test files).",
 		obj(map[string]any{"plan": map[string]any{"type": "object", "description": "{\"items\": [ ... ]}"}}, "plan")},
 		buildOK: true,
@@ -208,6 +270,20 @@ func sArg(a map[string]any, k string) string {
 	// Purpose: read a string argument.
 	s, _ := a[k].(string)
 	return strings.TrimSpace(s)
+}
+
+func rawArg(a map[string]any, k string) string {
+	// Purpose: read a string argument without trimming inner whitespace.
+	s, _ := a[k].(string)
+	return s
+}
+
+func writeHint(r design.WriteResult) string {
+	// Purpose: point the agent at check findings after a write.
+	if len(r.Findings) > 0 {
+		return fmt.Sprintf("fix %d findings in %s, then call maid_next", len(r.Findings), r.Path)
+	}
+	return "call maid_next"
 }
 
 func bArg(a map[string]any, k string) bool {

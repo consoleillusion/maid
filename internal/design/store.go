@@ -5,6 +5,7 @@ package design
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -67,6 +68,9 @@ func Load(root string) (*Store, error) {
 	// Purpose: parse all design chapters into a Store.
 	s := &Store{Root: root, byID: map[string]*Chapter{}, items: map[string]ItemRef{}}
 	dir := filepath.Join(root, Dir)
+	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {
+		return s, nil // no design yet: the bootstrap phase
+	}
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err

@@ -69,8 +69,9 @@
               export GOBIN="$PWD/.bin"
               export PATH="$GOBIN:$PATH"
               export MAID_BD="$(command -v bd)"
-              echo "maid dev shell: $(go version | cut -d' ' -f3), bd $(bd version 2>/dev/null | head -n1)"
-              echo "build maid with: go install ./cmd/maid"
+              # Print to stderr so `nix develop -c maid mcp` keeps stdout clean for MCP.
+              echo "maid dev shell: $(go version | cut -d' ' -f3), bd $(bd version 2>/dev/null | head -n1)" >&2
+              echo "build maid with: go install ./cmd/maid" >&2
             '';
           };
         }

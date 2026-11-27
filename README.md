@@ -32,7 +32,7 @@ maid check         # check design/
 maid status
 ```
 
-Add maid to your MCP client as a stdio server with the command `maid mcp`, run in the project root. Then tell the agent to call `maid_next`.
+Add maid to your MCP client as a stdio server with the command `maid mcp`, run in the project root. With Nix, `nix shell /path/to/maid#maid /path/to/maid#bd -c maid mcp` builds maid and bd from the flake, so the server always matches the checked-out commit. Keep the MCP command's stdout clean: anything else printed there breaks the protocol. Then tell the agent to call `maid_next`.
 
 The agent can write and accept design chapters through maid's tools alone. To accept a chapter yourself, run `maid accept CHAPTER`. Build and test agents also need to edit files and run `git commit` in their worktree, so use an agent with file and shell access, such as Claude Code, or the Claude desktop app with the project folder added.
 

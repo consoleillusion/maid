@@ -43,10 +43,15 @@ links: [phases, work-items, acceptance, chapter-format]
 | Tool | Input | Output |
 |---|---|---|
 | `work_claim` | `id?`, `filter?` | The claim, the lease, the worktree path and the context packet. |
+| `work_files` | `id` | Files in the worktree; owned files are marked. |
+| `work_read` | `id`, `path` | File content. |
+| `work_write` | `id`, `path`, `content`, `remove?` | Writes an owned file. |
+| `work_run` | `id`, `check` (`test`, `format`, `lint`) | Check result. |
+| `work_commit` | `id`, `message` | Commit ID. |
 | `work_heartbeat` | `id` | New lease expiry. |
 | `work_release` | `id`, `reason` | Result. |
-| `work_submit` | `id`, `model?`, `cost?` | Queue position. |
-| `work_result` | `id`, `attempt?` | Accepted, or the rejection report. |
+| `work_submit` | `id`, `patch?` (unified diff), `files?` (path → content), `message?`, `model?`, `cost?` | maid applies the patch or files, commits, runs the merge queue, and returns accepted or the rejection report. |
+| `work_result` | `id`, `attempt?` | Attempts and their reports. |
 
 ## Resources
 

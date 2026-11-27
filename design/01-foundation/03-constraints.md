@@ -2,7 +2,7 @@
 id: constraints
 title: Constraints and assumptions
 part: 01-foundation
-status: draft
+status: accepted
 style: ste
 owner: paul
 summary: >

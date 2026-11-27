@@ -48,3 +48,13 @@ Each area shows where the project is now and where it must be. The tasks for an 
 | MCP extras | Not built | Resources, prompts, elicitation, HTTP | REQ-MCP-003, REQ-MCP-006 |
 | Generated index and report | Not built | design/index.md generated; HTML report | REQ-DOC-014 |
 | Robustness | Not built | Lease expiry, parallel attempts, flaky tests | REQ-WI-006, REQ-WI-011, REQ-ACC-012 to REQ-ACC-014 |
+
+## Milestone 2b: everything is a task (ADR-0008)
+
+| Area | Now | Target | Requirements |
+|---|---|---|---|
+| Task list | maid_next gives one step | maid_next lists every ready task | REQ-PH-024 |
+| Plain prompts | Server instructions say to call maid_next first | Agents call maid_next whenever the user asks them to work | REQ-PH-025, G-011 |
+| Seeded tasks | maid init creates no tasks | maid init seeds the design tasks | REQ-PH-026 |
+| Design tasks | Design work happens outside tasks | Design work is tasks of kind design, checked by the design check | REQ-PH-027 |
+| Metrics for any language | Go adapter planned | Language-independent measures for every language; adapters for a few languages | REQ-SC-017, G-013 |

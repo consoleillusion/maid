@@ -121,3 +121,13 @@ stateDiagram-v2
   escalated --> closed: split or replaced
   accepted --> closed
 ```
+
+## Proposal: Tests items may add stubs
+
+status: proposed · by claude-opus · 2026-11-27
+
+Add REQ-WI-022: "Where the code that acceptance tests call does not exist on the main branch, the test agent shall add stubs with the names and signatures from the criteria in the owned files of the code item, with bodies that return zero values."
+
+Also change the tests item rule in CreatePlan: a tests item owns its test files and the code item's owned files.
+
+Reason: in compiled languages such as Go, a test that calls a function that does not exist does not compile, and REQ-WI-020 requires tests that compile. A stub makes the tests compile and fail. The stub cannot implement the behaviour, because REQ-WI-020 rejects tests that pass on the main branch.

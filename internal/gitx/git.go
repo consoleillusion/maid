@@ -41,6 +41,17 @@ func (r Repo) AddWorktree(ctx context.Context, path, branch, base string) error 
 	return err
 }
 
+// EnsureBranch creates branch at the current HEAD if it does not exist
+// (REQ-ACC-022).
+func (r Repo) EnsureBranch(ctx context.Context, branch string) error {
+	// Purpose: make sure the maid branch exists before maid uses it.
+	if _, err := r.Head(ctx, "refs/heads/"+branch); err == nil {
+		return nil
+	}
+	_, err := Run(ctx, r.Dir, "branch", branch, "HEAD")
+	return err
+}
+
 // AddDetached creates a detached worktree at path on commit.
 func (r Repo) AddDetached(ctx context.Context, path, commit string) error {
 	// Purpose: create a scratch checkout for the merge queue.

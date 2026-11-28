@@ -19,6 +19,9 @@ func (s *Service) DesignOp(ctx context.Context, agent, action, reason string, op
 		return design.WriteResult{}, err
 	}
 	defer lock.Unlock()
+	if err := s.OnMaidBranch(ctx); err != nil {
+		return design.WriteResult{}, err
+	}
 	ds, err := s.Design()
 	if err != nil {
 		return design.WriteResult{}, err
@@ -42,6 +45,25 @@ func (s *Service) DesignOp(ctx context.Context, agent, action, reason string, op
 	}
 	_ = s.State.Log(state.Event{Agent: agent, Action: action, Detail: res.Ref + ": " + firstLine(reason)})
 	return res, nil
+}
+
+// OnMaidBranch switches a clean checkout to the maid branch, so design
+// commits land there (REQ-ACC-023).
+func (s *Service) OnMaidBranch(ctx context.Context) error {
+	// Purpose: keep every maid commit on one branch.
+	if err := s.Git.EnsureBranch(ctx, s.Cfg.Branch); err != nil {
+		return err
+	}
+	cur, _ := gitx.Run(ctx, s.Root, "symbolic-ref", "--short", "-q", "HEAD")
+	if cur == s.Cfg.Branch {
+		return nil
+	}
+	if dirty, _ := gitx.Run(ctx, s.Root, "status", "--porcelain", "--untracked-files=no"); dirty != "" {
+		return fmt.Errorf("maid commits design changes to %s, but the checkout is on %q and has uncommitted changes; commit or stash them, then run: git switch %s",
+			s.Cfg.Branch, cur, s.Cfg.Branch)
+	}
+	_, err := gitx.Run(ctx, s.Root, "switch", "-q", s.Cfg.Branch)
+	return err
 }
 
 func firstLine(s string) string {
@@ -72,6 +94,9 @@ func (s *Service) SetStatusBatch(ctx context.Context, agent string, ids []string
 		return nil, err
 	}
 	defer lock.Unlock()
+	if err := s.OnMaidBranch(ctx); err != nil {
+		return nil, err
+	}
 	ds, err := s.Design()
 	if err != nil {
 		return nil, err

@@ -222,6 +222,9 @@ func (s *Service) Claim(ctx context.Context, agent, id string) (Packet, error) {
 	if agent == "" {
 		return Packet{}, errors.New("agent id is required")
 	}
+	if err := s.Git.EnsureBranch(ctx, s.Cfg.Branch); err != nil {
+		return Packet{}, err
+	}
 	candidates, err := s.claimable(ctx, agent)
 	if err != nil {
 		return Packet{}, err
@@ -251,7 +254,7 @@ func (s *Service) Claim(ctx context.Context, agent, id string) (Packet, error) {
 			_ = s.Tasks.Release(ctx, it.ID, agent)
 			return Packet{}, err
 		}
-		_ = s.State.Log(state.Event{Agent: agent, Action: "claim", WorkItem: it.ID, Detail: att.Branch})
+		_ = s.State.Log(state.Event{Agent: agent, Action: "claim", WorkItem: it.ID, Detail: att.Worktree})
 		return s.packet(ctx, it, att)
 	}
 	return Packet{}, tasks.ErrNoReady
@@ -268,7 +271,7 @@ func (s *Service) claimable(ctx context.Context, agent string) ([]tasks.WorkItem
 	if err != nil {
 		return nil, err
 	}
-	main, err := s.Git.Head(ctx, s.Cfg.MainBranch)
+	main, err := s.Git.Head(ctx, s.Cfg.Branch)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +300,7 @@ func (s *Service) blocked(ctx context.Context, it tasks.WorkItem, agent string, 
 		}
 		for _, t := range it.Maid.AcceptanceTests {
 			if !s.Git.FileExists(ctx, main, t.File) {
-				return "acceptance test " + t.File + " is not on " + s.Cfg.MainBranch
+				return "acceptance test " + t.File + " is not on " + s.Cfg.Branch
 			}
 		}
 	}
@@ -327,12 +330,12 @@ func (s *Service) whyNot(ctx context.Context, agent, id string) string {
 		return "it has open dependencies"
 	}
 	active, _ := s.Tasks.List(ctx, false)
-	main, _ := s.Git.Head(ctx, s.Cfg.MainBranch)
+	main, _ := s.Git.Head(ctx, s.Cfg.Branch)
 	return s.blocked(ctx, it, agent, active, main)
 }
 
 func (s *Service) startAttempt(ctx context.Context, it tasks.WorkItem, agent string) (state.Attempt, error) {
-	// Purpose: create the attempt record, branch and worktree (REQ-WI-007).
+	// Purpose: create the attempt record and a detached worktree (REQ-WI-007).
 	if att, ok, err := s.State.Current(it.ID, agent); err != nil {
 		return att, err
 	} else if ok {
@@ -343,7 +346,7 @@ func (s *Service) startAttempt(ctx context.Context, it tasks.WorkItem, agent str
 		return state.Attempt{}, err
 	}
 	n := len(prev) + 1
-	base, err := s.Git.Head(ctx, s.Cfg.MainBranch)
+	base, err := s.Git.Head(ctx, s.Cfg.Branch)
 	if err != nil {
 		return state.Attempt{}, err
 	}
@@ -352,10 +355,9 @@ func (s *Service) startAttempt(ctx context.Context, it tasks.WorkItem, agent str
 	}
 	att := state.Attempt{
 		WorkItem: it.ID, Number: n, Agent: agent, Base: base, Started: s.Now().UTC(),
-		Branch:   fmt.Sprintf("maid/%s/%d", it.ID, n),
 		Worktree: s.State.Path("worktrees", fmt.Sprintf("%s-%d", it.ID, n)),
 	}
-	if err := s.Git.AddWorktree(ctx, att.Worktree, att.Branch, base); err != nil {
+	if err := s.Git.AddDetached(ctx, att.Worktree, base); err != nil {
 		return state.Attempt{}, err
 	}
 	return att, s.State.SaveAttempt(att)

@@ -259,6 +259,12 @@ func initProject(ctx context.Context, root string) error {
 	if err != nil {
 		return err
 	}
+	cleanAttemptBranches(ctx, root)
+	if err := work.New(root, cfg, nil).OnMaidBranch(ctx); err != nil {
+		fmt.Println("maid branch:", err)
+	} else {
+		fmt.Println("maid commits to branch", cfg.Branch)
+	}
 	b := &tasks.Beads{Dir: root, Bin: cfg.Bd}
 	if !b.Initialised() {
 		if err := b.Init(ctx); err != nil {
@@ -268,6 +274,32 @@ func initProject(ctx context.Context, root string) error {
 	}
 	fmt.Println("maid is ready. Point your agent at `maid mcp` and tell it to call maid_next.")
 	return nil
+}
+
+func cleanAttemptBranches(ctx context.Context, root string) {
+	// Purpose: remove the maid/* branches and their worktrees from the old layout (REQ-ACC-024).
+	out, err := exec.CommandContext(ctx, "git", "-C", root, "worktree", "list", "--porcelain").Output()
+	if err == nil {
+		path := ""
+		for _, l := range strings.Split(string(out), "\n") {
+			if strings.HasPrefix(l, "worktree ") {
+				path = strings.TrimPrefix(l, "worktree ")
+			}
+			if strings.HasPrefix(l, "branch refs/heads/maid/") {
+				_ = exec.CommandContext(ctx, "git", "-C", root, "worktree", "remove", "--force", path).Run()
+			}
+		}
+	}
+	_ = exec.CommandContext(ctx, "git", "-C", root, "worktree", "prune").Run()
+	refs, err := exec.CommandContext(ctx, "git", "-C", root, "for-each-ref", "--format=%(refname:short)", "refs/heads/maid/").Output()
+	if err != nil {
+		return
+	}
+	for _, b := range strings.Fields(string(refs)) {
+		if exec.CommandContext(ctx, "git", "-C", root, "branch", "-D", b).Run() == nil {
+			fmt.Println("deleted branch", b)
+		}
+	}
 }
 
 func ensureIgnored(root, entry string) error {

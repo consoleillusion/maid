@@ -3,6 +3,7 @@ package work
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"os"
@@ -66,7 +67,7 @@ func (s *Service) Submit(ctx context.Context, sub Submission) (state.Report, err
 
 	rep, newHead := s.evaluate(ctx, it, att)
 	if rep.Accepted {
-		if err := s.Git.FastForward(ctx, s.Cfg.MainBranch, newHead); err != nil {
+		if err := s.Git.FastForward(ctx, s.Cfg.Branch, newHead); err != nil {
 			rep.Accepted, rep.FailedCheck, rep.Reason = false, "merge", "fast-forward failed: "+err.Error()
 		}
 	}
@@ -102,14 +103,14 @@ func (s *Service) evaluate(ctx context.Context, it tasks.WorkItem, att state.Att
 	pass := func(check, detail string) {
 		rep.Checks = append(rep.Checks, state.Check{Name: check, Passed: true, Detail: detail})
 	}
-	head, err := s.Git.Head(ctx, att.Branch)
+	head, err := gitx.Run(ctx, att.Worktree, "rev-parse", "HEAD")
 	if err != nil {
 		return fail("branch", err.Error())
 	}
 	if head == att.Base {
-		return fail("branch", "the attempt branch has no commits")
+		return fail("branch", "the attempt has no commits; commit in the worktree or send edits, a patch or files")
 	}
-	main, err := s.Git.Head(ctx, s.Cfg.MainBranch)
+	main, err := s.Git.Head(ctx, s.Cfg.Branch)
 	if err != nil {
 		return fail("branch", err.Error())
 	}
@@ -124,9 +125,9 @@ func (s *Service) evaluate(ctx context.Context, it tasks.WorkItem, att state.Att
 	conflicts, err := gitx.Rebase(ctx, scratch, main)
 	if err != nil || len(conflicts) > 0 {
 		rep.Conflicts = conflicts
-		return fail("rebase", "rebase onto "+s.Cfg.MainBranch+" failed: "+errString(err, conflicts))
+		return fail("rebase", "rebase onto "+s.Cfg.Branch+" failed: "+errString(err, conflicts))
 	}
-	newHead, err := gitx.Run(ctx, scratch, "rev-parse", "HEAD")
+	newHead, err := squash(ctx, scratch, main, it.ID, att.Agent)
 	if err != nil {
 		return fail("rebase", err.Error())
 	}
@@ -368,4 +369,27 @@ func clip(s string) string {
 		return s[:1500] + "..."
 	}
 	return s
+}
+
+// squash turns the rebased commits in scratch into one commit on base with
+// a Maid-Task trailer, and returns it (REQ-ACC-007).
+func squash(ctx context.Context, scratch, base, id, agent string) (string, error) {
+	// Purpose: keep one atomic, task-based commit for each accepted attempt.
+	msg, err := gitx.Run(ctx, scratch, "log", "-1", "--format=%B", "HEAD")
+	if err != nil {
+		return "", err
+	}
+	if !strings.Contains(msg, "Maid-Task:") {
+		msg = strings.TrimSpace(msg) + "\n\nMaid-Task: " + id
+	}
+	if _, err := gitx.Run(ctx, scratch, "reset", "-q", "--soft", base); err != nil {
+		return "", err
+	}
+	if st, _ := gitx.Run(ctx, scratch, "status", "--porcelain"); st == "" {
+		return "", errors.New("the attempt makes no change to the maid branch")
+	}
+	if _, err := gitx.Run(ctx, scratch, "-c", "user.name="+agent, "-c", "user.email="+agent+"@maid.invalid", "commit", "-q", "-m", msg); err != nil {
+		return "", err
+	}
+	return gitx.Run(ctx, scratch, "rev-parse", "HEAD")
 }

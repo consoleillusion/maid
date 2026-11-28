@@ -75,7 +75,7 @@ func (s *Service) packet(ctx context.Context, it tasks.WorkItem, att state.Attem
 	}
 	switch it.Maid.Kind {
 	case tasks.KindTests:
-		p.Instructions = testsInstructions(it, att, s.Cfg.MainBranch)
+		p.Instructions = testsInstructions(it, att, s.Cfg.Branch)
 	default:
 		p.TestFiles = map[string]string{}
 		for _, t := range it.Maid.AcceptanceTests {
@@ -96,7 +96,7 @@ func codeInstructions(it tasks.WorkItem, att state.Attempt) []string {
 		names = append(names, t.Names...)
 	}
 	return []string{
-		"Work only in the worktree " + att.Worktree + " on branch " + att.Branch + ".",
+		"Work only in the worktree " + att.Worktree + ". It has a detached HEAD: commit there, and do not create branches.",
 		"Make these acceptance tests pass: " + strings.Join(names, ", ") + ".",
 		"Change only files that match owns: " + strings.Join(it.Maid.Owns, ", ") + ".",
 		"Do not change, delete or skip the acceptance test files.",
@@ -115,7 +115,7 @@ func testsInstructions(it tasks.WorkItem, att state.Attempt, mainBranch string) 
 		want = append(want, fmt.Sprintf("%s: %s", t.File, strings.Join(t.Names, ", ")))
 	}
 	return []string{
-		"Work only in the worktree " + att.Worktree + " on branch " + att.Branch + ".",
+		"Work only in the worktree " + att.Worktree + ". It has a detached HEAD: commit there, and do not create branches.",
 		"Write acceptance tests from the criteria. Create exactly these tests: " + strings.Join(want, "; ") + ".",
 		"Each test must compile and must fail on " + mainBranch + ", because the feature does not exist yet.",
 		"If the code the tests call does not exist, add a stub in the owned non-test files: the exact names and signatures from the criteria, with bodies that return zero values. The stub must not implement the behaviour.",

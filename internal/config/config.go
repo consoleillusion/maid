@@ -30,7 +30,7 @@ type Budget struct {
 
 // Config is the content of maid.json.
 type Config struct {
-	MainBranch  string   `json:"main_branch"`
+	Branch      string   `json:"branch"` // every maid commit goes here (REQ-ACC-021)
 	Test        Test     `json:"test"`
 	FormatCheck []string `json:"format_check,omitempty"` // must exit 0 and print nothing
 	Lint        []string `json:"lint,omitempty"`         // must exit 0
@@ -43,7 +43,7 @@ type Config struct {
 func Default() Config {
 	// Purpose: give the go-cli profile defaults.
 	return Config{
-		MainBranch:  "main",
+		Branch:      "maid-auto",
 		Test:        Test{Adapter: "go", Command: []string{"go", "test", "-json", "./..."}},
 		FormatCheck: []string{"gofmt", "-l", "."},
 		Lint:        []string{"go", "vet", "./..."},
@@ -66,8 +66,8 @@ func Load(root string) (Config, error) {
 	if err := json.Unmarshal(b, &c); err != nil {
 		return c, fmt.Errorf("%s: %w", File, err)
 	}
-	if c.MainBranch == "" {
-		c.MainBranch = "main"
+	if c.Branch == "" {
+		c.Branch = "maid-auto"
 	}
 	if c.Budget.Attempts <= 0 {
 		c.Budget.Attempts = 2

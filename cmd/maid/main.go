@@ -26,7 +26,7 @@ const usage = `maid — Metric Assisted AI Driven Development
 Usage:
   maid init                         set up maid.json, Beads and .maid/ in this repository
   maid mcp                          run the MCP server on stdio
-  maid next   [-role design|build] [-agent ID]
+  maid next   [-agent ID]
   maid status [-detail] [-json]
   maid check  [-json]               check the design; exit 1 on errors
   maid index  [-json]
@@ -80,7 +80,6 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 	fs := flag.NewFlagSet(cmd, flag.ContinueOnError)
 	asJSON := fs.Bool("json", false, "print JSON")
 	agent := fs.String("agent", os.Getenv("MAID_AGENT"), "agent ID")
-	role := fs.String("role", "", "design or build")
 	detail := fs.Bool("detail", false, "include each work item")
 	summary := fs.Bool("summary", false, "chapter summaries only")
 	model := fs.String("model", "", "model name")
@@ -123,7 +122,7 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 		}
 		return 0, nil
 	case "next":
-		n, err := guide.Compute(ctx, svc, *role, *agent)
+		n, err := guide.Compute(ctx, svc, "", *agent)
 		if err != nil {
 			return 1, err
 		}

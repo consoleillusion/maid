@@ -23,7 +23,8 @@ type Packet struct {
 	Reads        []string          `json:"reads,omitempty"`
 	Conventions  string            `json:"conventions,omitempty"`
 	Commands     map[string]string `json:"commands"`
-	Tokens       int               `json:"tokens"` // estimate (REQ-WI-014)
+	References   map[string]string `json:"references,omitempty"` // design text named in the criteria (REQ-WI-030)
+	Tokens       int               `json:"tokens"`               // estimate (REQ-WI-014)
 }
 
 func (s *Service) packet(ctx context.Context, it tasks.WorkItem, att state.Attempt) (Packet, error) {
@@ -50,6 +51,27 @@ func (s *Service) packet(ctx context.Context, it tasks.WorkItem, att state.Attem
 	}
 	if conv, err := ds.Read([]string{"conventions"}, false); err == nil {
 		p.Conventions = conv[0].Text
+	}
+	// Design paths, chapter#anchor refs and item IDs in the criteria are
+	// resolved; plain words are not, so a word such as "index" does not pull
+	// in a chapter. Refs that do not resolve, and requirements that the
+	// packet already holds, are skipped. Each key is the ref as written.
+	const refPunct = "`\"'()[]{}<>,;:.!?"
+	p.References = map[string]string{}
+	for _, tok := range strings.Fields(it.Maid.Criteria) {
+		ref := strings.Trim(tok, refPunct)
+		if ref == "" || !isDesignRef(ref) || contains(it.Maid.Implements, ref) {
+			continue
+		}
+		if _, seen := p.References[ref]; seen {
+			continue
+		}
+		if ex, err := ds.Read([]string{ref}, false); err == nil && len(ex) > 0 {
+			p.References[ref] = ex[0].Text
+		}
+	}
+	if len(p.References) == 0 {
+		p.References = nil
 	}
 	switch it.Maid.Kind {
 	case tasks.KindTests:
@@ -80,7 +102,7 @@ func codeInstructions(it tasks.WorkItem, att state.Attempt) []string {
 		"Do not change, delete or skip the acceptance test files.",
 		"Do not break any test that passes now.",
 		fmt.Sprintf("Keep the change under %d changed lines.", it.Maid.Budget.MaxChangedLines),
-		"If you have no file access, use work_files, work_read, work_write, work_run and work_commit; they act on this worktree.",
+		"If you have no file access, use work_files and work_read to read, work_edit to change existing files with exact replacements, and work_write only for new files and full rewrites; then work_run and work_commit. Or send edits or a patch with work_submit.",
 		"Commit your work on the branch, then call work_submit with id " + it.ID + ".",
 		"Call work_heartbeat if you work for longer than a few minutes.",
 	}
@@ -99,7 +121,7 @@ func testsInstructions(it tasks.WorkItem, att state.Attempt, mainBranch string) 
 		"If the code the tests call does not exist, add a stub in the owned non-test files: the exact names and signatures from the criteria, with bodies that return zero values. The stub must not implement the behaviour.",
 		"Tag each test with the requirement and scenario it covers, in a comment above the test.",
 		"Change only the owned files: " + strings.Join(it.Maid.Owns, ", ") + ".",
-		"If you have no file access, use work_files, work_read, work_write, work_run and work_commit; they act on this worktree.",
+		"If you have no file access, use work_files and work_read to read, work_edit to change existing files with exact replacements, and work_write only for new files and full rewrites; then work_run and work_commit. Or send edits or a patch with work_submit.",
 		"Commit your work on the branch, then call work_submit with id " + it.ID + ".",
 	}
 }
@@ -113,8 +135,55 @@ func estimateTokens(p Packet) int {
 	for _, c := range p.TestFiles {
 		n += len(c)
 	}
+	for _, r := range p.References {
+		n += len(r)
+	}
 	for _, i := range p.Instructions {
 		n += len(i)
 	}
 	return n / 4
+}
+
+func isDesignRef(ref string) bool {
+	// Purpose: accept design file paths, chapter#anchor refs and item IDs, not plain words.
+	if strings.HasPrefix(ref, "design/") && strings.HasSuffix(ref, ".md") {
+		return true
+	}
+	if i := strings.Index(ref, "#"); i > 0 && i < len(ref)-1 {
+		return true
+	}
+	return isItemID(ref)
+}
+
+func isItemID(ref string) bool {
+	// Purpose: match item IDs such as REQ-WI-030, ADR-0008 and Q-001.
+	parts := strings.Split(ref, "-")
+	if len(parts) < 2 {
+		return false
+	}
+	for _, p := range parts[:len(parts)-1] {
+		if p == "" || strings.ToUpper(p) != p || strings.ToLower(p) == p {
+			return false
+		}
+	}
+	last := parts[len(parts)-1]
+	if last == "" {
+		return false
+	}
+	for _, c := range last {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func contains(list []string, s string) bool {
+	// Purpose: report whether list holds s.
+	for _, x := range list {
+		if x == s {
+			return true
+		}
+	}
+	return false
 }

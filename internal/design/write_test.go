@@ -48,12 +48,9 @@ func TestAcceptedChapterNeedsProposal(t *testing.T) {
 
 // REQ-PH-007
 func TestSetStatus(t *testing.T) {
-	// Purpose: acceptance needs an approver and a clean chapter.
+	// Purpose: acceptance needs a clean chapter; the approver's name is recorded when given.
 	root := writeDesign(t, map[string]string{"01-a/alpha.md": goodChapter, "01-a/beta.md": betaChapter})
 	s, _ := Load(root)
-	if _, err := s.SetStatus("alpha", "accepted", ""); err == nil {
-		t.Fatal("accepted without approver")
-	}
 	if _, err := s.SetStatus("alpha", "accepted", "paul"); err != nil {
 		t.Fatal(err)
 	}

@@ -204,7 +204,7 @@ func (s *Service) Commit(ctx context.Context, agent, id, message string) (string
 		return "", err
 	}
 	if st, _ := gitx.Run(ctx, att.Worktree, "status", "--porcelain"); st == "" {
-		return "", errors.New("nothing to commit; change files with work_write first")
+		return "", errors.New("nothing to commit; change files with work_edit or work_write first")
 	}
 	if _, err := gitx.Run(ctx, att.Worktree, "-c", "user.name="+agent, "-c", "user.email="+agent+"@maid.invalid",
 		"commit", "-q", "-m", message); err != nil {
@@ -213,7 +213,7 @@ func (s *Service) Commit(ctx context.Context, agent, id, message string) (string
 	return gitx.Run(ctx, att.Worktree, "rev-parse", "HEAD")
 }
 
-// applyChanges writes the files and applies the patch of a submission in
+// applyChanges writes the files, applies the edits and the patch of a submission in
 // the agent's worktree, then commits them (REQ-WI-028).
 func (s *Service) applyChanges(ctx context.Context, sub Submission) error {
 	// Purpose: turn a patch or a set of files into a commit on the attempt branch.
@@ -228,6 +228,11 @@ func (s *Service) applyChanges(ctx context.Context, sub Submission) error {
 	sort.Strings(paths)
 	for _, p := range paths {
 		if err := s.WriteFile(ctx, sub.Agent, sub.ID, p, sub.Files[p], false); err != nil {
+			return err
+		}
+	}
+	if len(sub.Edits) > 0 {
+		if err := s.EditFile(ctx, sub.Agent, sub.ID, sub.Edits); err != nil {
 			return err
 		}
 	}
@@ -259,7 +264,7 @@ func (s *Service) applyPatch(ctx context.Context, it tasks.WorkItem, worktree, p
 		return err
 	}
 	tmp.Close()
-	names, err := gitx.Run(ctx, worktree, "apply", "--numstat", "--recount", tmp.Name())
+	names, err := gitx.Run(ctx, worktree, "apply", "--numstat", "--recount", "--ignore-whitespace", tmp.Name())
 	if err != nil {
 		return fmt.Errorf("the patch is not a valid unified diff: %w", err)
 	}
@@ -274,7 +279,7 @@ func (s *Service) applyPatch(ctx context.Context, it tasks.WorkItem, worktree, p
 		return fmt.Errorf("the patch changes files that %s does not own: %s; you may change only: %s",
 			it.ID, strings.Join(outside, ", "), strings.Join(it.Maid.Owns, ", "))
 	}
-	if _, err := gitx.Run(ctx, worktree, "apply", "--recount", "--whitespace=nowarn", tmp.Name()); err != nil {
+	if _, err := gitx.Run(ctx, worktree, "apply", "--recount", "--ignore-whitespace", "--whitespace=nowarn", tmp.Name()); err != nil {
 		return fmt.Errorf("the patch does not apply to the current files; read them with work_read and send the patch again: %w", err)
 	}
 	return nil

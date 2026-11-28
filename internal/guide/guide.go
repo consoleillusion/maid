@@ -35,15 +35,16 @@ type Call struct {
 	When      string         `json:"when,omitempty"`
 }
 
-// Roles.
+// Roles are ignored: every agent gets the step that follows from the
+// project state (REQ-PH-001). The constants remain for callers.
 const (
 	RoleDesign = "design"
 	RoleBuild  = "build"
 )
 
-// Compute derives the next step for agent in role from the design, the task
+// Compute derives the next step for agent from the design, the task
 // store and local state (REQ-PH-001, REQ-PH-003).
-func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, error) {
+func Compute(ctx context.Context, s *work.Service, _, agent string) (Next, error) {
 	// Purpose: choose the single next action for an agent.
 	ds, err := s.Design()
 	if err != nil {
@@ -55,14 +56,8 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 		// The design phases do not need the task store, so report the
 		// problem instead of failing.
 		warnings = append(warnings, "task store unavailable: "+taskErr.Error())
-		if role == RoleBuild {
-			return Next{Phase: "6-build", Why: "The task store cannot be read.", Tools: []string{"maid_status"}, Warnings: warnings}, nil
-		}
 	}
 	questions := openQuestions(ds)
-	if role == RoleBuild {
-		return buildNext(ctx, s, agent, items), nil
-	}
 	n := designNext(ds, items)
 	n.AskUser = append(n.AskUser, questions...)
 	n.Warnings = warnings
@@ -70,7 +65,7 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 		n.Step = "Ask the user to fix the task store, then call maid_next again. " + n.Step
 	}
 	if n.Phase >= "6" {
-		if b := buildNext(ctx, s, agent, items); b.Step != "" && role == "" {
+		if b := buildNext(ctx, s, agent, items); b.Step != "" {
 			b.AskUser = append(b.AskUser, questions...)
 			return b, nil
 		}
@@ -114,8 +109,9 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 		return Next{
 			Phase: phase,
 			Step: fmt.Sprintf("Ask the user ONE question that lists all %d chapters waiting for approval (with their one-line summaries from design_index): "+
-				"do they accept all of them, or which do they want changed? Then record every accepted chapter with ONE design_set_status call. "+
-				"Change only the chapters they name, with design_write.", len(pending)),
+				"do they accept all of them, or which do they want changed? Change only the chapters they name, with design_write. "+
+				"Then record every accepted chapter with ONE design_set_status call and approved_by set to their name. "+
+				"Or, unless the user wants to approve, accept the chapters yourself with ONE design_set_status call and no approved_by, and tell the user which chapters you accepted.", len(pending)),
 			Why: why, Read: []string{"index"},
 			Tools:    []string{"design_index", "design_set_status", "design_read", "design_write", "design_question"},
 			DoneWhen: []string{"every chapter that the plan needs has status accepted"},
@@ -166,7 +162,7 @@ func buildNext(ctx context.Context, s *work.Service, agent string, items []tasks
 				Why: "You hold the claim on this item.", Tools: []string{"work_claim", "work_heartbeat", "work_submit", "work_release"},
 				DoneWhen: []string{"the merge queue accepts your submission"},
 				Calls: []Call{{Tool: "work_claim", Arguments: map[string]any{"id": it.ID}, When: "to get your context packet and worktree again"},
-					{Tool: "work_files", Arguments: map[string]any{"id": it.ID}, When: "if you have no file access: then work_read, work_write, work_run and work_commit"},
+					{Tool: "work_files", Arguments: map[string]any{"id": it.ID}, When: "if you have no file access: then work_read, work_edit, work_run and work_commit"},
 					{Tool: "work_submit", Arguments: map[string]any{"id": it.ID}, When: "after you commit"}},
 			}
 		}

@@ -55,8 +55,9 @@ func TestComputeComponents(t *testing.T) {
 func TestComputeLimits(t *testing.T) {
 	// Purpose: penalties are capped, so the score never goes below 0.
 	in := Inputs{AcceptancePassed: 1, AcceptanceTotal: 1, Added: 1000, Budget: 100, RuntimeDepsAdded: 5, ComplexityAdded: 50}
-	if got := Compute(in, Balanced()).Score; !near(got, 0) {
-		t.Errorf("score = %v, want 0", got)
+	r := Compute(in, Balanced())
+	if !near(r.Score, 0) || len(r.Components) != 6 {
+		t.Errorf("score = %v with %d components, want 0 with 6", r.Score, len(r.Components))
 	}
 }
 

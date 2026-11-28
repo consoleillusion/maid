@@ -28,7 +28,7 @@ maid shall keep the command and arguments that start code-review-graph in maid.j
 ## Requirements: MCP bridge
 
 ### Tool list
-At MCP startup, the MCP server shall fetch the upstream tool list and expose every tool under its upstream name.
+When the MCP server starts, the MCP server shall fetch the upstream tool list and expose every tool under its upstream name.
 
 ### Tool calls
 When an agent calls an upstream tool, the MCP server shall forward the call arguments and shall return the upstream result.

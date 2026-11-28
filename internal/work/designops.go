@@ -34,11 +34,12 @@ func (s *Service) DesignOp(ctx context.Context, agent, action, reason string, op
 		reason = action + " " + res.Ref
 	}
 	msg := fmt.Sprintf("design(%s): %s\n\n%s by %s through maid.", res.Ref, firstLine(reason), action, agent)
-	if changed, _ := gitx.Run(ctx, s.Root, "status", "--porcelain", "--", res.Path); changed == "" {
+	paths := append([]string{res.Path}, res.Also...) // the chapter and the index files (REQ-DOC-019)
+	if changed, _ := gitx.Run(ctx, s.Root, append([]string{"status", "--porcelain", "--"}, paths...)...); changed == "" {
 		return res, nil // nothing changed, for example a status that was already set
 	}
-	if _, err := gitx.Run(ctx, s.Root, "add", "--", res.Path); err == nil {
-		if _, err := gitx.Run(ctx, s.Root, "commit", "-q", "-m", msg, "--", res.Path); err != nil {
+	if _, err := gitx.Run(ctx, s.Root, append([]string{"add", "--"}, paths...)...); err == nil {
+		if _, err := gitx.Run(ctx, s.Root, append([]string{"commit", "-q", "-m", msg, "--"}, paths...)...); err != nil {
 			res.Findings = append(res.Findings, design.Finding{Path: res.Path, Rule: "git", Severity: "advice",
 				Message: "the change is saved but not committed: " + err.Error()})
 		}

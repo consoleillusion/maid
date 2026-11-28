@@ -57,6 +57,7 @@ func (s *Store) Check() []Finding {
 			seenItems[sec.ItemID] = ch.Path
 		}
 		out = append(out, checkPart(ch)...)
+		out = append(out, checkHeadings(ch)...)
 		out = append(out, s.checkLinks(ch)...)
 		out = append(out, checkStyle(ch)...)
 	}
@@ -72,6 +73,23 @@ func checkPart(ch *Chapter) []Finding {
 	var out []Finding
 	if fp := ch.FM.String("part"); fp != "" && fp != p {
 		out = append(out, Finding{ch.Path, 1, "REQ-DOC-020", style.Error, "part is " + fp + " but the chapter is in folder " + p})
+	}
+	return out
+}
+
+var numberedHeading = regexp.MustCompile(`^#{1,6}\s+\d`)
+
+func checkHeadings(ch *Chapter) []Finding {
+	// Purpose: report headings that start with a position number (REQ-DOC-022).
+	var out []Finding
+	fence := false
+	for i, l := range strings.Split(ch.Body, "\n") {
+		if strings.HasPrefix(l, "```") {
+			fence = !fence
+		}
+		if !fence && numberedHeading.MatchString(l) {
+			out = append(out, Finding{ch.Path, ch.BodyLine + i, "REQ-DOC-022", style.Error, "heading starts with a number; index.md holds the order: " + l})
+		}
 	}
 	return out
 }

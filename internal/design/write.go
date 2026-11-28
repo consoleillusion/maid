@@ -188,7 +188,7 @@ func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
 	var also []string
 	if PartOf(path.Join(Dir, c.Path)) != "" {
 		var err error
-		if also, err = s.addToIndex(c.Path, c.Title); err != nil {
+		if also, err = s.addToIndex(c.Path); err != nil {
 			return WriteResult{}, err
 		}
 	}

@@ -2,7 +2,6 @@ package design
 
 import (
 	_ "embed" // index.typ template
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -18,19 +17,34 @@ var indexTyp string
 // IndexFile is the front page and reading order of the design (REQ-DOC-014).
 const IndexFile = "index.md"
 
-const indexStart = "---\nid: index\ntitle: Design\nstatus: draft\nstyle: ste\nowner: user\nsummary: Front page of the design and the reading order of its chapters.\nlinks: []\n---\n\n# Design\n\nThis page lists the chapters of the design in reading order.\n"
+const indexStart = "# Design\n"
 
 // IndexEntry is one chapter in the reading order of design/index.md.
 type IndexEntry struct {
-	Part  string // the level-2 heading above the entry
-	Title string // the link text
+	Part  string // the part folder name, with hyphens as spaces and a capital first letter
+	Title string // the title of the chapter
 	Path  string // relative to the project root, for example design/foundation/vision.md
 }
 
 var (
 	indexPartRe = regexp.MustCompile(`^##\s+(.+?)\s*$`)
-	indexItemRe = regexp.MustCompile(`^\s*\d+[.)]\s+\[([^\]]+)\]\(([^)\s]+\.md)\)`)
+	// indexItemRe matches "- path.md", "- [Title](path.md)" and the same
+	// with a number instead of the bullet.
+	indexItemRe = regexp.MustCompile(`^\s*(?:[-*+]|\d+[.)])\s+(?:\[([^\]]+)\]\(([^)\s]+\.md)\)|([^\s\[]+\.md))\s*$`)
 )
+
+// indexItem returns the title and path of an index list line.
+func indexItem(l string) (title, p string, ok bool) {
+	// Purpose: read one entry in either the plain or the link form.
+	m := indexItemRe.FindStringSubmatch(l)
+	if m == nil {
+		return "", "", false
+	}
+	if m[2] != "" {
+		return m[1], path.Clean(m[2]), true
+	}
+	return "", path.Clean(m[3]), true
+}
 
 // Order returns the chapters in the order that design/index.md lists them
 // (REQ-DOC-014).
@@ -45,9 +59,24 @@ func (s *Store) Order() []IndexEntry {
 	for _, l := range strings.Split(bodyOf(string(b)), "\n") {
 		if m := indexPartRe.FindStringSubmatch(l); m != nil {
 			part = m[1]
-		} else if m := indexItemRe.FindStringSubmatch(l); m != nil {
-			out = append(out, IndexEntry{Part: part, Title: m[1], Path: path.Join(Dir, path.Clean(m[2]))})
+			continue
 		}
+		title, p, ok := indexItem(l)
+		if !ok {
+			continue
+		}
+		e := IndexEntry{Part: part, Title: title, Path: path.Join(Dir, p)}
+		if f := PartOf(e.Path); f != "" && e.Part == "" || f != "" && title == "" {
+			e.Part = partTitle(f)
+		}
+		if e.Title == "" {
+			for _, ch := range s.Chapters {
+				if ch.Path == e.Path {
+					e.Title = ch.FM.String("title")
+				}
+			}
+		}
+		out = append(out, e)
 	}
 	return out
 }
@@ -90,7 +119,7 @@ func partTitle(folder string) string {
 // addToIndex lists a new chapter in index.md and creates index.md and
 // index.typ when they are missing (REQ-DOC-017, REQ-DOC-019). It returns the
 // changed paths, relative to the project root.
-func (s *Store) addToIndex(rel, title string) ([]string, error) {
+func (s *Store) addToIndex(rel string) ([]string, error) {
 	// Purpose: keep the reading order complete when a chapter is created.
 	var changed []string
 	dir := filepath.Join(s.Root, Dir)
@@ -105,7 +134,7 @@ func (s *Store) addToIndex(rel, title string) ([]string, error) {
 	if b, err := os.ReadFile(idx); err == nil {
 		text = strings.ReplaceAll(string(b), "\r\n", "\n")
 	}
-	if err := atomicWrite(idx, insertEntry(text, path.Dir(rel), title, rel)); err != nil {
+	if err := atomicWrite(idx, insertEntry(text, path.Dir(rel), rel)); err != nil {
 		return nil, err
 	}
 	return append(changed, path.Join(Dir, IndexFile)), nil
@@ -117,42 +146,28 @@ func exists(p string) bool {
 	return err == nil
 }
 
-// insertEntry appends "N. [title](rel)" to the list of the part that holds
-// folder, or adds a heading for the part at the end.
-func insertEntry(text, folder, title, rel string) string {
-	// Purpose: place a new chapter at the end of its part in index.md.
+// insertEntry puts rel after the last path in the same folder, or at the
+// end of the list (REQ-DOC-017).
+func insertEntry(text, folder, rel string) string {
+	// Purpose: place a new chapter in the reading order.
 	lines := strings.Split(strings.TrimRight(text, "\n"), "\n")
-	start := partHeading(lines, folder)
-	if start < 0 {
-		return strings.Join(lines, "\n") + "\n\n## " + partTitle(folder) + "\n\n1. [" + title + "](" + rel + ")\n"
-	}
-	n, last := 0, start
-	for j := start + 1; j < len(lines) && !strings.HasPrefix(lines[j], "#"); j++ {
-		if indexItemRe.MatchString(lines[j]) {
-			n, last = n+1, j
-		}
-	}
-	entry := fmt.Sprintf("%d. [%s](%s)", n+1, title, rel)
-	add := []string{entry}
-	if n == 0 {
-		add = []string{"", entry}
-	}
-	out := append(append(append([]string{}, lines[:last+1]...), add...), lines[last+1:]...)
-	return strings.Join(out, "\n") + "\n"
-}
-
-func partHeading(lines []string, folder string) int {
-	// Purpose: find the index line of the part heading for a folder.
-	head := -1
+	at, last := -1, -1
 	for i, l := range lines {
-		if indexPartRe.MatchString(l) {
-			head = i
-			if strings.EqualFold(indexPartRe.FindStringSubmatch(l)[1], partTitle(folder)) {
-				return i
+		if _, p, ok := indexItem(l); ok {
+			last = i
+			if path.Dir(p) == folder {
+				at = i
 			}
-		} else if m := indexItemRe.FindStringSubmatch(l); m != nil && head >= 0 && path.Dir(path.Clean(m[2])) == folder {
-			return head
 		}
 	}
-	return -1
+	if at < 0 {
+		at = last
+	}
+	entry := "- " + rel
+	if at < 0 {
+		lines = append(lines, "", entry)
+	} else {
+		lines = append(lines[:at+1], append([]string{entry}, lines[at+1:]...)...)
+	}
+	return strings.Join(lines, "\n") + "\n"
 }

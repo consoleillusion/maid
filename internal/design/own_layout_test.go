@@ -29,8 +29,8 @@ func TestOwnDesignLayout(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(b), "1. [Vision](foundation/vision.md)") {
-		t.Error("design/index.md does not list 1. [Vision](foundation/vision.md)")
+	if !strings.Contains(string(b), "\n- foundation/vision.md\n") {
+		t.Error("design/index.md does not list - foundation/vision.md")
 	}
 	if _, err := os.Stat(filepath.Join(root, "index.typ")); err != nil {
 		t.Error("design/index.typ does not exist")

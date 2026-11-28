@@ -12,7 +12,7 @@ Milestone 1 is implemented: the design store and checks, plans with separate tes
 
 maid commits all its work to one branch, `maid-auto`: one commit for each accepted task, with a `Maid-Task:` trailer, and one commit for each design change. Merge `maid-auto` into your main branch when you want.
 
-The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md). To build it as one PDF, run `typst compile design/index.typ` (Typst 0.15 or later; the first build downloads the cmarker and merman packages). Mermaid code fences render as diagrams.
+The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md). To build it as two PDFs, run `scripts/compile-pdf.sh` (Typst 0.15 or later; the first build downloads the cmarker and merman packages). It writes a light and a dark PDF named after the design title. The title page shows the title at the bottom left and uses `design/cover_image.png` above it when that file exists. `scripts/compile-pdf.sh --dark-only` writes only the dark PDF. Mermaid code fences render as diagrams. `maid init` installs this script, the PDF template, a release workflow and a `.gitattributes` file in any project. The workflow attaches the dark PDF to published major and minor releases (`vX.Y.0`), not to patches.
 
 ## Install and run
 

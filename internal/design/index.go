@@ -116,20 +116,42 @@ func partTitle(folder string) string {
 	return strings.ToUpper(w[:1]) + w[1:]
 }
 
+// EnsureIndexFiles creates design/index.md and design/index.typ when they are
+// missing. It returns the paths it wrote, relative to the project root.
+func EnsureIndexFiles(root string) ([]string, error) {
+	// Purpose: give a project the reading order and the PDF template on init.
+	dir := filepath.Join(root, Dir)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return nil, err
+	}
+	var written []string
+	idx := filepath.Join(dir, IndexFile)
+	if !exists(idx) {
+		if err := atomicWrite(idx, indexStart); err != nil {
+			return nil, err
+		}
+		written = append(written, path.Join(Dir, IndexFile))
+	}
+	typ := filepath.Join(dir, "index.typ")
+	if !exists(typ) {
+		if err := atomicWrite(typ, indexTyp); err != nil {
+			return nil, err
+		}
+		written = append(written, path.Join(Dir, "index.typ"))
+	}
+	return written, nil
+}
+
 // addToIndex lists a new chapter in index.md and creates index.md and
 // index.typ when they are missing. It returns the
 // changed paths, relative to the project root.
 func (s *Store) addToIndex(rel string) ([]string, error) {
 	// Purpose: keep the reading order complete when a chapter is created.
-	var changed []string
-	dir := filepath.Join(s.Root, Dir)
-	if typ := filepath.Join(dir, "index.typ"); !exists(typ) {
-		if err := atomicWrite(typ, indexTyp); err != nil {
-			return nil, err
-		}
-		changed = append(changed, path.Join(Dir, "index.typ"))
+	changed, err := EnsureIndexFiles(s.Root)
+	if err != nil {
+		return nil, err
 	}
-	idx := filepath.Join(dir, IndexFile)
+	idx := filepath.Join(s.Root, Dir, IndexFile)
 	text := indexStart
 	if b, err := os.ReadFile(idx); err == nil {
 		text = strings.ReplaceAll(string(b), "\r\n", "\n")

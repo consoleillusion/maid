@@ -1,11 +1,22 @@
-// Builds the design as one PDF: typst compile design/index.typ
+// Builds the design as one PDF: scripts/compile-pdf.sh
 // The chapter order comes from index.md, so this file does not change when
-// chapters are added. maid writes it; edit the style settings below freely.
+// chapters are added. The script passes mode=dark for the dark build and
+// cover=yes when design/cover_image.png exists.
 #import "@preview/cmarker:0.1.10"
 #import "@preview/merman:0.6.0": mermaid-profile, show-mermaid-blocks
 
 #let sans = ("Inter", "Noto Sans", "Source Sans 3", "IBM Plex Sans", "DejaVu Sans", "Liberation Sans", "Arial")
 #let mono = ("JetBrains Mono", "DejaVu Sans Mono")
+
+// The build script chooses the mode. Direct compilation stays light.
+#let dark = sys.inputs.at("mode", default: "light") == "dark"
+#let cover = sys.inputs.at("cover", default: "") == "yes"
+#let ink = if dark { rgb("#eeeeee") } else { rgb("#000000") }
+#let muted = if dark { rgb("#aaaaaa") } else { luma(90) }
+#let stroke-colour = if dark { rgb("#555555") } else { luma(180) }
+#let code-fill = if dark { rgb("#333333") } else { luma(245) }
+#let link-colour = if dark { rgb("#8ab4f8") } else { rgb("#1f4e8c") }
+#let page-fill = if dark { rgb("#222222") } else { white }
 
 // Remove a leading YAML frontmatter block.
 #let strip-frontmatter(s) = {
@@ -82,12 +93,12 @@
 }
 
 #let chapter-image(dir) = (src, ..args) => {
-  let p = if src.starts-with("/") { src } else { "/design/" + normalise(if dir == "" { src } else { dir + "/" + src }) }
+  let p = if src.starts-with("/") { src } else { normalise(if dir == "" { src } else { dir + "/" + src }) }
   image(p, ..args)
 }
 
 #set document(title: title)
-#set text(font: sans, size: 10.5pt, lang: "en")
+#set text(font: sans, size: 10.5pt, lang: "en", fill: ink)
 #show raw: set text(font: mono, size: 9pt)
 #set par(justify: false, leading: 0.65em, spacing: 1.1em)
 // Only parts have numbers, in roman numerals; chapters and sections have none.
@@ -96,31 +107,34 @@
 #show heading.where(level: 1): it => { pagebreak(weak: true); v(2em); text(26pt, it); v(1.5em) }
 #show heading.where(level: 2): it => { v(1.2em); text(16pt, it); v(0.4em) }
 #show table: set text(size: 9.5pt)
-#set table(stroke: 0.5pt + luma(180), inset: 6pt)
+#set table(stroke: 0.5pt + stroke-colour, inset: 6pt)
 #show table.cell.where(y: 0): set text(weight: "semibold")
-#show link: set text(fill: rgb("#1f4e8c"))
+#show link: set text(fill: link-colour)
 // Mermaid fences become diagrams; other code keeps a grey block.
-#let diagrams = mermaid-profile(theme-preset: "editor", theme-appearance: "light")
+#let diagrams = mermaid-profile(theme-preset: "editor", theme-appearance: if dark { "dark" } else { "light" })
 #let diagram = show-mermaid-blocks(profile: diagrams, document-context: true, width: 100%)
 #show raw.where(block: true): it => {
   if it.lang == "mermaid" {
     diagram(it)
   } else {
-    block(fill: luma(245), inset: 8pt, radius: 3pt, width: 100%, it)
+    block(fill: code-fill, inset: 8pt, radius: 3pt, width: 100%, it)
   }
 }
 
-// Title page: the title in the bottom left.
-#page(margin: (x: 2.5cm, y: 3cm), numbering: none)[
+// Title page: the cover image at the top when it exists, the title at the bottom left.
+#page(margin: (x: 2.5cm, y: 3cm), fill: page-fill, numbering: none)[
+  #if cover [
+    #place(top + center, image("./cover_image.png", width: 40%))
+  ]
   #align(bottom + left)[
     #text(36pt, weight: "bold", title)
     #v(0.6em)
-    #text(11pt, fill: luma(90), datetime.today().display("[day] [month repr:long] [year]"))
+    #text(11pt, fill: muted, datetime.today().display("[day] [month repr:long] [year]"))
   ]
 ]
 
-#set page(paper: "a4", margin: (x: 2.3cm, y: 2.5cm), numbering: "1",
-  footer: context [#text(8.5pt, fill: luma(110))[
+#set page(paper: "a4", margin: (x: 2.3cm, y: 2.5cm), fill: page-fill, numbering: "1",
+  footer: context [#text(8.5pt, fill: muted)[
     #title #h(0.4em) · #h(0.4em) #breadcrumb-part.get() #h(0.4em) · #h(0.4em) #breadcrumb-chapter.get()
     #h(1fr) #counter(page).display()
   ]])
@@ -138,14 +152,14 @@
     let (meta, body) = cmarker.render-with-metadata(
       read(path),
       metadata-block: "frontmatter-yaml",
-            h1-level: if dir == "" { 1 } else { 2 },
+      h1-level: if dir == "" { 1 } else { 2 },
       label-prefix: path + ":",
       scope: (link: chapter-link(dir), image: chapter-image(dir)),
     )
     [#metadata(path)#label(path)]
     body
     if meta != none and "status" in meta {
-      align(right, text(8.5pt, fill: luma(110))[Status: #meta.status])
+      align(right, text(8.5pt, fill: muted)[Status: #meta.status])
     }
   }
 }

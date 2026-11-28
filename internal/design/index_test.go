@@ -93,6 +93,32 @@ func TestIndexTypRomanParts(t *testing.T) {
 	}
 }
 
+// scenario: the PDF template supports both modes and a cover image
+func TestIndexTypModes(t *testing.T) {
+	// Purpose: the installed template builds a light and a dark book.
+	root := t.TempDir()
+	written, err := EnsureIndexFiles(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"design/index.md", "design/index.typ"}
+	if !reflect.DeepEqual(written, want) {
+		t.Fatalf("EnsureIndexFiles() wrote %v, want %v", written, want)
+	}
+	b, err := os.ReadFile(filepath.Join(root, "design/index.typ"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, part := range []string{`sys.inputs.at("mode"`, `rgb("#222222")`, `cover_image.png`, "bottom + left"} {
+		if !strings.Contains(string(b), part) {
+			t.Errorf("index.typ does not contain %q", part)
+		}
+	}
+	if again, err := EnsureIndexFiles(root); err != nil || len(again) != 0 {
+		t.Fatalf("second EnsureIndexFiles() = %v, %v; want no writes", again, err)
+	}
+}
+
 // heading-numbered scenario: maid's own design has no position numbers
 func TestOwnIndexAndHeadings(t *testing.T) {
 	// Purpose: maid's index.md is bulleted paths, and no heading in its design is numbered.

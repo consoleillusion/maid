@@ -1,0 +1,2 @@
+# Generated artefacts: PDFs are built from design/index.typ by scripts/compile-pdf.sh.
+*.pdf binary linguist-generated=true

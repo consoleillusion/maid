@@ -48,7 +48,7 @@ maid shall commit every accepted attempt and every design change to one branch, 
 If the maid branch does not exist, then maid shall create it at the current commit of the checkout.
 
 ### REQ-ACC-023 Design commits
-If the checkout is not on the maid branch, then maid shall refuse a design change and shall return the command that switches the checkout to the maid branch.
+When a design change starts and the checkout is not on the maid branch, maid shall switch the checkout to the maid branch if no tracked file has uncommitted changes, and otherwise shall refuse the change and return the command that switches the branch.
 
 ### REQ-ACC-024 Old attempt branches
 When `maid init` runs, maid shall delete the branches that match `maid/*` and remove the worktrees of finished attempts.

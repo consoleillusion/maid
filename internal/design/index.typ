@@ -58,6 +58,14 @@
   out
 }
 
+// The breadcrumb names the design, the current part and the current chapter.
+#let breadcrumb-part = state("breadcrumb-part", "")
+#let breadcrumb-chapter = state("breadcrumb-chapter", "")
+#let chapter-title(path) = {
+  let m = read(path).match(regex("(?m)^# +(.+?)\\s*$"))
+  if m == none { path } else { m.captures.at(0) }
+}
+
 // Links to other chapters become links inside the PDF; web links stay.
 #let chapter-link(dir) = (dest, ..args) => {
   let body = args.pos().at(0, default: none)
@@ -112,16 +120,21 @@
 ]
 
 #set page(paper: "a4", margin: (x: 2.3cm, y: 2.5cm), numbering: "1",
-  footer: context [#text(8.5pt, fill: luma(110))[#title #h(1fr) #counter(page).display()]])
+  footer: context [#text(8.5pt, fill: luma(110))[
+    #title #h(0.4em) · #h(0.4em) #breadcrumb-part.get() #h(0.4em) · #h(0.4em) #breadcrumb-chapter.get()
+    #h(1fr) #counter(page).display()
+  ]])
 
 #text(20pt, weight: "semibold")[Contents]
 #v(0.8em)
 #outline(title: none, depth: 2, indent: auto)
 
 #for part in parts {
+  breadcrumb-part.update(if part.name != none { part.name } else { "" })
   if part.name != none { heading(level: 1, numbering: "I", part.name) }
   for path in part.chapters {
     let dir = dir-of(path)
+    breadcrumb-chapter.update(chapter-title(path))
     let (meta, body) = cmarker.render-with-metadata(
       read(path),
       metadata-block: "frontmatter-yaml",

@@ -67,5 +67,5 @@ The design is the source of truth. All agents and all humans read the same desig
 
 - **Few user prompts:** maid asks the user only for information that only the user has. It asks every question of a phase in one message. The design agent makes all other decisions and records them as decisions that the user can change. Each extra user turn costs the user time and costs an expensive model turn.
 - **Plain prompts:** The user asks the agent to work on the project in plain words. maid tells the agent which tasks are available. The user does not need special syntax.
-- **Guidance, not gates:** Metrics, automatic formatting, tests, documentation and code graphs show agents what a successful commit is. They do not slow development. See ADR-0008.
+- **Guidance, not gates:** Metrics, automatic formatting, tests, documentation and code graphs show agents what a successful commit is. They do not slow development. Code graphs help to minimize token usage by describing the code structure. Maid itself is meant to be give a focused view to code that guides modular development so agents can work with small parts of the codebase without knowing anything else. See ADR-0008.
 - **Any language:** maid measures any language with language-independent measures. Adapters add better measures for each language, a few languages first.

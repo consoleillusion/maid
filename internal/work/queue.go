@@ -28,6 +28,7 @@ type Submission struct {
 	// queue runs, for agents without file access (REQ-WI-028).
 	Patch   string            // unified diff, relative to the repository root
 	Files   map[string]string // path -> complete new content
+	Edits   []Edit            // exact text replacements (REQ-WI-031)
 	Message string            // commit message for the applied changes
 }
 
@@ -35,7 +36,7 @@ type Submission struct {
 // Submissions are processed one at a time across all maid processes.
 func (s *Service) Submit(ctx context.Context, sub Submission) (state.Report, error) {
 	// Purpose: rebase, check, test and merge or reject one attempt (REQ-ACC-001 to REQ-ACC-009).
-	if sub.Patch != "" || len(sub.Files) > 0 {
+	if sub.Patch != "" || len(sub.Files) > 0 || len(sub.Edits) > 0 {
 		if err := s.applyChanges(ctx, sub); err != nil {
 			return state.Report{}, err
 		}

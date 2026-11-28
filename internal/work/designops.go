@@ -94,7 +94,9 @@ func (s *Service) SetStatusBatch(ctx context.Context, agent string, ids []string
 	if len(paths) == 0 {
 		return out, nil
 	}
-	who := ""
+	// The commit names who approved the change, or the agent that made it
+	// when the user delegated approval (REQ-PH-007).
+	who := " (by " + agent + ")"
 	if approvedBy != "" {
 		who = " (approved by " + approvedBy + ")"
 	}

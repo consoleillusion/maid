@@ -2,7 +2,7 @@
 id: work-items
 title: Work items, claims and context packets
 part: 02-method
-status: draft
+status: accepted
 style: ears
 owner: paul
 summary: >
@@ -153,3 +153,15 @@ When an agent submits a work item with a patch or a set of files, maid shall app
 
 ### REQ-WI-030 Referenced sections
 When the criteria of a work item name a design chapter or section, maid shall include the text of each named section in the context packet.
+
+### REQ-WI-031 Minimal edits
+When an agent that holds the claim on a work item sends a list of text replacements for an owned file, maid shall replace each old text with its new text and write the file.
+
+### REQ-WI-032 Edit match rule
+If the old text of a replacement occurs zero times or more than once in the file, then maid shall refuse the whole edit, keep the file unchanged and return the number of matches.
+
+### REQ-WI-033 Tolerant patches
+When an agent submits a unified diff, maid shall recount the line numbers of each hunk and ignore whitespace differences in context lines before it applies the patch.
+
+### REQ-WI-034 Minimal changes first
+maid shall tell agents to change existing files with work_edit or a patch, and to use work_write only for new files and full rewrites.

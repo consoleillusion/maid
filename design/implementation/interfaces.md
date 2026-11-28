@@ -103,3 +103,25 @@ While maid runs in HTTP mode, the MCP server shall accept connections only on th
 | `done_when` | list | The gate conditions for this step. |
 | `ask_user` | list | Questions for the user, in plain words. |
 | `blocked` | list | Work items that cannot proceed. |
+
+## Proposal: Align MCP interface with implemented tools
+
+status: proposed · by opencode-978a9f · 2026-11-28
+
+### Implemented tool set
+The MCP server shall expose `maid_next`, `maid_status`, `design_index`, `design_read`, `design_check`, `design_write`, `design_append`, `design_create`, `design_set_status`, `design_propose`, `work_plan`, `work_claim`, `work_files`, `work_read`, `work_write`, `work_edit`, `work_run`, `work_commit`, `work_heartbeat`, `work_release`, `work_submit` and `work_result`.
+
+### Graph tool set
+The MCP server shall expose the 30 code-review-graph tools alongside its own tools.
+
+### Implemented tool inputs
+`work_claim` shall accept `id` and `agent`. `work_result` shall accept `id`. `design_propose` shall accept `chapter`, `title`, `content` and `agent`. `work_submit` shall accept `edits`.
+
+### maid_next response fields
+The `maid_next` response shall include `calls`, `tasks` and `warnings`.
+
+### Future MCP extras
+Where resources, prompts, elicitation, streamable HTTP or `toon` output are not implemented, the MCP server shall report them as targets and shall not advertise them as current behaviour.
+
+### Agent identity
+The MCP server shall record an agent ID for each state-changing tool except `work_plan`, which shall be a target.

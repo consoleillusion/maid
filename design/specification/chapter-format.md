@@ -134,27 +134,14 @@ stateDiagram-v2
 
 A human or a configured review agent moves an item from `review` to `accepted`.
 
-## Proposal: Define the design directory and derive chapter metadata
+## Proposal: Group the index by part and add a PDF script
 status: proposed
-
-The design in `design/` is the comprehensive specification of what the project shall be. Agents and humans shall use it as the single source of truth. This repeats G-002 at the place where agents learn the file layout.
-
-### Purpose and completeness
-The design directory shall hold everything that defines the project. A reader shall not need another specification to know what the project shall be. Generated documents shall trace back to the design.
-
-### Part and chapter paths
-Chapters shall be grouped into parts at `design/<part>/<chapter>.md`. The part is the folder name. The chapter ID is the file name without `.md`. The chapter title is the level-1 heading in that file.
-
-Chapter frontmatter shall not contain `id`, `title` or `part`. It shall contain only `status`, `style`, `owner`, `summary` and `links`. Item IDs shall stay in section headings, as REQ-DOC-006 requires.
-
-### Unnumbered names
-Part folders and chapter files shall not start with a position number. Part order shall be shown with roman numerals in `design/index.md` and in the PDF. Chapter files and chapter headings shall carry no position number. One ordered index keeps rearrangement cheap and avoids numbers that drift out of sync.
 
 ### Index
 REQ-DOC-014 shall change so that `design/index.md` contains the design title, then level-2 headings for parts in roman numerals, then a link to every chapter under its part. The link order is the reading order. REQ-DOC-016 and REQ-DOC-017 shall keep enforcing completeness and insertion position.
 
 ### PDF
-REQ-DOC-018 shall change so that `design/index.typ` includes every Markdown file listed in `design/index.md`, in that order, with Typst's `cmarker` package. It shall produce an attractive PDF with a title page, a sans-serif font, part breaks numbered in roman numerals, and no numbers on chapters or sections.
+REQ-DOC-018 shall change so that `design/index.typ` includes every Markdown file listed in `design/index.md`, in that order, with Typst's `cmarker` package. Fenced `mermaid` blocks in those files shall render as diagrams through Typst's `merman` package. The PDF shall have a title page, a sans-serif font, part breaks numbered in roman numerals, and no numbers on chapters or sections.
 
 ### Compile script
 maid shall provide an npm script that compiles `design/index.typ` to the design PDF.

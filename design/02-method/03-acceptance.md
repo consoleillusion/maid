@@ -39,7 +39,19 @@ If the rebase has a conflict, then the merge queue shall reject the submission w
 When the rebase succeeds, the merge queue shall run, in order: the format check, the lint check, the owned-path check, the acceptance-test protection check, the acceptance tests of the work item, and the full test suite.
 
 ### REQ-ACC-007 Accept
-If all checks pass and no test that passed on the main branch fails, then the merge queue shall fast-forward the main branch to the rebased attempt branch.
+If all checks pass and no test that passed on the maid branch fails, then the merge queue shall add the attempt to the maid branch as one commit whose message ends with the trailer `Maid-Task: <work item ID>`.
+
+### REQ-ACC-021 One branch
+maid shall commit every accepted attempt and every design change to one branch, the maid branch, whose name is the `branch` value in `maid.json` and is `maid-auto` by default.
+
+### REQ-ACC-022 Maid branch creation
+If the maid branch does not exist, then maid shall create it at the current commit of the checkout.
+
+### REQ-ACC-023 Design commits
+If the checkout is not on the maid branch, then maid shall refuse a design change and shall return the command that switches the checkout to the maid branch.
+
+### REQ-ACC-024 Old attempt branches
+When `maid init` runs, maid shall delete the branches that match `maid/*` and remove the worktrees of finished attempts.
 
 ### REQ-ACC-008 Reject
 If a check fails, then the merge queue shall reject the submission and shall keep the main branch unchanged.

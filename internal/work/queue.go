@@ -28,6 +28,7 @@ type Submission struct {
 	// queue runs, for agents without file access (REQ-WI-028).
 	Patch   string            // unified diff, relative to the repository root
 	Files   map[string]string // path -> complete new content
+	Edits   []Edit            // exact text replacements (REQ-WI-031)
 	Message string            // commit message for the applied changes
 }
 

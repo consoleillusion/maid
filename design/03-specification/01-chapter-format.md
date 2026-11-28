@@ -88,7 +88,7 @@ Each ID in the `links` field shall resolve to an existing chapter, item or decis
 |---|---|---|
 | `id` | string | Chapter ID. Lowercase, hyphenated. Unique. |
 | `title` | string | Human title. |
-| `part` | string | The part folder name. |
+| `part` | string | Optional. Equal to the part folder name (REQ-DOC-020). |
 | `status` | enum | See REQ-DOC-009. |
 | `style` | string | Style ID from the style registry. |
 | `owner` | string | The person who accepts changes. |

@@ -22,21 +22,21 @@ import (
 type Submission struct {
 	Agent string
 	ID    string
-	Model string // reported by the agent (REQ-SC-009)
-	Cost  string // reported by the agent (REQ-WI-016)
+	Model string // reported by the agent
+	Cost  string // reported by the agent
 
 	// Optional changes that maid applies and commits before the merge
-	// queue runs, for agents without file access (REQ-WI-028).
+	// queue runs, for agents without file access.
 	Patch   string            // unified diff, relative to the repository root
 	Files   map[string]string // path -> complete new content
-	Edits   []Edit            // exact text replacements (REQ-WI-031)
+	Edits   []Edit            // exact text replacements
 	Message string            // commit message for the applied changes
 }
 
 // Submit runs the merge queue for one submission and returns its report.
 // Submissions are processed one at a time across all maid processes.
 func (s *Service) Submit(ctx context.Context, sub Submission) (state.Report, error) {
-	// Purpose: rebase, check, test and merge or reject one attempt (REQ-ACC-001 to REQ-ACC-009).
+	// Purpose: rebase, check, test and merge or reject one attempt.
 	if sub.Patch != "" || len(sub.Files) > 0 || len(sub.Edits) > 0 {
 		if err := s.applyChanges(ctx, sub); err != nil {
 			return state.Report{}, err
@@ -209,7 +209,7 @@ func (s *Service) evaluate(ctx context.Context, it tasks.WorkItem, att state.Att
 }
 
 // withoutAcceptance drops the item's own acceptance tests from regressions:
-// a tests item may redefine an existing test, which then fails (REQ-ACC-025).
+// a tests item may redefine an existing test, which then fails.
 func withoutAcceptance(ids []string, it tasks.WorkItem) []string {
 	// Purpose: let a tests item change what an existing test expects.
 	own := map[string]bool{}
@@ -230,7 +230,7 @@ func withoutAcceptance(ids []string, it tasks.WorkItem) []string {
 
 // acceptanceResult checks the acceptance tests for the kind of item.
 func acceptanceResult(it tasks.WorkItem, res testrun.Result) string {
-	// Purpose: code items need passing acceptance tests; tests items need failing ones (REQ-WI-020).
+	// Purpose: code items need passing acceptance tests; tests items need failing ones.
 	for _, t := range it.Maid.AcceptanceTests {
 		for _, name := range t.Names {
 			ids := res.Matching([]string{name})
@@ -253,7 +253,7 @@ func acceptanceResult(it tasks.WorkItem, res testrun.Result) string {
 
 // baseline returns test results for the main commit, running them if needed.
 func (s *Service) baseline(ctx context.Context, main string) (state.Baseline, error) {
-	// Purpose: keep the record of which tests pass on main (REQ-ACC-011).
+	// Purpose: keep the record of which tests pass on main.
 	b, err := s.State.LoadBaseline()
 	if err != nil {
 		return b, err
@@ -299,7 +299,7 @@ func (s *Service) accept(ctx context.Context, it tasks.WorkItem, att state.Attem
 	}
 	if it.Maid.Kind == tasks.KindTests && it.Maid.TestsFor != "" {
 		if code, err := s.Tasks.Get(ctx, it.Maid.TestsFor); err == nil {
-			code.Maid.TestsAuthor = att.Agent // REQ-WI-019
+			code.Maid.TestsAuthor = att.Agent
 			_ = s.Tasks.SetMeta(ctx, code.ID, code.Maid)
 		}
 	}
@@ -315,7 +315,7 @@ func (s *Service) reject(ctx context.Context, it tasks.WorkItem, att state.Attem
 		budget = s.Cfg.Budget.Attempts
 	}
 	if it.Maid.Attempts >= budget {
-		it.Maid.Escalated, rep.Escalated = true, true // REQ-WI-009
+		it.Maid.Escalated, rep.Escalated = true, true
 	}
 	if err := s.Tasks.SetMeta(ctx, it.ID, it.Maid); err != nil {
 		return err
@@ -323,7 +323,7 @@ func (s *Service) reject(ctx context.Context, it tasks.WorkItem, att state.Attem
 	return s.Tasks.Release(ctx, it.ID, att.Agent)
 }
 
-// attemptEnv gives each attempt unique resources (REQ-ACC-017).
+// attemptEnv gives each attempt unique resources.
 func (s *Service) attemptEnv(id string, n int) []string {
 	// Purpose: build MAID_* variables for one test run.
 	key := fmt.Sprintf("%s-%d", id, n)
@@ -395,7 +395,7 @@ func clip(s string) string {
 }
 
 // squash turns the rebased commits in scratch into one commit on base with
-// a Maid-Task trailer, and returns it (REQ-ACC-007).
+// a Maid-Task trailer, and returns it.
 func squash(ctx context.Context, scratch, base, id, agent string) (string, error) {
 	// Purpose: keep one atomic, task-based commit for each accepted attempt.
 	msg, err := gitx.Run(ctx, scratch, "log", "-1", "--format=%B", "HEAD")

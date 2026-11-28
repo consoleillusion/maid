@@ -20,14 +20,14 @@ type Finding struct {
 	Message  string `json:"message"`
 }
 
-// RequiredFields are the frontmatter fields every chapter must have (REQ-DOC-002).
+// RequiredFields are the frontmatter fields every chapter must have.
 // ID, title and part come from the path and the level-1 heading, not frontmatter.
 var RequiredFields = []string{"status", "style", "owner", "summary", "links"}
 
-// Statuses are the allowed status values (REQ-DOC-009).
+// Statuses are the allowed status values.
 var Statuses = map[string]bool{"stub": true, "draft": true, "review": true, "accepted": true, "superseded": true}
 
-const maxSummaryWords = 60 // REQ-DOC-003
+const maxSummaryWords = 60
 
 var mdLink = regexp.MustCompile(`\]\(([^)\s#:]+\.md)(#[^)]*)?\)`)
 
@@ -36,7 +36,6 @@ func (s *Store) Check() []Finding {
 	// Purpose: run structure, link and style checks over every chapter.
 	var out []Finding
 	seen := map[string]string{}
-	seenItems := map[string]string{}
 	for _, ch := range s.Chapters {
 		if isTemplate(ch) {
 			continue
@@ -44,18 +43,9 @@ func (s *Store) Check() []Finding {
 		out = append(out, checkFrontmatter(ch)...)
 		if ch.ID != "" {
 			if other, dup := seen[ch.ID]; dup {
-				out = append(out, Finding{ch.Path, 1, "REQ-DOC-006", style.Error, "duplicate chapter id " + ch.ID + " (also in " + other + ")"})
+				out = append(out, Finding{ch.Path, 1, "duplicate-chapter", style.Error, "duplicate chapter id " + ch.ID + " (also in " + other + ")"})
 			}
 			seen[ch.ID] = ch.Path
-		}
-		for _, sec := range ch.Sections {
-			if sec.ItemID == "" {
-				continue
-			}
-			if other, dup := seenItems[sec.ItemID]; dup {
-				out = append(out, Finding{ch.Path, sec.Line, "REQ-DOC-006", style.Error, "duplicate item " + sec.ItemID + " (also in " + other + ")"})
-			}
-			seenItems[sec.ItemID] = ch.Path
 		}
 		out = append(out, checkHeadings(ch)...)
 		out = append(out, s.checkLinks(ch)...)
@@ -67,7 +57,7 @@ func (s *Store) Check() []Finding {
 var numberedHeading = regexp.MustCompile(`^#{1,6}\s+\d`)
 
 func checkHeadings(ch *Chapter) []Finding {
-	// Purpose: report headings that start with a position number (REQ-DOC-022).
+	// Purpose: report headings that start with a position number.
 	var out []Finding
 	fence := false
 	for i, l := range strings.Split(ch.Body, "\n") {
@@ -75,32 +65,32 @@ func checkHeadings(ch *Chapter) []Finding {
 			fence = !fence
 		}
 		if !fence && numberedHeading.MatchString(l) {
-			out = append(out, Finding{ch.Path, ch.BodyLine + i, "REQ-DOC-022", style.Error, "heading starts with a number; index.md holds the order: " + l})
+			out = append(out, Finding{ch.Path, ch.BodyLine + i, "heading-numbered", style.Error, "heading starts with a number; index.md holds the order: " + l})
 		}
 	}
 	return out
 }
 
 func (s *Store) checkIndex() []Finding {
-	// Purpose: compare design/index.md with the chapters in part folders (REQ-DOC-016).
+	// Purpose: compare design/index.md with the chapters in part folders.
 	idx := path.Join(Dir, IndexFile)
 	if !s.HasIndex() {
 		if len(s.Chapters) == 0 {
 			return nil
 		}
-		return []Finding{{idx, 1, "REQ-DOC-016", style.Advice, "design/index.md is missing; create it with the chapters in reading order"}}
+		return []Finding{{idx, 1, "index", style.Advice, "design/index.md is missing; create it with the chapters in reading order"}}
 	}
 	var out []Finding
 	listed := map[string]bool{}
 	for _, e := range s.Order() {
 		listed[e.Path] = true
 		if _, err := os.Stat(filepath.Join(s.Root, filepath.FromSlash(e.Path))); err != nil {
-			out = append(out, Finding{idx, 1, "REQ-DOC-016", style.Error, "index entry does not exist: " + e.Path})
+			out = append(out, Finding{idx, 1, "index", style.Error, "index entry does not exist: " + e.Path})
 		}
 	}
 	for _, ch := range s.Chapters {
 		if PartOf(ch.Path) != "" && !isTemplate(ch) && !listed[ch.Path] {
-			out = append(out, Finding{ch.Path, 1, "REQ-DOC-016", style.Error, "chapter is not listed in design/index.md"})
+			out = append(out, Finding{ch.Path, 1, "index", style.Error, "chapter is not listed in design/index.md"})
 		}
 	}
 	return out
@@ -114,48 +104,41 @@ func isTemplate(ch *Chapter) bool {
 func checkFrontmatter(ch *Chapter) []Finding {
 	// Purpose: check required fields, status values, style and summary length.
 	if ch.FMErr != nil {
-		return []Finding{{ch.Path, 1, "REQ-DOC-002", style.Error, "frontmatter: " + ch.FMErr.Error()}}
+		return []Finding{{ch.Path, 1, "frontmatter", style.Error, "frontmatter: " + ch.FMErr.Error()}}
 	}
 	var out []Finding
 	for _, f := range RequiredFields {
 		if _, ok := ch.FM[f]; !ok {
-			out = append(out, Finding{ch.Path, 1, "REQ-DOC-002", style.Error, "missing frontmatter field " + f})
+			out = append(out, Finding{ch.Path, 1, "frontmatter", style.Error, "missing frontmatter field " + f})
 		}
 	}
 	if st := ch.FM.String("status"); st != "" && !Statuses[st] {
-		out = append(out, Finding{ch.Path, 1, "REQ-DOC-009", style.Error, "invalid status " + st})
+		out = append(out, Finding{ch.Path, 1, "status", style.Error, "invalid status " + st})
 	}
 	if sty := ch.FM.String("style"); sty != "" {
 		if _, ok := style.Registry[sty]; !ok {
-			out = append(out, Finding{ch.Path, 1, "REQ-STY-001", style.Error, "unregistered style " + sty})
+			out = append(out, Finding{ch.Path, 1, "style-unknown", style.Error, "unregistered style " + sty})
 		}
 	}
 	if n := len(strings.Fields(ch.FM.String("summary"))); n > maxSummaryWords {
-		out = append(out, Finding{ch.Path, 1, "REQ-DOC-003", style.Error, fmt.Sprintf("summary has %d words (max %d)", n, maxSummaryWords)})
+		out = append(out, Finding{ch.Path, 1, "summary-length", style.Error, fmt.Sprintf("summary has %d words (max %d)", n, maxSummaryWords)})
 	}
 	return out
 }
 
 func (s *Store) checkLinks(ch *Chapter) []Finding {
-	// Purpose: check frontmatter links, item references and relative Markdown links.
+	// Purpose: check frontmatter links and relative Markdown links.
 	var out []Finding
 	for _, l := range ch.FM.List("links") {
 		if !s.Resolves(l) {
-			out = append(out, Finding{ch.Path, 1, "REQ-DOC-015", style.Error, "link does not resolve: " + l})
+			out = append(out, Finding{ch.Path, 1, "link", style.Error, "link does not resolve: " + l})
 		}
 	}
-	reported := map[string]bool{}
 	for i, line := range strings.Split(ch.Body, "\n") {
-		for _, ref := range ItemIDPattern.FindAllString(line, -1) {
-			if !reported[ref] && !s.Resolves(ref) {
-				reported[ref] = true
-				out = append(out, Finding{ch.Path, ch.BodyLine + i, "REQ-DOC-015", style.Error, "reference does not resolve: " + ref})
-			}
-		}
 		for _, m := range mdLink.FindAllStringSubmatch(line, -1) {
 			target := path.Join(path.Dir(ch.Path), m[1])
 			if _, err := os.Stat(filepath.Join(s.Root, filepath.FromSlash(target))); err != nil {
-				out = append(out, Finding{ch.Path, ch.BodyLine + i, "REQ-DOC-015", style.Error, "broken link: " + m[1]})
+				out = append(out, Finding{ch.Path, ch.BodyLine + i, "link", style.Error, "broken link: " + m[1]})
 			}
 		}
 	}

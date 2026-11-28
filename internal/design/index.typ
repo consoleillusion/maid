@@ -125,8 +125,7 @@
     let (meta, body) = cmarker.render-with-metadata(
       read(path),
       metadata-block: "frontmatter-yaml",
-      // A file outside a part folder, such as questions.md, is a part of its own.
-      h1-level: if dir == "" { 1 } else { 2 },
+            h1-level: if dir == "" { 1 } else { 2 },
       label-prefix: path + ":",
       scope: (link: chapter-link(dir), image: chapter-image(dir)),
     )

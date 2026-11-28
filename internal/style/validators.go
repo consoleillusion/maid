@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// STE limits (ASD-STE100 rules STE-1, STE-2, STE-7).
+// STE limits from the Simplified Technical English card.
 const (
 	steMaxSentenceWords  = 25
 	steMaxParagraphSents = 6
@@ -19,13 +19,13 @@ func ValidateSTE(body string) []Finding {
 	var out []Finding
 	for _, s := range sentences(prose) {
 		if n := words(s.Text); n > steMaxSentenceWords {
-			out = append(out, Finding{s.Line, "STE-2", Error,
+			out = append(out, Finding{s.Line, "sentence-length", Error,
 				fmt.Sprintf("sentence has %d words (max %d): %s", n, steMaxSentenceWords, clip(s.Text))})
 		}
 	}
 	for _, p := range paragraphs(prose) {
 		if n := len(sentences(p.text)); n > steMaxParagraphSents {
-			out = append(out, Finding{p.line, "STE-7", Error,
+			out = append(out, Finding{p.line, "paragraph-length", Error,
 				fmt.Sprintf("paragraph has %d sentences (max %d)", n, steMaxParagraphSents)})
 		}
 	}
@@ -63,21 +63,30 @@ func paragraphs(prose string) []para {
 	return out
 }
 
-var reqHeading = regexp.MustCompile(`^#{2,4}\s+REQ-[A-Z]+-\d{3}\b`)
+var requirementHeading = regexp.MustCompile(`^###\s+\S`)
 var earsStart = regexp.MustCompile(`^(The |When |While |If |Where |Each |maid |A |An )`)
 var earsBanned = regexp.MustCompile(`\b(should|may|must)\b`)
 
-// ValidateEARS checks the first sentence after each REQ heading.
+// ValidateEARS checks the first sentence after each level-3 requirement heading.
 func ValidateEARS(body string) []Finding {
-	// Purpose: apply EARS-1 to EARS-3 to every requirement in a body.
+	// Purpose: apply the EARS rules to every requirement in a body.
 	lines := strings.Split(body, "\n")
 	var out []Finding
 	inFence := false
+	section := ""
 	for i := 0; i < len(lines); i++ {
-		if strings.HasPrefix(strings.TrimSpace(lines[i]), "```") {
+		t := strings.TrimSpace(lines[i])
+		if strings.HasPrefix(t, "```") {
 			inFence = !inFence
 		}
-		if inFence || !reqHeading.MatchString(lines[i]) {
+		if inFence {
+			continue
+		}
+		if strings.HasPrefix(t, "## ") {
+			section = strings.ToLower(strings.TrimPrefix(t, "## "))
+			continue
+		}
+		if !strings.HasPrefix(section, "requirements") || !requirementHeading.MatchString(lines[i]) {
 			continue
 		}
 		j := i + 1
@@ -85,7 +94,7 @@ func ValidateEARS(body string) []Finding {
 			j++
 		}
 		if j >= len(lines) || strings.HasPrefix(lines[j], "#") {
-			out = append(out, Finding{i + 1, "EARS-0", Error, "requirement has no text"})
+			out = append(out, Finding{i + 1, "ears-text", Error, "requirement has no text"})
 			continue
 		}
 		var req []string
@@ -102,16 +111,16 @@ func checkEARS(line int, s string) []Finding {
 	var out []Finding
 	n := strings.Count(" "+s+" ", " shall ")
 	if n == 0 {
-		out = append(out, Finding{line, "EARS-1", Error, "requirement has no \"shall\": " + clip(s)})
+		out = append(out, Finding{line, "ears-shall", Error, "requirement has no \"shall\": " + clip(s)})
 	}
 	if n > 2 {
-		out = append(out, Finding{line, "EARS-3", Error, fmt.Sprintf("requirement has %d responses (max 2): %s", n, clip(s))})
+		out = append(out, Finding{line, "ears-responses", Error, fmt.Sprintf("requirement has %d responses (max 2): %s", n, clip(s))})
 	}
 	if m := earsBanned.FindString(stripCode(s)); m != "" {
-		out = append(out, Finding{line, "EARS-1", Error, fmt.Sprintf("use \"shall\", not %q", m)})
+		out = append(out, Finding{line, "ears-shall", Error, fmt.Sprintf("use \"shall\", not %q", m)})
 	}
 	if !earsStart.MatchString(s) {
-		out = append(out, Finding{line, "EARS-P", Error, "requirement does not start with an EARS pattern: " + clip(s)})
+		out = append(out, Finding{line, "ears-pattern", Error, "requirement does not start with an EARS pattern: " + clip(s)})
 	}
 	return out
 }
@@ -121,7 +130,7 @@ var sbvrRule = regexp.MustCompile(`^It is (obligatory|prohibited|permitted|neces
 // ValidateSBVR checks the rule keywords in the "Business rules" section and
 // the definition form in the "Terms" section.
 func ValidateSBVR(body string) []Finding {
-	// Purpose: apply SBVR-2 and the definition form to a glossary body.
+	// Purpose: apply the rule keyword and definition rules to a glossary body.
 	var out []Finding
 	section := ""
 	for i, l := range strings.Split(body, "\n") {
@@ -133,10 +142,10 @@ func ValidateSBVR(body string) []Finding {
 		switch {
 		case strings.Contains(section, "rules") && strings.HasPrefix(t, "- "):
 			if !sbvrRule.MatchString(strings.TrimPrefix(t, "- ")) {
-				out = append(out, Finding{i + 1, "SBVR-2", Error, "rule does not start with a rule keyword: " + clip(t)})
+				out = append(out, Finding{i + 1, "sbvr-rule-keyword", Error, "rule does not start with a rule keyword: " + clip(t)})
 			}
 		case section == "terms" && t != "" && !strings.HasPrefix(t, "**"):
-			out = append(out, Finding{i + 1, "SBVR-1", Error, "term definition must start with **term**: " + clip(t)})
+			out = append(out, Finding{i + 1, "sbvr-term-definition", Error, "term definition must start with **term**: " + clip(t)})
 		}
 	}
 	return out
@@ -150,10 +159,10 @@ func ValidateGherkin(text string) []Finding {
 	end := func() {
 		if scenarioLine > 0 {
 			if whens != 1 {
-				out = append(out, Finding{scenarioLine, "GH-2", Error, fmt.Sprintf("scenario has %d When steps (want 1)", whens)})
+				out = append(out, Finding{scenarioLine, "gherkin-when", Error, fmt.Sprintf("scenario has %d When steps (want 1)", whens)})
 			}
 			if !seenThen {
-				out = append(out, Finding{scenarioLine, "GH-3", Error, "scenario has no Then step"})
+				out = append(out, Finding{scenarioLine, "gherkin-then", Error, "scenario has no Then step"})
 			}
 		}
 	}
@@ -171,7 +180,7 @@ func ValidateGherkin(text string) []Finding {
 	}
 	end()
 	if !strings.Contains(text, "Scenario") {
-		out = append(out, Finding{1, "GH-1", Error, "block has no Scenario"})
+		out = append(out, Finding{1, "gherkin-scenario", Error, "block has no Scenario"})
 	}
 	return out
 }

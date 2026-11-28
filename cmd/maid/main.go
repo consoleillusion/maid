@@ -272,7 +272,7 @@ func initProject(ctx context.Context, root string) error {
 }
 
 func cleanAttemptBranches(ctx context.Context, root string) {
-	// Purpose: remove the maid/* branches and their worktrees from the old layout (REQ-ACC-024).
+	// Purpose: remove the maid/* branches and their worktrees from the old layout.
 	out, err := exec.CommandContext(ctx, "git", "-C", root, "worktree", "list", "--porcelain").Output()
 	if err == nil {
 		path := ""

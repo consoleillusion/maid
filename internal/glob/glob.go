@@ -50,7 +50,7 @@ func matchSegs(pat, segs []string) bool {
 // Overlap reports whether two pattern lists can match a common path. It is
 // conservative: it compares the literal prefixes of the patterns.
 func Overlap(a, b []string) bool {
-	// Purpose: detect work items that could change the same files (REQ-WI-003).
+	// Purpose: detect work items that could change the same files.
 	for _, x := range a {
 		for _, y := range b {
 			px, py := literalPrefix(x), literalPrefix(y)

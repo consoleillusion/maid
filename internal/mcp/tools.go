@@ -27,7 +27,7 @@ type Tool struct {
 
 type def struct {
 	tool    Tool
-	buildOK bool // listed only from phase 5 (REQ-PH-004)
+	buildOK bool // listed only from phase 5
 	run     func(ctx context.Context, t *Tools, args map[string]any, agent string) (any, string, error)
 }
 
@@ -77,10 +77,10 @@ var defs = []def{
 				return nil, "", err
 			}
 			return ds.Index(design.Filter{Part: sArg(a, "part"), Status: sArg(a, "status"), Style: sArg(a, "style"), Link: sArg(a, "link")}),
-				"call design_read with the IDs you need", nil
+				"call design_read with the chapter sections you need", nil
 		}},
-	{tool: Tool{"design_read", "Read design text. Each ref can be a chapter ID (vision), a file path (design/foundation/vision.md), a chapter title, an item ID (REQ-WI-004, any case), or chapter#heading. Returns the smallest text for each ref with its version; refs that match nothing come back in not_found with suggestions. Example: {\"refs\": [\"vision\", \"REQ-WI-004\"]}",
-		obj(map[string]any{"refs": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "chapter IDs, paths, titles, item IDs or chapter#heading"},
+	{tool: Tool{"design_read", "Read design text. Each ref can be a chapter name (vision), a file path (design/foundation/vision.md), a chapter title, or chapter#heading. Returns the smallest text for each ref with its version; refs that match nothing come back in not_found with suggestions. Example: {\"refs\": [\"vision\", \"acceptance#atomic-claim\"]}",
+		obj(map[string]any{"refs": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "chapter names, paths, titles or chapter#heading"},
 			"detail": map[string]any{"type": "string", "enum": []string{"summary", "full"}, "description": "summary returns only chapter summaries"}}, "refs")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, _ string) (any, string, error) {
 			ds, err := t.Svc.Design()
@@ -98,7 +98,7 @@ var defs = []def{
 			}
 			return map[string]any{"excerpts": ex, "not_found": missing}, hint, nil
 		}},
-	{tool: Tool{"design_check", "Check the design: frontmatter, IDs, links and writing styles. Errors fail gates; advice does not.", obj(map[string]any{})},
+	{tool: Tool{"design_check", "Check the design: frontmatter, chapter names, links and writing styles. Errors fail gates; advice does not.", obj(map[string]any{})},
 		run: func(ctx context.Context, t *Tools, a map[string]any, _ string) (any, string, error) {
 			ds, err := t.Svc.Design()
 			if err != nil {
@@ -112,7 +112,7 @@ var defs = []def{
 			return map[string]any{"findings": f, "count": len(f)}, hint, nil
 		}},
 	{tool: Tool{"design_write", "Replace one design section (heading included). Pass base_version from design_read; the write fails if the section changed since. Accepted chapters cannot be written; use design_propose.",
-		obj(map[string]any{"ref": str("item ID or chapter#anchor"), "content": str("the new section text, starting with its heading"),
+		obj(map[string]any{"ref": str("chapter name#heading slug"), "content": str("the new section text, starting with its heading"),
 			"base_version": str("version from design_read"), "reason": str("why, one line"), "agent": agentProp}, "ref", "content", "base_version", "reason")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
 			res, err := t.Svc.DesignOp(ctx, agent, "write", sArg(a, "reason"), func(ds *design.Store) (design.WriteResult, error) {
@@ -128,7 +128,7 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_create", "Create a new design chapter with status draft. path is relative to design/, for example foundation/vision.md: part/name.md, lowercase, no numbers. The chapter ID comes from the file name, the title from the '# Title' heading, and the part from the folder. maid adds the chapter to design/index.md, which holds the reading order. Read the style card in design/styles/ before you write the body.",
+	{tool: Tool{"design_create", "Create a new design chapter with status draft. path is relative to design/, for example foundation/vision.md: part/name.md, lowercase, no numbers. The chapter ID comes from the file name, the title from the '# Title' heading, and the part from the folder. maid adds the chapter to design/index.md, which holds the reading order. Read the style section in design/specification/styles.md before you write the body.",
 		obj(map[string]any{"path": str("part/name.md"),
 			"style":   map[string]any{"type": "string", "enum": []string{"ste", "ears", "sbvr-se", "gherkin", "ace"}},
 			"summary": str("at most 60 words"), "links": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
@@ -170,18 +170,7 @@ var defs = []def{
 			})
 			return res, "tell the user that a proposal is waiting for review", err
 		}},
-	{tool: Tool{"design_question", "Record a question for the user instead of guessing. Returns the question ID; write TBD (Q-NNN) where the answer is needed.",
-		obj(map[string]any{"question": str("the question"), "blocks": str("IDs of the items that need the answer"), "agent": agentProp}, "question")},
-		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
-			var qid string
-			res, err := t.Svc.DesignOp(ctx, agent, "question", sArg(a, "question"), func(ds *design.Store) (design.WriteResult, error) {
-				id, r, err := ds.AddQuestion(sArg(a, "question"), sArg(a, "blocks"), "")
-				qid = id
-				return r, err
-			})
-			return map[string]any{"id": qid, "result": res}, "ask the user, or continue with unblocked work", err
-		}},
-	{tool: Tool{"work_plan", "Create work items from a plan. For each code item maid also creates a tests item that a different agent completes first. Each item needs key, title, implements (requirement IDs), criteria (Gherkin), acceptance_tests ([{file, names}]) and owns (path globs that must not include the test files).",
+	{tool: Tool{"work_plan", "Create work items from a plan. For each code item maid also creates a tests item that a different agent completes first. Each item needs key, title, implements (design section paths), criteria (Gherkin), acceptance_tests ([{file, names}]) and owns (path globs that must not include the test files).",
 		obj(map[string]any{"plan": map[string]any{"type": "object", "description": "{\"items\": [ ... ]}"}}, "plan")},
 		buildOK: true,
 		run: func(ctx context.Context, t *Tools, a map[string]any, _ string) (any, string, error) {
@@ -312,7 +301,7 @@ func (t *Tools) Phase(ctx context.Context) string {
 }
 
 // List returns every tool. Clients may not reload the list when the phase
-// changes, so phase rules are applied when a tool is called (REQ-PH-004).
+// changes, so phase rules are applied when a tool is called.
 func (t *Tools) List(ctx context.Context) []Tool {
 	// Purpose: list all tools in every phase.
 	out := make([]Tool, 0, len(defs))
@@ -324,7 +313,7 @@ func (t *Tools) List(ctx context.Context) []Tool {
 
 // Call runs a tool and returns an MCP tool result.
 func (t *Tools) Call(ctx context.Context, name string, raw json.RawMessage, defaultAgent string) map[string]any {
-	// Purpose: run one tool and format its result with a next-step hint (REQ-PH-002).
+	// Purpose: run one tool and format its result with a next-step hint.
 	args := map[string]any{}
 	if len(raw) > 0 && string(raw) != "null" {
 		if err := json.Unmarshal(raw, &args); err != nil {

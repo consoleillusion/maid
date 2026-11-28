@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// REQ-WI-024 REQ-WI-025 REQ-WI-026 REQ-WI-027
 func TestWorkThroughMaidOnly(t *testing.T) {
 	// Purpose: an agent with no file access completes the loop with maid's file tools.
 	s, root := project(t)
@@ -80,8 +79,6 @@ func TestWorkThroughMaidOnly(t *testing.T) {
 		t.Fatalf("main = %s", got)
 	}
 }
-
-// REQ-WI-028
 func TestSubmitWithPatchAndFiles(t *testing.T) {
 	// Purpose: a test agent submits files and a build agent submits a patch, with no other tools.
 	s, root := project(t)

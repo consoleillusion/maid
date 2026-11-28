@@ -5,16 +5,14 @@ import (
 	"testing"
 )
 
-// REQ-DOC-008
 func TestResolve(t *testing.T) {
-	// Purpose: accept IDs, paths, titles, any case and heading text.
+	// Purpose: accept chapter names, paths, titles, any case and heading text.
 	root := writeDesign(t, map[string]string{"01-a/alpha.md": goodChapter, "01-a/beta.md": betaChapter})
 	s, _ := Load(root)
 	cases := map[string]string{
 		"alpha": "alpha", "Alpha": "alpha", "design/01-a/alpha.md": "alpha", "01-a/alpha.md": "alpha",
-		"./design/01-a/alpha.md": "alpha", "01-a/alpha": "alpha", "req-al-002": "REQ-AL-002",
-		"alpha#Requirements": "alpha#requirements", "design/01-a/alpha.md#REQ-AL-001": "alpha#REQ-AL-001",
-		"beta#q-001": "beta#Q-001",
+		"./design/01-a/alpha.md": "alpha", "01-a/alpha": "alpha",
+		"alpha#Requirements": "alpha#requirements", "design/01-a/alpha.md#One": "alpha#one",
 	}
 	for in, want := range cases {
 		got, err := s.Resolve(in)

@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// REQ-DOC-014 REQ-DOC-017 REQ-DOC-019 scenario: bulleted index on create
+// scenario: bulleted index on create
 func TestIndexBullets(t *testing.T) {
 	// Purpose: index.md holds the title and bulleted paths, grouped by part folder.
 	root := t.TempDir()
@@ -29,7 +29,7 @@ func TestIndexBullets(t *testing.T) {
 	}
 }
 
-// REQ-DOC-021 scenario: index is not a chapter
+// scenario: index is not a chapter
 func TestIndexNotLoaded(t *testing.T) {
 	// Purpose: index.md has no frontmatter and is not checked as a chapter.
 	root := writeDesign(t, map[string]string{
@@ -49,7 +49,7 @@ func TestIndexNotLoaded(t *testing.T) {
 	}
 }
 
-// REQ-DOC-014 scenario: bulleted paths give the order
+// scenario: bulleted paths give the order
 func TestOrderBullets(t *testing.T) {
 	// Purpose: parts come from folders and titles from the chapters.
 	root := writeDesign(t, map[string]string{
@@ -64,18 +64,18 @@ func TestOrderBullets(t *testing.T) {
 	}
 }
 
-// REQ-DOC-022 scenario: numbered heading
+// heading-numbered scenario: numbered heading
 func TestCheckNumberedHeading(t *testing.T) {
 	// Purpose: a heading that starts with a position number is an error.
 	ch := strings.Replace(chapterText("vision", "foundation"), "# T\n", "# T\n\n## 1. Scope\n\nText.\n", 1)
 	root := writeDesign(t, map[string]string{"index.md": "# D\n\n- foundation/vision.md\n", "foundation/vision.md": ch})
 	s, _ := Load(root)
-	if n := countFindings(s.Check(), "REQ-DOC-022"); n != 1 {
-		t.Errorf("%d REQ-DOC-022 errors, want 1", n)
+	if n := countFindings(s.Check(), "heading-numbered"); n != 1 {
+		t.Errorf("%d heading-numbered errors, want 1", n)
 	}
 }
 
-// REQ-DOC-018 scenario: only parts are numbered, in roman numerals
+// scenario: only parts are numbered, in roman numerals
 func TestIndexTypRomanParts(t *testing.T) {
 	// Purpose: the PDF numbers parts with roman numerals and nothing else.
 	root := t.TempDir()
@@ -93,7 +93,7 @@ func TestIndexTypRomanParts(t *testing.T) {
 	}
 }
 
-// REQ-DOC-014 REQ-DOC-022 scenario: maid's own design has no position numbers
+// heading-numbered scenario: maid's own design has no position numbers
 func TestOwnIndexAndHeadings(t *testing.T) {
 	// Purpose: maid's index.md is bulleted paths, and no heading in its design is numbered.
 	root := filepath.Join("..", "..", Dir)

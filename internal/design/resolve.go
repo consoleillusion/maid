@@ -22,9 +22,9 @@ func (n NotFound) Error() string {
 	return msg + ". Call design_index to list chapters."
 }
 
-// Resolve turns what an agent typed into a canonical ref: a chapter ID, an
-// item ID, or chapter#anchor. It accepts IDs in any letter case, file paths
-// (with or without design/), chapter titles, and heading text after #.
+// Resolve turns what an agent typed into a canonical ref: a chapter ID or a
+// chapter#anchor. It accepts IDs in any letter case, file paths (with or
+// without design/), chapter titles, and heading text after #.
 func (s *Store) Resolve(ref string) (string, error) {
 	// Purpose: accept every reasonable way to name a chapter or section.
 	raw := strings.TrimSpace(ref)
@@ -33,11 +33,6 @@ func (s *Store) Resolve(ref string) (string, error) {
 	}
 	base, anchor, hasAnchor := strings.Cut(raw, "#")
 	ch := s.findChapter(base)
-	if ch == nil && !hasAnchor {
-		if id, ok := s.findItem(base); ok {
-			return id, nil
-		}
-	}
 	if ch == nil {
 		return "", NotFound{Ref: ref, DidYouMean: s.suggest(base)}
 	}
@@ -45,8 +40,8 @@ func (s *Store) Resolve(ref string) (string, error) {
 		return ch.ID, nil
 	}
 	anchor = strings.TrimSpace(anchor)
-	for _, cand := range []string{anchor, strings.ToUpper(anchor), slug(anchor)} {
-		if ch.Section(cand) != nil || hasTableItem(ch, cand) {
+	for _, cand := range []string{anchor, slug(anchor)} {
+		if ch.Section(cand) != nil {
 			return ch.ID + "#" + cand, nil
 		}
 	}
@@ -66,9 +61,6 @@ func (s *Store) ResolveChapter(ref string) (*Chapter, error) {
 	}
 	if ch := s.byID[id]; ch != nil {
 		return ch, nil
-	}
-	if it, ok := s.items[id]; ok {
-		return nil, fmt.Errorf("%s is an item in chapter %q; pass the chapter ID %q", id, it.Chapter.ID, it.Chapter.ID)
 	}
 	chID, _, _ := strings.Cut(id, "#")
 	return nil, fmt.Errorf("%s is a section; pass the chapter ID %q", id, chID)
@@ -100,25 +92,10 @@ func (s *Store) findChapter(q string) *Chapter {
 	return nil
 }
 
-func (s *Store) findItem(q string) (string, bool) {
-	// Purpose: match an item ID in any letter case.
-	if _, ok := s.items[q]; ok {
-		return q, true
-	}
-	up := strings.ToUpper(strings.TrimSpace(q))
-	if _, ok := s.items[up]; ok {
-		return up, true
-	}
-	return "", false
-}
-
 func (s *Store) suggest(q string) []string {
-	// Purpose: list the IDs that are closest to an unknown ref.
+	// Purpose: list the chapter IDs closest to an unknown ref.
 	var all []string
 	for id := range s.byID {
-		all = append(all, id)
-	}
-	for id := range s.items {
 		all = append(all, id)
 	}
 	return closest(q, all, 5)

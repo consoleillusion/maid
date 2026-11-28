@@ -23,8 +23,11 @@ links: []
 
 # Calc
 
-### REQ-CA-001 Add
+### Add
 When a caller adds two integers, the calc package shall return their sum.
+
+### Rounding
+The calc package shall not round the result.
 `
 
 const criteria = `Scenario: add
@@ -89,7 +92,7 @@ func plan(t *testing.T, s *Service) Planned {
 	// Purpose: create the standard one-item plan.
 	t.Helper()
 	p, err := s.CreatePlan(context.Background(), Plan{Items: []PlanItem{{
-		Key: "add", Title: "Add two integers", Implements: []string{"REQ-CA-001"}, Criteria: criteria,
+		Key: "add", Title: "Add two integers", Implements: []string{"calc#add"}, Criteria: criteria,
 		AcceptanceTests: []tasks.TestRef{{File: "calc/add_test.go", Names: []string{"TestAdd"}}},
 		Owns:            []string{"calc/calc.go"},
 	}}})
@@ -99,9 +102,8 @@ func plan(t *testing.T, s *Service) Planned {
 	return p
 }
 
-const addTest = "package calc\n\nimport \"testing\"\n\n// REQ-CA-001 scenario: add\nfunc TestAdd(t *testing.T) {\n\tif Add(2, 3) != 5 {\n\t\tt.Fatal(\"want 5\")\n\t}\n}\n"
+const addTest = "package calc\n\nimport \"testing\"\n\n// design section: calc#add\nfunc TestAdd(t *testing.T) {\n\tif Add(2, 3) != 5 {\n\t\tt.Fatal(\"want 5\")\n\t}\n}\n"
 
-// REQ-WI-002 REQ-WI-017 REQ-WI-018 REQ-WI-019 REQ-WI-020 REQ-ACC-007 REQ-ACC-011
 func TestFullLoop(t *testing.T) {
 	// Purpose: tests item, then the code item by a different agent, both through the merge queue.
 	s, root := project(t)
@@ -111,7 +113,7 @@ func TestFullLoop(t *testing.T) {
 		t.Fatal("code item claimable before its tests exist")
 	}
 	// The tests author writes a real acceptance test that fails to compile on
-	// main; maid must reject it (REQ-WI-020) ...
+	// main; maid must reject it ...
 	pk, err := s.Claim(ctx, "tester", p.Tests["add"])
 	if err != nil {
 		t.Fatal(err)
@@ -187,8 +189,6 @@ func acceptedTests(t *testing.T) (*Service, string, Planned) {
 	}
 	return s, root, p
 }
-
-// REQ-ACC-008 REQ-WI-008 REQ-ACC-010 REQ-WI-009
 func TestRejections(t *testing.T) {
 	// Purpose: outside paths, changed acceptance tests and regressions are rejected; budget escalates.
 	s, _, p := acceptedTests(t)
@@ -231,8 +231,6 @@ func TestRejections(t *testing.T) {
 		t.Fatal("escalated item still claimable")
 	}
 }
-
-// REQ-ACC-008
 func TestRegressionRejected(t *testing.T) {
 	// Purpose: a submission that breaks a passing test is rejected and main is unchanged.
 	s, root, p := acceptedTests(t)
@@ -258,8 +256,6 @@ func TestRegressionRejected(t *testing.T) {
 		t.Fatal("main changed after a rejection")
 	}
 }
-
-// REQ-WI-004
 func TestClaimConflict(t *testing.T) {
 	// Purpose: a second agent cannot claim an item that is already claimed.
 	s, _ := project(t)
@@ -272,17 +268,15 @@ func TestClaimConflict(t *testing.T) {
 		t.Fatalf("err = %v, want ErrNoReady", err)
 	}
 }
-
-// REQ-WI-001
 func TestPlanValidation(t *testing.T) {
-	// Purpose: reject plans with unknown requirements or tests inside owns.
+	// Purpose: reject plans with unknown design sections or tests inside owns.
 	s, _ := project(t)
 	_, err := s.CreatePlan(context.Background(), Plan{Items: []PlanItem{{
-		Key: "x", Title: "x", Implements: []string{"REQ-ZZ-001"}, Criteria: criteria,
+		Key: "x", Title: "x", Implements: []string{"calc#nope"}, Criteria: criteria,
 		AcceptanceTests: []tasks.TestRef{{File: "calc/add_test.go", Names: []string{"TestAdd"}}},
 		Owns:            []string{"calc/**"},
 	}}})
-	if err == nil || !strings.Contains(err.Error(), "unknown requirement") || !strings.Contains(err.Error(), "inside owns") {
+	if err == nil || !strings.Contains(err.Error(), "unknown design section") || !strings.Contains(err.Error(), "inside owns") {
 		t.Fatalf("err = %v", err)
 	}
 }
@@ -299,8 +293,6 @@ func (s *Service) WorkItemOwnsForTest(ctx context.Context, id string, owns []str
 		panic(err)
 	}
 }
-
-// REQ-WI-022
 func TestTestsItemMayAddStub(t *testing.T) {
 	// Purpose: tests for code that does not exist yet compile through a stub and are accepted.
 	s, root := project(t)

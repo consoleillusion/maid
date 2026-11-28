@@ -41,7 +41,7 @@ func countFindings(fs []Finding, rule string) int {
 	return n
 }
 
-// REQ-DOC-017 REQ-DOC-019 scenario: new chapters go into the index
+// scenario: new chapters go into the index
 func TestCreateChapterAddsToIndex(t *testing.T) {
 	// Purpose: created chapters are listed under their part in creation order.
 	root := t.TempDir()
@@ -64,12 +64,12 @@ func TestCreateChapterAddsToIndex(t *testing.T) {
 	if p := s.Chapter("vision").Part; p != "foundation" {
 		t.Errorf("part = %q, want foundation", p)
 	}
-	if n := countFindings(s.Check(), "REQ-DOC-016"); n != 0 {
-		t.Errorf("%d REQ-DOC-016 errors after creating chapters", n)
+	if n := countFindings(s.Check(), "index"); n != 0 {
+		t.Errorf("%d index errors after creating chapters", n)
 	}
 }
 
-// REQ-DOC-001 scenario: numbered path
+// scenario: numbered path
 func TestCreateChapterRejectsNumberedPath(t *testing.T) {
 	// Purpose: part and chapter names carry no position numbers.
 	root := t.TempDir()
@@ -80,7 +80,7 @@ func TestCreateChapterRejectsNumberedPath(t *testing.T) {
 	}
 }
 
-// REQ-DOC-016 scenario: incomplete index
+// index scenario: incomplete index
 func TestCheckIndexComplete(t *testing.T) {
 	// Purpose: unlisted chapters and missing entries are errors.
 	root := writeDesign(t, map[string]string{
@@ -88,12 +88,12 @@ func TestCheckIndexComplete(t *testing.T) {
 		"foundation/vision.md": chapterText("vision", "foundation"),
 	})
 	s, _ := Load(root)
-	if n := countFindings(s.Check(), "REQ-DOC-016"); n != 2 {
-		t.Errorf("%d REQ-DOC-016 errors, want 2: %+v", n, s.Check())
+	if n := countFindings(s.Check(), "index"); n != 2 {
+		t.Errorf("%d index errors, want 2: %+v", n, s.Check())
 	}
 }
 
-// REQ-DOC-001 scenario: part comes from the folder
+// scenario: part comes from the folder
 func TestPartComesFromFolder(t *testing.T) {
 	// Purpose: the part is the folder that contains the chapter file.
 	root := writeDesign(t, map[string]string{
@@ -106,7 +106,7 @@ func TestPartComesFromFolder(t *testing.T) {
 	}
 }
 
-// REQ-DOC-014 scenario: order
+// scenario: order
 func TestOrder(t *testing.T) {
 	// Purpose: the reading order is the order of index.md.
 	root := writeDesign(t, map[string]string{
@@ -121,7 +121,7 @@ func TestOrder(t *testing.T) {
 	}
 }
 
-// REQ-DOC-018 scenario: PDF template
+// scenario: PDF template
 func TestIndexTypTemplate(t *testing.T) {
 	// Purpose: index.typ builds the PDF from index.md with cmarker.
 	root := t.TempDir()

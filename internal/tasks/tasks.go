@@ -1,5 +1,5 @@
 // Package tasks defines the task port: work items, dependencies, claims and
-// leases. See design/04-architecture/02-task-store.md.
+// leases. See design/implementation/architecture.md.
 package tasks
 
 import (
@@ -15,14 +15,14 @@ const (
 	StatusClosed     = "closed"
 )
 
-// Kinds of work item (REQ-WI-017).
+// Kinds of work item.
 const (
 	KindCode  = "code"
 	KindTests = "tests"
 	KindDocs  = "docs"
 )
 
-// ErrConflict means another agent holds the claim (REQ-WI-004).
+// ErrConflict means another agent holds the claim.
 var ErrConflict = errors.New("work item is claimed by another agent")
 
 // ErrNotFound means the work item does not exist.
@@ -37,7 +37,7 @@ type TestRef struct {
 	Names []string `json:"names,omitempty"`
 }
 
-// Budget limits a work item (REQ-WI-001, REQ-WI-009).
+// Budget limits a work item.
 type Budget struct {
 	Attempts        int `json:"attempts,omitempty"`
 	MaxChangedLines int `json:"max_changed_lines,omitempty"`

@@ -22,12 +22,9 @@ setup() {
   git init -q -b main
   git config user.email e2e@example.invalid
   git config user.name e2e
-  mkdir -p design/01-a calc
-  cat > design/01-a/calc.md <<'EOF'
+  mkdir -p design/specification calc
+  cat > design/specification/calc.md <<'EOF'
 ---
-id: calc
-title: Calc
-part: 01-a
 status: accepted
 style: ears
 owner: e2e
@@ -37,14 +34,11 @@ links: []
 
 # Calc
 
-### REQ-CA-001 Add
+### Add
 When a caller adds two integers, the calc package shall return their sum.
 EOF
-  cat > design/01-a/vision.md <<'EOF'
+  cat > design/specification/vision.md <<'EOF'
 ---
-id: vision
-title: Vision
-part: 01-a
 status: accepted
 style: ste
 owner: e2e
@@ -54,10 +48,10 @@ links: []
 
 # Vision
 
-### G-001 Add numbers
+### Add numbers
 The calc package adds numbers.
 
-### NG-001 No floats
+### No floats
 The calc package does not handle floating point numbers.
 EOF
   printf 'module example.com/p\n\ngo 1.21\n' > go.mod
@@ -69,7 +63,7 @@ EOF
 write_plan() {
   # Purpose: write a one-item plan.
   cat > /tmp/maid-e2e-plan.json <<'EOF'
-{"items":[{"key":"add","title":"Add two integers","implements":["REQ-CA-001"],
+{"items":[{"key":"add","title":"Add two integers","implements":["calc#add"],
   "criteria":"Scenario: add\n  Given 2 and 3\n  When the caller adds them\n  Then the result is 5",
   "acceptance_tests":[{"file":"calc/add_test.go","names":["TestAdd"]}],
   "owns":["calc/calc.go"]}]}
@@ -87,7 +81,7 @@ main() {
 
   wt=$("$MAID" claim -agent tester | field worktree)
   [ -d "$wt" ] || fail "no worktree for tests item"
-  printf 'package calc\n\nimport "testing"\n\n// REQ-CA-001 scenario: add\nfunc TestAdd(t *testing.T) {\n\tif Add(2, 3) != 5 {\n\t\tt.Fatal("want 5")\n\t}\n}\n' > "$wt/calc/add_test.go"
+  printf 'package calc\n\nimport "testing"\n\n// design section: calc#add\nfunc TestAdd(t *testing.T) {\n\tif Add(2, 3) != 5 {\n\t\tt.Fatal("want 5")\n\t}\n}\n' > "$wt/calc/add_test.go"
   git -C "$wt" add -A && git -C "$wt" commit -q -m tests
   "$MAID" submit -agent tester "$tests_id" | field accepted | grep -qx True || fail "tests item rejected"
 

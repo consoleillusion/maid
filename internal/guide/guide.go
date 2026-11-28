@@ -1,5 +1,5 @@
 // Package guide derives the current phase and builds the maid_next response.
-// See design/02-method/01-phases.md.
+// See design/method/phases.md.
 package guide
 
 import (
@@ -14,7 +14,7 @@ import (
 	"github.com/consoleillusion/maid/internal/work"
 )
 
-// Next is the maid_next response (design/05-interfaces/01-mcp.md).
+// Next is the maid_next response (design/implementation/interfaces.md).
 type Next struct {
 	Phase    string        `json:"phase"`
 	Step     string        `json:"step"`
@@ -29,7 +29,7 @@ type Next struct {
 	Tasks    []TaskSummary `json:"tasks"`           // work items the agent may claim
 }
 
-// TaskSummary is one ready work item in maid_next (REQ-PH-024).
+// TaskSummary is one ready work item in maid_next.
 type TaskSummary struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
@@ -44,14 +44,14 @@ type Call struct {
 }
 
 // Roles are ignored: every agent gets the step that follows from the
-// project state (REQ-PH-001). The constants remain for callers.
+// project state. The constants remain for callers.
 const (
 	RoleDesign = "design"
 	RoleBuild  = "build"
 )
 
 // Compute derives the next step for agent from the design, the task
-// store and local state (REQ-PH-001, REQ-PH-003).
+// store and local state.
 func Compute(ctx context.Context, s *work.Service, _, agent string) (Next, error) {
 	// Purpose: choose the single next action for an agent.
 	ds, err := s.Design()
@@ -65,16 +65,13 @@ func Compute(ctx context.Context, s *work.Service, _, agent string) (Next, error
 		// problem instead of failing.
 		warnings = append(warnings, "task store unavailable: "+taskErr.Error())
 	}
-	questions := openQuestions(ds)
 	n := designNext(ds, items)
-	n.AskUser = append(n.AskUser, questions...)
 	n.Warnings = warnings
 	if taskErr != nil && n.Phase >= "5" {
 		n.Step = "Ask the user to fix the task store, then call maid_next again. " + n.Step
 	}
 	if n.Phase >= "6" {
 		if b := buildNext(ctx, s, agent, items); b.Step != "" {
-			b.AskUser = append(b.AskUser, questions...)
 			return b, nil
 		}
 	}
@@ -90,16 +87,16 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 			Tools: []string{"design_create", "design_check"}, DoneWhen: []string{"design/ contains a vision chapter with at least one goal and one non-goal"},
 			AskUser: []string{"What is this project for, and what is out of scope?"},
 			Calls: []Call{{Tool: "design_create", When: "after the user answers; replace the goal and non-goal text with theirs",
-				Arguments: map[string]any{"path": "foundation/vision.md", "id": "vision", "title": "Vision", "style": "ste",
+				Arguments: map[string]any{"path": "foundation/vision.md", "style": "ste",
 					"summary": "Why the project exists and what it must and must not do.",
-					"body":    "# Vision\n\n## Goals\n\n### G-001 <goal>\n<one or two sentences>\n\n## Non-goals\n\n### NG-001 <non-goal>\n<one or two sentences>\n"}}},
+					"body":    "# Vision\n\n## Goals\n\n### <goal name>\n<one or two sentences>\n\n## Non-goals\n\n### <non-goal name>\n<one or two sentences>\n"}}},
 		}
 	}
 	if errs := errorFindings(ds); len(errs) > 0 {
 		f := errs[0]
 		return Next{
 			Phase: phaseOf(ds, items), Step: fmt.Sprintf("Fix %d design check errors. The first is %s line %d: %s", len(errs), f.Path, f.Line, f.Message),
-			Why: "Each gate requires a design that passes its checks (REQ-PH-006).", Read: refsOf(errs),
+			Why: "Each gate requires a design that passes its checks.", Read: refsOf(errs),
 			Tools: []string{"design_check", "design_read", "design_write"}, DoneWhen: []string{"design_check reports no errors"},
 			Calls: []Call{{Tool: "design_check", Arguments: map[string]any{}, When: "to see every finding"},
 				{Tool: "design_read", Arguments: map[string]any{"refs": []string{f.Path}}, When: "to get the text and version before design_write"}},
@@ -109,7 +106,7 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 	if pending := Pending(ds); (!visionOK || len(pending) > 0) && len(items) == 0 {
 		phase, why := "2-4-design", "Work items can only implement accepted requirements."
 		if !visionOK {
-			phase, why = "1-intent", "The intent gate requires an accepted vision (REQ-PH-011)."
+			phase, why = "1-intent", "The intent gate requires an accepted vision."
 		}
 		if len(pending) == 0 {
 			pending = []string{"vision"}
@@ -132,7 +129,7 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 			Tools: []string{"work_plan"}, DoneWhen: []string{"each accepted requirement is linked to a work item"},
 			Calls: []Call{{Tool: "work_plan", When: "with one item for each small piece of work",
 				Arguments: map[string]any{"plan": map[string]any{"items": []map[string]any{{
-					"key": "short-key", "title": "What the item delivers", "implements": []string{"REQ-XX-001"},
+					"key": "short-key", "title": "What the item delivers", "implements": []string{"acceptance#atomic-claim"},
 					"criteria":         "Scenario: <behaviour>\n  Given <state>\n  When <action>\n  Then <result>",
 					"acceptance_tests": []map[string]any{{"file": "pkg/thing_test.go", "names": []string{"TestThing"}}},
 					"owns":             []string{"pkg/thing.go"}}}}}}},
@@ -141,7 +138,7 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 	if esc := escalated(items); len(esc) > 0 {
 		return Next{
 			Phase: "6-build", Step: "Resolve escalated work items: split them, clarify the requirements, or correct the acceptance tests.",
-			Why: "These items used their attempt budget (REQ-WI-009, REQ-WI-010).", Blocked: esc,
+			Why: "These items used their attempt budget.", Blocked: esc,
 			Tools: []string{"maid_status", "work_result", "work_plan", "design_read"},
 			Calls: []Call{{Tool: "work_result", Arguments: map[string]any{"id": esc[0]}, When: "to see why the attempts were rejected"}},
 		}
@@ -198,7 +195,7 @@ func phaseOf(ds *design.Store, items []tasks.WorkItem) string {
 }
 
 func errorFindings(ds *design.Store) []design.Finding {
-	// Purpose: keep only findings that fail a gate (REQ-STY-004).
+	// Purpose: keep only findings that fail a gate.
 	var out []design.Finding
 	for _, f := range ds.Check() {
 		if f.Severity == style.Error {
@@ -237,7 +234,7 @@ func Pending(ds *design.Store) []string {
 }
 
 func notAccepted(ds *design.Store) []string {
-	// Purpose: list part chapters that are not accepted yet, in reading order (REQ-DOC-014).
+	// Purpose: list part chapters that are not accepted yet, in reading order.
 	open := func(ch *design.Chapter) bool {
 		st := ch.FM.String("status")
 		return design.PartOf(ch.Path) != "" && st != "accepted" && st != "superseded"
@@ -261,25 +258,6 @@ func notAccepted(ds *design.Store) []string {
 		}
 	}
 	sort.Strings(out)
-	return out
-}
-
-func openQuestions(ds *design.Store) []string {
-	// Purpose: read open questions from the questions table.
-	ch := ds.Chapter("questions")
-	if ch == nil {
-		return nil
-	}
-	var out []string
-	for _, l := range strings.Split(ch.Body, "\n") {
-		cells := strings.Split(strings.Trim(strings.TrimSpace(l), "|"), "|")
-		if len(cells) < 3 || !strings.HasPrefix(strings.TrimSpace(cells[0]), "Q-") {
-			continue
-		}
-		if strings.TrimSpace(cells[len(cells)-1]) == "open" {
-			out = append(out, strings.TrimSpace(cells[0])+": "+strings.TrimSpace(cells[1]))
-		}
-	}
 	return out
 }
 

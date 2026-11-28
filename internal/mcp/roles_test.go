@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// REQ-PH-001 scenario: no role in the schema
+// scenario: no role in the schema
 func TestNextHasNoRole(t *testing.T) {
 	// Purpose: maid_next does not ask the agent for a role.
 	tl := &Tools{}

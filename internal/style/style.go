@@ -1,5 +1,5 @@
 // Package style holds the registered writing styles and their validators.
-// See design/03-specification/02-style-registry.md.
+// See design/specification/styles.md.
 package style
 
 import (
@@ -31,11 +31,11 @@ type Style struct {
 
 // Registry lists the registered styles by ID.
 var Registry = map[string]Style{
-	"ste":     {ID: "ste", Card: "styles/ste.md", Enforcement: Error, Validate: ValidateSTE},
-	"ears":    {ID: "ears", Card: "styles/ears.md", Enforcement: Error, Validate: ValidateEARS},
-	"sbvr-se": {ID: "sbvr-se", Card: "styles/sbvr-se.md", Enforcement: Error, Validate: ValidateSBVR},
-	"gherkin": {ID: "gherkin", Card: "styles/gherkin.md", Enforcement: Error, Validate: ValidateGherkin},
-	"ace":     {ID: "ace", Card: "styles/ace.md", Enforcement: Advice, Validate: nil},
+	"ste":     {ID: "ste", Card: "specification/styles.md#simplified-technical-english", Enforcement: Error, Validate: ValidateSTE},
+	"ears":    {ID: "ears", Card: "specification/styles.md#ears-requirements", Enforcement: Error, Validate: ValidateEARS},
+	"sbvr-se": {ID: "sbvr-se", Card: "specification/styles.md#sbvr-structured-english", Enforcement: Error, Validate: ValidateSBVR},
+	"gherkin": {ID: "gherkin", Card: "specification/styles.md#gherkin", Enforcement: Error, Validate: ValidateGherkin},
+	"ace":     {ID: "ace", Card: "specification/styles.md#attempto-controlled-english", Enforcement: Advice, Validate: nil},
 }
 
 // Block is a fenced code block found in a body.

@@ -36,13 +36,13 @@ func (r Repo) Head(ctx context.Context, ref string) (string, error) {
 
 // AddWorktree creates a worktree at path on a new branch from base.
 func (r Repo) AddWorktree(ctx context.Context, path, branch, base string) error {
-	// Purpose: give an attempt its own isolated checkout (REQ-WI-007).
+	// Purpose: give an attempt its own isolated checkout.
 	_, err := Run(ctx, r.Dir, "worktree", "add", "-q", "-b", branch, path, base)
 	return err
 }
 
 // EnsureBranch creates branch at the current HEAD if it does not exist
-// (REQ-ACC-022).
+// .
 func (r Repo) EnsureBranch(ctx context.Context, branch string) error {
 	// Purpose: make sure the maid branch exists before maid uses it.
 	if _, err := r.Head(ctx, "refs/heads/"+branch); err == nil {
@@ -70,7 +70,7 @@ func (r Repo) RemoveWorktree(ctx context.Context, path string) error {
 // Rebase rebases the detached HEAD in worktree onto onto. On conflict it
 // aborts and returns the conflicting paths.
 func Rebase(ctx context.Context, worktree, onto string) (conflicts []string, err error) {
-	// Purpose: replay an attempt on the latest main branch (REQ-ACC-004, REQ-ACC-005).
+	// Purpose: replay an attempt on the latest main branch.
 	if _, err := Run(ctx, worktree, "rebase", "-q", onto); err != nil {
 		files, _ := Run(ctx, worktree, "diff", "--name-only", "--diff-filter=U")
 		_, _ = Run(ctx, worktree, "rebase", "--abort")
@@ -122,7 +122,7 @@ func (r Repo) Diff(ctx context.Context, base, head string) ([]Change, error) {
 
 // FastForward moves branch to commit if commit descends from it.
 func (r Repo) FastForward(ctx context.Context, branch, commit string) error {
-	// Purpose: merge an accepted attempt without a merge commit (REQ-ACC-007).
+	// Purpose: merge an accepted attempt without a merge commit.
 	old, err := r.Head(ctx, branch)
 	if err != nil {
 		return err

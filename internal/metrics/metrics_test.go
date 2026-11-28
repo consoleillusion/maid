@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// REQ-SC-007 scenario: dependencies added
+// scenario: dependencies added
 func TestGoDeps(t *testing.T) {
 	// Purpose: direct requirements are runtime, indirect ones are dev.
 	oldMod := []byte("module x\n\ngo 1.24\n\nrequire example.com/a v1.0.0\n")
@@ -19,7 +19,7 @@ func TestGoDeps(t *testing.T) {
 	}
 }
 
-// REQ-SC-007 scenario: require block and single-line require
+// scenario: require block and single-line require
 func TestGoDepsRequireBlock(t *testing.T) {
 	// Purpose: both require forms are counted.
 	newMod := []byte("module x\n\ngo 1.24\n\nrequire example.com/one v1.0.0\n\nrequire (\n\texample.com/two v1.0.0\n\texample.com/three v1.0.0\n)\n")
@@ -32,7 +32,7 @@ func TestGoDepsRequireBlock(t *testing.T) {
 	}
 }
 
-// REQ-SC-007 scenario: complexity of a function
+// scenario: complexity of a function
 func TestGoComplexity(t *testing.T) {
 	// Purpose: one if, one for and one && give complexity 4.
 	src := []byte("package p\n\nfunc F(x int) int {\n\tif x > 0 && x < 10 {\n\t\treturn x\n\t}\n\tfor i := 0; i < x; i++ {\n\t\tx--\n\t}\n\treturn x\n}\n")
@@ -45,7 +45,7 @@ func TestGoComplexity(t *testing.T) {
 	}
 }
 
-// REQ-SC-007 scenario: complexity of methods
+// scenario: complexity of methods
 func TestGoComplexityMethod(t *testing.T) {
 	// Purpose: methods are named Type.Method.
 	src := []byte("package p\n\ntype T struct{}\n\nfunc (T) M() {}\n")
@@ -58,7 +58,7 @@ func TestGoComplexityMethod(t *testing.T) {
 	}
 }
 
-// REQ-SC-007 scenario: complexity added
+// scenario: complexity added
 func TestComplexityAdded(t *testing.T) {
 	// Purpose: the result is new minus old over functions in either map.
 	oldFuncs := map[string]int{"A": 2, "B": 3}

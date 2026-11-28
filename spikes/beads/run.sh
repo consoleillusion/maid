@@ -27,14 +27,14 @@ setup_repo() {
 
 test_graph() {
   # Purpose: create a dependency graph with maid metadata and check ready work.
-  A=$(bd create "store schema" --spec-id REQ-WI-001 --acceptance "TestStore passes" \
+  A=$(bd create "store schema" --spec-id calc-add --acceptance "TestStore passes" \
         --metadata '{"maid":{"owns":["internal/store/**"]}}' --silent)
   B=$(bd create "claim tool" --deps "$A" --silent)
   C=$(bd create "ready tool" --deps "$A" --silent)
   ready=$(bd ready --json | python3 -c 'import json,sys; print(" ".join(i["id"] for i in json.load(sys.stdin)))')
   [[ " $ready " == *" $A "* ]] || fail "root item not ready"
   [[ " $ready " != *" $B "* ]] || fail "blocked item listed as ready"
-  [ "$(bd show "$A" --json | field spec_id)" = "REQ-WI-001" ] || fail "spec_id did not round-trip"
+  [ "$(bd show "$A" --json | field spec_id)" = "calc-add" ] || fail "spec_id did not round-trip"
   echo "PASS graph, ready, metadata"
 }
 

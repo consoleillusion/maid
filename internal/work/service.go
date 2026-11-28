@@ -1,5 +1,5 @@
 // Package work implements planning, claims, context packets and the merge
-// queue. See design/02-method/02-work-items.md and 03-acceptance.md.
+// queue. See design/method/work-items.md and method/acceptance.md.
 package work
 
 import (
@@ -69,7 +69,7 @@ type Planned struct {
 }
 
 // CreatePlan validates a plan and creates a tests item and a code item for
-// each entry (REQ-WI-017, REQ-WI-018).
+// each entry.
 func (s *Service) CreatePlan(ctx context.Context, p Plan) (Planned, error) {
 	// Purpose: turn a plan into work items in dependency order.
 	order, err := s.validatePlan(p)
@@ -107,7 +107,7 @@ func (s *Service) CreatePlan(ctx context.Context, p Plan) (Planned, error) {
 				Title: "Tests: " + it.Title, DependsOn: deps,
 				Maid: tasks.Meta{Key: it.Key + ".tests", Kind: tasks.KindTests, Implements: it.Implements,
 					Criteria: it.Criteria, AcceptanceTests: it.AcceptanceTests,
-					// The test agent may add stubs in the code item's files so the tests compile (REQ-WI-022).
+					// The test agent may add stubs in the code item's files so the tests compile.
 					Owns:  append(append([]string{}, testFiles...), it.Owns...),
 					Reads: append([]string{}, it.Reads...), Budget: budget},
 			})
@@ -139,7 +139,7 @@ func (s *Service) CreatePlan(ctx context.Context, p Plan) (Planned, error) {
 }
 
 func (s *Service) validatePlan(p Plan) ([]PlanItem, error) {
-	// Purpose: check required fields and requirement links, then sort by dependencies.
+	// Purpose: check required fields and design links, then sort by dependencies.
 	if len(p.Items) == 0 {
 		return nil, errors.New("plan has no items")
 	}
@@ -156,15 +156,15 @@ func (s *Service) validatePlan(p Plan) ([]PlanItem, error) {
 		case byKey[it.Key].Key != "":
 			problems = append(problems, "duplicate key "+it.Key)
 		case len(it.Implements) == 0:
-			problems = append(problems, it.Key+": implements no requirement")
+			problems = append(problems, it.Key+": implements no design section")
 		case len(it.Owns) == 0:
 			problems = append(problems, it.Key+": owns no paths")
 		case (it.Kind == "" || it.Kind == tasks.KindCode) && (len(it.AcceptanceTests) == 0 || strings.TrimSpace(it.Criteria) == ""):
 			problems = append(problems, it.Key+": code items need criteria and acceptance_tests")
 		}
 		for _, r := range it.Implements {
-			if _, ok := ds.Item(r); !ok {
-				problems = append(problems, it.Key+": unknown requirement "+r)
+			if !ds.Resolves(r) {
+				problems = append(problems, it.Key+": unknown design section "+r)
 			}
 		}
 		for _, t := range it.AcceptanceTests {
@@ -287,7 +287,7 @@ func (s *Service) claimable(ctx context.Context, agent string) ([]tasks.WorkItem
 
 // blocked returns why agent cannot claim it, or "".
 func (s *Service) blocked(ctx context.Context, it tasks.WorkItem, agent string, active []tasks.WorkItem, main string) string {
-	// Purpose: apply REQ-WI-002, REQ-WI-003, REQ-WI-009 and REQ-WI-019 to one item.
+	// Purpose: apply the claim, escalation and tests-author rules to one item.
 	if it.Maid.Kind == "" {
 		return "not a maid work item"
 	}
@@ -335,7 +335,7 @@ func (s *Service) whyNot(ctx context.Context, agent, id string) string {
 }
 
 func (s *Service) startAttempt(ctx context.Context, it tasks.WorkItem, agent string) (state.Attempt, error) {
-	// Purpose: create the attempt record and a detached worktree (REQ-WI-007).
+	// Purpose: create the attempt record and a detached worktree.
 	if att, ok, err := s.State.Current(it.ID, agent); err != nil {
 		return att, err
 	} else if ok {
@@ -365,7 +365,7 @@ func (s *Service) startAttempt(ctx context.Context, it tasks.WorkItem, agent str
 
 // Heartbeat renews the claim of agent on id.
 func (s *Service) Heartbeat(ctx context.Context, agent, id string) error {
-	// Purpose: keep a claim alive (REQ-WI-005).
+	// Purpose: keep a claim alive.
 	return s.Tasks.Heartbeat(ctx, id, agent)
 }
 

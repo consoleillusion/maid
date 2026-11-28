@@ -1,5 +1,5 @@
 // Package metrics turns project files into score inputs.
-// See design/02-method/04-scoring.md.
+// See design/method/scoring.md.
 package metrics
 
 // GoDeps compares two go.mod files. Direct requirements count as runtime,

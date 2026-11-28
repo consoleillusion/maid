@@ -5,10 +5,9 @@ import (
 	"testing"
 )
 
-// REQ-DOC-002
 func TestSplitAndParse(t *testing.T) {
 	// Purpose: parse every value form that design files use.
-	src := "---\nid: vision\ntitle: \"Style card: STE\"\nstatus: draft # comment\nsummary: >\n  one\n  two\nlinks: [a, \"b c\", ADR-0001]\nrevisit-when: []\nprofile: null\nitems:\n  - x\n  - 'y'\n---\n# Body\n"
+	src := "---\nid: vision\ntitle: \"Style card: STE\"\nstatus: draft # comment\nsummary: >\n  one\n  two\nlinks: [a, \"b c\", decision]\nrevisit-when: []\nprofile: null\nitems:\n  - x\n  - 'y'\n---\n# Body\n"
 	fm, body, line, err := Split(src)
 	if err != nil {
 		t.Fatal(err)
@@ -22,7 +21,7 @@ func TestSplitAndParse(t *testing.T) {
 	}
 	want := Map{
 		"id": "vision", "title": "Style card: STE", "status": "draft",
-		"summary": "one two", "links": []string{"a", "b c", "ADR-0001"},
+		"summary": "one two", "links": []string{"a", "b c", "decision"},
 		"revisit-when": []string{}, "profile": nil, "items": []string{"x", "y"},
 	}
 	if !reflect.DeepEqual(m, want) {

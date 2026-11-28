@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// REQ-WI-031 scenario: work_edit is listed
+// scenario: work_edit is listed
 func TestWorkEditListed(t *testing.T) {
 	// Purpose: agents can find work_edit and the edits property of work_submit.
 	found := map[string]map[string]any{}

@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-// indexTyp builds the design as one PDF from index.md (REQ-DOC-018).
+// indexTyp builds the design as one PDF from index.md.
 //
 //go:embed index.typ
 var indexTyp string
 
-// IndexFile is the front page and reading order of the design (REQ-DOC-014).
+// IndexFile is the front page and reading order of the design.
 const IndexFile = "index.md"
 
 const indexStart = "# Design\n"
@@ -47,7 +47,7 @@ func indexItem(l string) (title, p string, ok bool) {
 }
 
 // Order returns the chapters in the order that design/index.md lists them
-// (REQ-DOC-014).
+// .
 func (s *Store) Order() []IndexEntry {
 	// Purpose: read the reading order of the design.
 	b, err := os.ReadFile(filepath.Join(s.Root, Dir, IndexFile))
@@ -100,11 +100,11 @@ func bodyOf(text string) string {
 }
 
 // PartOf returns the part folder of a chapter path such as
-// design/foundation/vision.md, or "" when the file is not in a part folder.
+// design/foundation/vision.md, or "" when the file is at the root of design/.
 func PartOf(p string) string {
-	// Purpose: tell part chapters from root files, styles and decisions.
+	// Purpose: tell part chapters from root files such as index.md.
 	dir := path.Dir(strings.TrimPrefix(p, Dir+"/"))
-	if dir == "." || strings.Contains(dir, "/") || dir == "styles" || dir == "decisions" {
+	if dir == "." || strings.Contains(dir, "/") {
 		return ""
 	}
 	return dir
@@ -117,7 +117,7 @@ func partTitle(folder string) string {
 }
 
 // addToIndex lists a new chapter in index.md and creates index.md and
-// index.typ when they are missing (REQ-DOC-017, REQ-DOC-019). It returns the
+// index.typ when they are missing. It returns the
 // changed paths, relative to the project root.
 func (s *Store) addToIndex(rel string) ([]string, error) {
 	// Purpose: keep the reading order complete when a chapter is created.
@@ -147,7 +147,7 @@ func exists(p string) bool {
 }
 
 // insertEntry puts rel after the last path in the same folder, or at the
-// end of the list (REQ-DOC-017).
+// end of the list.
 func insertEntry(text, folder, rel string) string {
 	// Purpose: place a new chapter in the reading order.
 	lines := strings.Split(strings.TrimRight(text, "\n"), "\n")

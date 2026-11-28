@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// Beads is the task port adapter for the bd CLI (ADR-0005).
+// Beads is the task port adapter for the bd CLI.
 type Beads struct {
 	Dir string // project root
 	Bin string // path to bd; "bd" when empty
@@ -19,7 +19,7 @@ type Beads struct {
 
 // Init initialises Beads in the project without touching AGENTS.md. Stealth
 // mode keeps the database local: no Dolt remote, and .beads/ is excluded
-// from git through .git/info/exclude (C-004).
+// from git through .git/info/exclude.
 func (b *Beads) Init(ctx context.Context) error {
 	// Purpose: run bd init with the flags maid requires.
 	_, err := b.run(ctx, "", "init", "--non-interactive", "--skip-agents", "--skip-hooks", "--stealth", "--quiet")

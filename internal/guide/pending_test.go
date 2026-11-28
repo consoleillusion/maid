@@ -16,7 +16,7 @@ func chapter(id, part string) string {
 	return "---\nstatus: draft\nstyle: ste\nowner: paul\nsummary: S.\nlinks: []\n---\n\n# T\n\nText.\n"
 }
 
-// REQ-DOC-014 scenario: pending in index order
+// scenario: pending in index order
 func TestPendingFollowsIndex(t *testing.T) {
 	// Purpose: chapters wait for approval in reading order, and only listed chapters count.
 	root := t.TempDir()

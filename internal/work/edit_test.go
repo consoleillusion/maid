@@ -31,7 +31,7 @@ func readFile(t *testing.T, dir, rel string) string {
 	return string(b)
 }
 
-// REQ-WI-031 scenario: replace text
+// scenario: replace text
 func TestEditReplacesText(t *testing.T) {
 	// Purpose: an exact replacement changes only the matched text.
 	s, id, wt := claimTests(t)
@@ -45,7 +45,7 @@ func TestEditReplacesText(t *testing.T) {
 	}
 }
 
-// REQ-WI-032 scenario: ambiguous match
+// scenario: ambiguous match
 func TestEditRefusesAmbiguousMatch(t *testing.T) {
 	// Purpose: an old text that matches twice refuses every edit in the call.
 	s, id, wt := claimTests(t)
@@ -63,7 +63,7 @@ func TestEditRefusesAmbiguousMatch(t *testing.T) {
 	}
 }
 
-// REQ-WI-033 scenario: patch with wrong line counts
+// scenario: patch with wrong line counts
 func TestPatchWithWrongCounts(t *testing.T) {
 	// Purpose: a model-written diff with wrong counts and spaces for tabs still applies.
 	s, id, wt := claimTests(t)
@@ -80,7 +80,7 @@ func TestPatchWithWrongCounts(t *testing.T) {
 	}
 }
 
-// REQ-WI-031 scenario: edits in a submission
+// scenario: edits in a submission
 func TestSubmitEdits(t *testing.T) {
 	// Purpose: work_submit can carry edits instead of whole files.
 	s, id, wt := claimTests(t)

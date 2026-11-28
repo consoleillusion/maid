@@ -41,7 +41,7 @@ A chapter covers one area of the project. A chapter can be 1 to 20 pages. An age
 The design store shall contain each chapter as exactly one Markdown file at `design/<part>/<chapter>.md`, where the part and chapter names are lowercase, hyphenated and do not start with a digit.
 
 ### REQ-DOC-002 Frontmatter
-Each chapter shall start with YAML frontmatter that contains the fields `id`, `title`, `part`, `status`, `style`, `owner`, `summary` and `links`.
+Each chapter shall start with YAML frontmatter that contains the fields `id`, `title`, `status`, `style`, `owner`, `summary` and `links`.
 
 ### REQ-DOC-003 Summary length
 The `summary` field shall contain at most 60 words.

@@ -7,7 +7,7 @@ summary: >
 links: [phases, work-items, roadmap, vision]
 ---
 
-# ADR-0008 Everything is a task, and checks guide instead of block
+# Everything is a task, and checks guide instead of block
 
 ## Context and problem statement
 

@@ -14,7 +14,7 @@ summary: >
 links: []
 ---
 
-# ADR-NNNN <short title>
+# <short title>
 
 Based on MADR (Markdown Architectural Decision Records).
 

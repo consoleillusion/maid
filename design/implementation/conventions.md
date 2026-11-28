@@ -6,7 +6,7 @@ summary: >
   How maid's own code is written, tested and committed. These are the rules for
   agents that build maid. They are not the defaults that maid applies to other
   projects; those are in profiles.
-links: [ADR-0001, ADR-0007, profiles]
+links: [go, stdlib-only, profiles]
 ---
 
 # Engineering conventions for maid
@@ -20,9 +20,9 @@ links: [ADR-0001, ADR-0007, profiles]
 | Formatter | `gofmt` |
 | Linter | `golangci-lint` with the configuration in the repository |
 | Tests | `go test ./...` |
-| Dependencies | The Go standard library only, until a decision adds a module (ADR-0007). |
+| Dependencies | The Go standard library only, until a decision adds a module. |
 | Git | Call the `git` CLI. Do not use a Go git library. |
-| MCP | `internal/mcp`, stdio and tools only (ADR-0007). The official Go SDK replaces it when HTTP or elicitation is needed. |
+| MCP | `internal/mcp`, stdio and tools only. The official Go SDK replaces it when HTTP or elicitation is needed. |
 
 ## Code
 
@@ -31,7 +31,7 @@ links: [ADR-0001, ADR-0007, profiles]
 3. Return errors. Do not panic, except for programming errors at start-up.
 4. Put each component from the architecture in its own package under `internal/`.
 5. Access the task store, git and external tools only through their ports.
-6. Link each test to a requirement with a comment `// REQ-<AREA>-NNN` above the test.
+6. Name the design section that each test covers in a comment above the test, written as `// design section: <chapter>#<heading slug>`.
 
 Example:
 

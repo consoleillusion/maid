@@ -17,7 +17,7 @@ summary: >
 links: [work-items, acceptance, phases]
 ---
 
-# ADR-0004 Acceptance criteria from the design agent, tests from a separate test agent
+# Acceptance criteria from the design agent, tests from a separate test agent
 
 ## Context and problem statement
 
@@ -43,11 +43,11 @@ The large agent writes only what needs judgement: the scenarios, which are short
 
 Rules:
 
-- Each `code` work item has a `tests` work item, and depends on it (REQ-WI-017, REQ-WI-018).
-- The agent that wrote the tests cannot implement the work item (REQ-WI-019).
-- A `tests` submission is accepted when its tests compile and fail on the main branch, and a tagged test covers each scenario (REQ-WI-020).
-- A build submission that changes its acceptance tests is rejected (REQ-ACC-010).
-- At the rigorous depth level, the design agent or a human reviews the tests (REQ-WI-021).
+- Each `code` work item has a `tests` work item, and depends on it.
+- The agent that wrote the tests cannot implement the work item.
+- A `tests` submission is accepted when its tests compile and fail on the main branch, and a tagged test covers each scenario.
+- A build submission that changes its acceptance tests is rejected.
+- At the rigorous depth level, the design agent or a human reviews the tests.
 
 ### Consequences
 

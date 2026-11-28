@@ -8,16 +8,16 @@ date: 2026-11-27
 decision-makers: [paul]
 supersedes: null
 superseded-by: null
-revisit-when: ["maid needs streamable HTTP or elicitation (REQ-MCP-003, REQ-MCP-006)", "the state store needs queries across many attempts", "maid must run on Windows"]
+revisit-when: ["maid needs streamable HTTP or elicitation", "the state store needs queries across many attempts", "maid must run on Windows"]
 summary: >
   Milestone 1 uses no third-party Go modules. maid has its own small MCP
   server for stdio tools, its own parser for the frontmatter YAML subset, and
   a JSON-file state store with file locks instead of SQLite. Tools are
   configured in maid.json until decisions select them.
-links: [overview, conventions, mcp, ADR-0001]
+links: [architecture, conventions, interfaces, go]
 ---
 
-# ADR-0007 Build milestone 1 on the Go standard library only
+# Build milestone 1 on the Go standard library only
 
 ## Context and problem statement
 
@@ -40,8 +40,8 @@ Chosen option: "Standard library only, with small replaceable components."
 
 - `internal/mcp` implements JSON-RPC 2.0 over stdio with tools only. It does not implement resources, prompts, elicitation or HTTP yet.
 - `internal/frontmatter` parses the YAML subset that design files use: scalars, quoted strings, inline and block lists, and block scalars.
-- `internal/state` stores attempts, the test baseline and the activity log as JSON files in `.maid/`. A `flock` lock serialises the merge queue across processes. `flock` works on Linux and macOS (C-005).
-- `maid.json` configures the formatter, linter, test adapter and budgets until design decisions select them (REQ-PR-009).
+- `internal/state` stores attempts, the test baseline and the activity log as JSON files in `.maid/`. A `flock` lock serialises the merge queue across processes. `flock` works on Linux and macOS.
+- `maid.json` configures the formatter, linter, test adapter and budgets until design decisions select them.
 
 ### Consequences
 

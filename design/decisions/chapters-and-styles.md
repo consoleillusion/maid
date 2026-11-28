@@ -14,10 +14,10 @@ summary: >
   chapters are single Markdown files, sections are addressable. Each chapter
   declares one controlled-language style with a style card and, where possible,
   a validator.
-links: [chapter-format, style-registry]
+links: [format, styles]
 ---
 
-# ADR-0006 Organise the design as parts and chapters, each with a declared style
+# Organise the design as parts and chapters, each with a declared style
 
 ## Context and problem statement
 
@@ -25,7 +25,7 @@ Many agents and humans read the design, and each needs only a part of it. Small 
 
 ## Decision drivers
 
-- An agent must read only what its task needs (G-006).
+- An agent must read only what its task needs.
 - Text must be unambiguous enough for small models.
 - Text must be checkable by a program where possible.
 
@@ -45,5 +45,5 @@ Each chapter declares one style. Embedded blocks can use another style. The star
 
 - Good, because context packets can be small.
 - Good, because validators can enforce most styles.
-- Bad, because writers must learn several styles. Style cards are kept short (REQ-STY-002).
+- Bad, because writers must learn several styles. Style cards are kept short.
 - Bad, because the layout is not compatible with Spec Kit, Kiro or OpenSpec. An importer can be added later.

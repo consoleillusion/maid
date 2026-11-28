@@ -5,7 +5,7 @@ owner: paul
 summary: >
   Why maid exists, what it must achieve, what it must not do, and how we
   measure success. Read this first. Every other chapter must agree with it.
-links: [glossary, constraints, phases, ADR-0002, ADR-0003, ADR-0004]
+links: [glossary, constraints, phases, pull-model, merge-queue, acceptance-tests-first]
 ---
 
 # Vision and scope
@@ -48,24 +48,24 @@ The design is the source of truth. All agents and all humans read the same desig
 
 ## Non-goals
 
-- **No human project management:** maid does not provide boards, sprints, time tracking, comments or customer portals. An optional adapter can copy maid state to such a tool. No adapter is planned for v1 (Q-012).
-- **No git hosting:** maid does not host repositories or provide pull requests. maid uses local git. An optional adapter can open pull requests on a forge. No adapter is planned for v1 (Q-012).
+- **No human project management:** maid does not provide boards, sprints, time tracking, comments or customer portals. An optional adapter can copy maid state to such a tool. No adapter is planned for v1.
+- **No git hosting:** maid does not host repositories or provide pull requests. maid uses local git. An optional adapter can open pull requests on a forge. No adapter is planned for v1.
 - **No formatter, linter or test framework of its own:** maid runs the tools that the project selects.
-- **No agent launching in v1:** maid does not start agents in v1. Agents connect to maid and pull work. See ADR-0002.
+- **No agent launching in v1:** maid does not start agents in v1. Agents connect to maid and pull work.
 - **No multi-user roles in v1:** v1 is for one developer and many agents on one machine. The design must not prevent roles later.
 
 ## Success measures
 
-| ID | Measure | Target |
-|---|---|---|
-| SM-001 | Work items accepted on the first or second attempt by a small agent | Set after the calibration benchmark runs (Q-001, REQ-SC-011) |
-| SM-002 | Cost of a project built with maid, compared with a large agent alone | Set after the same benchmark project is built both ways (Q-001) |
-| SM-003 | Accepted commits that break a previously passing test | 0 |
-| SM-004 | Time for a new agent to start useful work after it connects | One `maid_next` call |
+| Measure | Target |
+|---|---|
+| Work items accepted on the first or second attempt by a small agent | Set after the calibration benchmark runs. |
+| Cost of a project built with maid, compared with a large agent alone | Set after the same benchmark project is built both ways. |
+| Accepted commits that break a previously passing test | 0 |
+| Time for a new agent to start useful work after it connects | One `maid_next` call |
 
-## **How maid feels to use**
+## How maid feels to use
 
 - **Few user prompts:** maid asks the user only for information that only the user has. It asks every question of a phase in one message. The design agent makes all other decisions and records them as decisions that the user can change. Each extra user turn costs the user time and costs an expensive model turn.
 - **Plain prompts:** The user asks the agent to work on the project in plain words. maid tells the agent which tasks are available. The user does not need special syntax.
-- **Guidance, not gates:** Metrics, automatic formatting, tests, documentation and code graphs show agents what a successful commit is. They do not slow development. Code graphs help to minimize token usage by describing the code structure. Maid itself is meant to be give a focused view to code that guides modular development so agents can work with small parts of the codebase without knowing anything else. See ADR-0008.
+- **Guidance, not gates:** Metrics, formatting, tests, documentation and code graphs show agents what a successful commit is. They do not slow development. Code graphs help agents work with small parts of the code.
 - **Any language:** maid measures any language with language-independent measures. Adapters add better measures for each language, a few languages first.

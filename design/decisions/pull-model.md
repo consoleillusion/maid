@@ -13,10 +13,10 @@ summary: >
   maid is a pull-based MCP server. Agents connect, call maid_next and claim
   work. Parallel work means more agents connect. An orchestrator that starts
   agents is out of scope for v1.
-links: [vision, constraints, overview]
+links: [vision, constraints, architecture]
 ---
 
-# ADR-0002 Agents pull work from maid; maid does not start agents
+# Agents pull work from maid; maid does not start agents
 
 ## Context and problem statement
 
@@ -43,4 +43,4 @@ Chosen option: "Pull", because it works with every client and keeps maid small. 
 - Good, because any MCP client works.
 - Good, because maid holds no API keys.
 - Bad, because maid cannot measure token cost. Agents can report cost when they submit.
-- Bad, because each client may start its own maid process, so all shared state must be safe for many processes. See C-007.
+- Bad, because each client may start its own maid process, so all shared state must be safe for many processes. See the architecture chapter.

@@ -13,10 +13,10 @@ summary: >
   maid uses Beads for work items, dependencies, claims and leases in v1. maid
   calls the bd CLI with JSON output through a task port. maid does not link
   Beads as a library, because embedded Dolt needs cgo.
-links: [task-store, work-items, constraints]
+links: [architecture, work-items, constraints]
 ---
 
-# ADR-0005 Use Beads as the v1 task store, through its CLI, behind a port
+# Use Beads as the v1 task store, through its CLI, behind a port
 
 ## Context and problem statement
 
@@ -24,9 +24,9 @@ maid needs work items with dependencies, a ready queue, atomic claims and leases
 
 ## Decision drivers
 
-- Reuse existing tools (G-009).
-- Claims must be atomic across many processes (C-007).
-- maid must stay one static binary (C-001).
+- Reuse existing tools.
+- Claims must be atomic across many processes.
+- maid must stay one static binary.
 
 ## Considered options
 
@@ -37,7 +37,7 @@ maid needs work items with dependencies, a ready queue, atomic claims and leases
 
 ## Decision outcome
 
-Chosen option: "Beads through its CLI". The spike showed that Beads already provides dependency-aware ready work, atomic claims, leases, reclaim and custom metadata. It also works with many processes at the same time. See `task-store` and `spikes/beads/README.md`.
+Chosen option: "Beads through its CLI". The spike showed that Beads already provides dependency-aware ready work, atomic claims, leases, reclaim and custom metadata. It also works with many processes at the same time. See the architecture chapter and `spikes/beads/README.md`.
 
 ### Consequences
 
@@ -57,8 +57,8 @@ Chosen option: "Beads through its CLI". The spike showed that Beads already prov
 ### Own SQLite task store
 
 - Good, because there is no extra install.
-- Bad, because maid builds and maintains a tracker (NG-001 risk).
+- Bad, because maid builds and maintains a tracker.
 
 ### External tracker
 
-- Bad, because it needs a network service (C-004) and is built for humans, not agents.
+- Bad, because it needs a network service and is built for humans, not agents.

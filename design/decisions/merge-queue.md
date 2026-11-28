@@ -16,7 +16,7 @@ summary: >
 links: [acceptance, scoring, vision]
 ---
 
-# ADR-0003 Accept submissions automatically through a local merge queue
+# Accept submissions automatically through a local merge queue
 
 ## Context and problem statement
 
@@ -24,8 +24,8 @@ Many agents submit commits. Who decides which commits reach the main branch, and
 
 ## Decision drivers
 
-- Acceptance must be mechanical, not the opinion of an agent (G-005).
-- No network service is required (C-004).
+- Acceptance must be mechanical, not the opinion of an agent.
+- No network service is required.
 - Parallel submissions must not break each other after merge.
 
 ## Considered options
@@ -45,4 +45,4 @@ The score does not accept. It ranks attempts that pass, and it can hold a submis
 - Good, because no forge is needed.
 - Good, because a submission that passes alone but breaks after another merge is caught.
 - Bad, because merges are serial. Throughput depends on test suite time.
-- Neutral, because a forge adapter can still open pull requests where a project requires them (NG-002).
+- Neutral, because a forge adapter can still open pull requests where a project requires them .

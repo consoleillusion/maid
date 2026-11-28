@@ -6,7 +6,7 @@ summary: >
   How maid calculates the 0-100 score of an attempt from tests, lines of code,
   dependencies, complexity and benchmarks. The score ranks passing attempts and
   sets the review band. It never replaces the acceptance rule.
-links: [acceptance, profiles, ADR-0003]
+links: [acceptance, profiles, merge-queue]
 ---
 
 # Score
@@ -30,48 +30,48 @@ Tests decide whether a submission is acceptable. The score decides which accepta
 
 ## Requirements
 
-### REQ-SC-001 Range
+### Range
 maid shall calculate the score of an attempt as a number from 0 to 100.
 
-### REQ-SC-002 Transparency
+### Transparency
 The score report shall list each component with its raw value, its normalised value, its weight and its contribution.
 
-### REQ-SC-003 Weights from the profile
+### Weights from the profile
 maid shall read the component weights and the review band from the profile decision of the project.
 
-### REQ-SC-004 Score does not accept
-maid shall not accept a submission because of its score. A submission is accepted only when it meets the acceptance rule in REQ-ACC-007 and its score is not below the minimum score (REQ-SC-016).
+### Score does not accept
+maid shall not accept a submission because of its score. A submission is accepted only when it meets the acceptance rule in the acceptance chapter and its score is not below the minimum score of the profile.
 
-### REQ-SC-016 Minimum score
+### Minimum score
 If the score of a submission that meets the acceptance rule is below the minimum score of the profile, then the merge queue shall reject the submission.
 
-### REQ-SC-005 Relative size
+### Relative size
 maid shall normalise the lines-of-code penalty by the changed-line budget of the work item, so that a work item with a larger budget is not penalised for the same relative size.
 
-### REQ-SC-006 Denied dependencies
+### Denied dependencies
 If a submission adds a dependency that is on the deny list of the project, then the merge queue shall reject the submission.
 
-### REQ-SC-007 Language independence
+### Language independence
 maid shall receive metrics from a metrics adapter in a common format, and shall not contain language-specific metric logic.
 
-### REQ-SC-008 Docs work items
+### Docs work items
 Where a work item has kind `docs`, maid shall score it with the docs component set from the profile, without lines-of-code and dependency penalties.
 
-### REQ-SC-009 History
+### History
 maid shall store the score of each attempt with the agent, the model name reported by the agent, and the work item.
 
-### REQ-SC-010 Agent comparison
+### Agent comparison
 When a human asks for agent performance, maid shall report acceptance rate, mean score and mean attempts for each agent and model.
 
-### REQ-SC-011 Calibration benchmark
+### Calibration benchmark
 The maid repository shall contain a benchmark set of work items, each with known good and known bad solutions.
 
-### REQ-SC-012 Calibrated weights
+### Calibrated weights
 Each built-in weight set shall rank every known good solution of the benchmark set above every known bad solution of the same work item.
 
 ## Formula
 
-### REQ-SC-013 Formula
+### Formula
 The scorer shall calculate the score with the formula in this section.
 
 ```text
@@ -87,10 +87,10 @@ bench      = clamp(−bench delta % / 20, −1, 1) when benchmarks ran; else 0
 round1     = round to one decimal place
 ```
 
-### REQ-SC-014 Balanced weights
+### Balanced weights
 The scorer shall use the balanced weights ws = 0.4, wd = 0.3, wc = 0.3, wr = 0.2 and wb = 0.2 when the project configures no weights.
 
-### REQ-SC-015 Examples
+### Examples
 The scorer shall give the scores in the examples table for the given inputs.
 
 | Passed / total | Added | Deleted | Budget | Runtime deps | All pass | Score |
@@ -149,5 +149,5 @@ func ComplexityAdded(oldFuncs, newFuncs map[string]int) int
 
 ## Any language
 
-### REQ-SC-017 Language-independent measures
+### Language-independent measures
 Where no metrics adapter exists for a language, the scorer shall use the changed lines from git and the dependency changes from the manifest files go.mod, package.json, Cargo.toml, pyproject.toml and requirements.txt.

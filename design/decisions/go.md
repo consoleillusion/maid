@@ -13,10 +13,10 @@ summary: >
   maid is written in Go and ships as one static binary for each platform. The
   existing TypeScript implementation is removed. Implementation restarts from
   design/.
-links: [constraints, conventions, overview]
+links: [constraints, conventions, architecture]
 ---
 
-# ADR-0001 Write maid in Go and restart from the design
+# Write maid in Go and restart from the design
 
 ## Context and problem statement
 

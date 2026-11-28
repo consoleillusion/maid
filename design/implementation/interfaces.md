@@ -6,7 +6,7 @@ summary: >
   The tools, resources, prompts and server instructions that maid exposes to
   agents, and the contract of maid_next. Tools are the baseline. Resources,
   prompts and elicitation are optional because not every client supports them.
-links: [phases, work-items, acceptance, chapter-format]
+links: [phases, work-items, acceptance, format]
 ---
 
 # MCP interface
@@ -22,22 +22,21 @@ maid has no roles. Any agent can call any tool. `maid_next` returns the next ste
 | `maid_next` | none | The next step. See the contract below. |
 | `design_index` | `part?`, `status?`, `style?`, `link?` | Chapters with summaries only. |
 | `design_read` | `refs[]`, `detail?` (`summary`, `full`) | Text and version of each requested section. |
-| `design_question` | `question`, `blocks?` | The new question ID. |
 | `design_check` | none | Findings: style, links, required sections. |
 | `maid_status` | `detail?` | Phase, chapter and work item states, test baseline, recent activity. |
 
-### Design phases (0–5) and review
+### Design phases and review
 
 | Tool | Input | Output |
 |---|---|---|
 | `design_scaffold` | `depth`, `profile?`, `answers?` (free text or fields) | Created stubs and the questions that remain. |
-| `design_write` | `id`, `section`, `content`, `base_version`, `reason` | New version, or a conflict with the current text. |
-| `design_propose` | `id`, `section`, `content`, `base_version`, `reason` | Proposal ID. |
+| `design_write` | `chapter`, `section`, `content`, `base_version`, `reason` | New version, or a conflict with the current text. |
+| `design_propose` | `chapter`, `title`, `content`, `reason` | Result of the proposal write. |
 | `design_review` | `proposal_id`, `decision` (`accept`, `reject`), `reason` | Result. |
-| `design_decide` | decision fields | New decision ID. |
-| `work_plan` | work items and dependencies | Created work item IDs. |
+| `design_decide` | decision fields | New decision chapter. |
+| `work_plan` | work items and dependencies | Created work items. |
 
-### Build phase (6–7)
+### Build and verify phases
 
 | Tool | Input | Output |
 |---|---|---|
@@ -65,42 +64,42 @@ maid has no roles. Any agent can call any tool. `maid_next` returns the next ste
 
 | Prompt | Use |
 |---|---|
-| `scaffold-design` | Start phase 0 and 1 with the user. |
+| `scaffold-design` | Start the bootstrap and intent phases with the user. |
 | `pick-up-work` | Claim a work item and follow the build loop. |
 | `review-proposals` | Review open proposals. |
 
 ## Requirements
 
-### REQ-MCP-001 Tools baseline
+### Tools baseline
 The MCP server shall make every operation available as a tool, and resources and prompts shall only repeat operations that tools provide.
 
-### REQ-MCP-002 Server instructions
+### Server instructions
 When a client connects, the MCP server shall send instructions that state the current phase and tell the agent to call `maid_next` first.
 
-### REQ-MCP-003 Elicitation
+### Elicitation
 Where the client supports elicitation, the MCP server shall ask the user its questions directly; otherwise the MCP server shall return the questions in the `ask_user` field of `maid_next`.
 
-### REQ-MCP-004 Output formats
+### Output formats
 Each tool that returns structured data shall accept `format` with the values `json` and `toon`, and the default shall be `toon`.
 
-### REQ-MCP-005 Agent identity
+### Agent identity
 Each tool call that changes state shall record an agent ID that the client supplies or that maid derives from the session.
 
-### REQ-MCP-006 Transports
+### Transports
 The MCP server shall support stdio and streamable HTTP.
 
-### REQ-MCP-007 Local HTTP only
+### Local HTTP only
 While maid runs in HTTP mode, the MCP server shall accept connections only on the loopback interface.
 
 ## maid_next contract
 
 | Field | Type | Meaning |
 |---|---|---|
-| `phase` | string | Current phase ID. |
+| `phase` | string | Current phase name. |
 | `step` | string | One sentence. The next action. |
 | `why` | string | One sentence. The reason. |
-| `read` | list of IDs | The minimum sections to read. |
+| `read` | list of section paths | The minimum sections to read. |
 | `tools` | list | The tools for this step. |
 | `done_when` | list | The gate conditions for this step. |
-| `ask_user` | list | Questions for the user, with IDs. |
-| `blocked` | list | Items that open questions block. |
+| `ask_user` | list | Questions for the user, in plain words. |
+| `blocked` | list | Work items that cannot proceed. |

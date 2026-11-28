@@ -1,5 +1,5 @@
-// Package design loads the design/ folder: parts, chapters, sections and
-// items with stable IDs. See design/03-specification/01-chapter-format.md.
+// Package design loads the design/ folder: parts, chapters and addressable
+// sections. See design/specification/format.md.
 package design
 
 import (
@@ -21,18 +21,13 @@ import (
 // Dir is the design folder name, relative to the project root.
 const Dir = "design"
 
-// ItemIDPattern matches the stable ID prefixes from the chapter format.
-var ItemIDPattern = regexp.MustCompile(`\b(REQ-[A-Z]+-\d{3}|ADR-\d{4}|Q-\d{3}|G-\d{3}|NG-\d{3}|SM-\d{3}|C-\d{3}|A-\d{3})\b`)
-
 var headingRe = regexp.MustCompile(`^(#{1,6})\s+(.*?)\s*$`)
-var tableItemRe = regexp.MustCompile(`^\|\s*((?:SM|C|A|Q)-\d{3})\s*\|`)
 
 // Store is a loaded design folder.
 type Store struct {
 	Root     string // project root
 	Chapters []*Chapter
 	byID     map[string]*Chapter
-	items    map[string]ItemRef
 }
 
 // Chapter is one Markdown file in the design.
@@ -49,27 +44,19 @@ type Chapter struct {
 }
 
 // Section is a heading and its content up to the next heading of the same
-// or a higher level.
+// or a higher level. A section is addressed by chapter ID and heading slug.
 type Section struct {
 	Anchor  string
 	Heading string
 	Level   int
 	Line    int // 1-based line in the file
-	ItemID  string
 	Text    string
-}
-
-// ItemRef locates an item.
-type ItemRef struct {
-	Chapter *Chapter
-	Section *Section // nil for table-row items
-	Line    int
 }
 
 // Load reads every .md file under root/design.
 func Load(root string) (*Store, error) {
 	// Purpose: parse all design chapters into a Store.
-	s := &Store{Root: root, byID: map[string]*Chapter{}, items: map[string]ItemRef{}}
+	s := &Store{Root: root, byID: map[string]*Chapter{}}
 	dir := filepath.Join(root, Dir)
 	if _, err := os.Stat(dir); errors.Is(err, fs.ErrNotExist) {
 		return s, nil // no design yet: the bootstrap phase
@@ -79,7 +66,7 @@ func Load(root string) (*Store, error) {
 			return err
 		}
 		if d.IsDir() || !strings.HasSuffix(p, ".md") || p == filepath.Join(dir, IndexFile) {
-			return nil // index.md is the reading order, not a chapter (REQ-DOC-021)
+			return nil // index.md is the reading order, not a chapter
 		}
 		ch, err := loadChapter(root, p)
 		if err != nil {
@@ -96,18 +83,6 @@ func Load(root string) (*Store, error) {
 		if ch.ID != "" {
 			if _, dup := s.byID[ch.ID]; !dup {
 				s.byID[ch.ID] = ch
-			}
-		}
-		for _, sec := range ch.Sections {
-			if sec.ItemID != "" {
-				if _, dup := s.items[sec.ItemID]; !dup {
-					s.items[sec.ItemID] = ItemRef{Chapter: ch, Section: sec, Line: sec.Line}
-				}
-			}
-		}
-		for id, line := range tableItems(ch) {
-			if _, dup := s.items[id]; !dup {
-				s.items[id] = ItemRef{Chapter: ch, Line: line}
 			}
 		}
 	}
@@ -136,7 +111,7 @@ func loadChapter(root, p string) (*Chapter, error) {
 	return ch, nil
 }
 
-// chapterID derives the chapter ID from its file name (REQ-DOC-001).
+// chapterID derives the chapter ID from its file name.
 func chapterID(p string) string {
 	// Purpose: use the file name without its extension as the chapter ID.
 	base := path.Base(p)
@@ -156,7 +131,7 @@ func chapterTitle(sections []*Section) string {
 
 // folderPart derives the part from the folder that contains the chapter.
 func folderPart(p string) string {
-	// Purpose: return the immediate folder name, including design, styles and decisions.
+	// Purpose: return the immediate folder name under design/.
 	dir := path.Dir(strings.TrimPrefix(p, Dir+"/"))
 	if dir == "." {
 		return Dir
@@ -197,36 +172,9 @@ func splitSections(body string, firstLine int) []*Section {
 				break
 			}
 		}
-		sec := &Section{Heading: h.text, Level: h.level, Line: firstLine + h.idx}
+		sec := &Section{Heading: h.text, Level: h.level, Line: firstLine + h.idx, Anchor: slug(h.text)}
 		sec.Text = strings.TrimRight(strings.Join(lines[h.idx:end], "\n"), "\n")
-		if id := leadingItemID(h.text); id != "" {
-			sec.ItemID, sec.Anchor = id, id
-		} else {
-			sec.Anchor = slug(h.text)
-		}
 		out = append(out, sec)
-	}
-	return out
-}
-
-func leadingItemID(heading string) string {
-	// Purpose: return the item ID that starts a heading, if any.
-	loc := ItemIDPattern.FindStringIndex(heading)
-	if loc == nil || loc[0] != 0 {
-		return ""
-	}
-	return heading[loc[0]:loc[1]]
-}
-
-func tableItems(ch *Chapter) map[string]int {
-	// Purpose: find items defined as the first cell of a table row.
-	out := map[string]int{}
-	for i, l := range strings.Split(ch.Body, "\n") {
-		if m := tableItemRe.FindStringSubmatch(l); m != nil {
-			if _, ok := out[m[1]]; !ok {
-				out[m[1]] = ch.BodyLine + i
-			}
-		}
 	}
 	return out
 }
@@ -247,46 +195,27 @@ func slug(s string) string {
 
 // Chapter returns the chapter with the given ID.
 func (s *Store) Chapter(id string) *Chapter {
-	// Purpose: look up a chapter by its frontmatter ID.
+	// Purpose: look up a chapter by its file name.
 	return s.byID[id]
 }
 
-// Item returns the location of an item ID.
-func (s *Store) Item(id string) (ItemRef, bool) {
-	// Purpose: look up a requirement, goal, question or other item.
-	r, ok := s.items[id]
-	return r, ok
-}
-
-// Resolves reports whether id names a chapter, an item, or chapter#anchor.
-func (s *Store) Resolves(id string) bool {
+// Resolves reports whether ref names a chapter or a chapter section.
+func (s *Store) Resolves(ref string) bool {
 	// Purpose: decide whether a link target exists.
-	if _, ok := s.byID[id]; ok {
+	if _, ok := s.byID[ref]; ok {
 		return true
 	}
-	if _, ok := s.items[id]; ok {
-		return true
-	}
-	ch, anchor, found := strings.Cut(id, "#")
+	chID, anchor, found := strings.Cut(ref, "#")
 	if !found {
 		return false
 	}
-	c := s.byID[ch]
-	if c == nil {
-		return false
-	}
-	return c.Section(anchor) != nil || hasTableItem(c, anchor)
-}
-
-func hasTableItem(c *Chapter, id string) bool {
-	// Purpose: check whether a table-row item is defined in a chapter.
-	_, ok := tableItems(c)[id]
-	return ok
+	c := s.byID[chID]
+	return c != nil && c.Section(anchor) != nil
 }
 
 // Section returns the section with the given anchor.
 func (c *Chapter) Section(anchor string) *Section {
-	// Purpose: look up a section of a chapter by anchor.
+	// Purpose: look up a section of a chapter by its heading slug.
 	for _, sec := range c.Sections {
 		if sec.Anchor == anchor {
 			return sec

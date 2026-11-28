@@ -19,7 +19,7 @@ import (
 )
 
 // These operations let an agent without file or shell access complete a
-// work item through maid alone (REQ-WI-024 to REQ-WI-027). Each one needs the
+// work item through maid alone. Each one needs the
 // agent's claim and works only in the agent's own worktree.
 
 // maxFileBytes limits one read or write.
@@ -127,7 +127,7 @@ func (s *Service) ReadFile(ctx context.Context, agent, id, p string) (string, er
 // WriteFile creates or replaces an owned file in the agent's worktree.
 // Empty content with remove set deletes the file.
 func (s *Service) WriteFile(ctx context.Context, agent, id, p, content string, remove bool) error {
-	// Purpose: let an agent change only the files its work item owns (REQ-WI-008).
+	// Purpose: let an agent change only the files its work item owns.
 	it, att, err := s.attempt(ctx, agent, id)
 	if err != nil {
 		return err
@@ -214,7 +214,7 @@ func (s *Service) Commit(ctx context.Context, agent, id, message string) (string
 }
 
 // applyChanges writes the files, applies the edits and the patch of a submission in
-// the agent's worktree, then commits them (REQ-WI-028).
+// the agent's worktree, then commits them.
 func (s *Service) applyChanges(ctx context.Context, sub Submission) error {
 	// Purpose: turn a patch or a set of files into a commit on the attempt branch.
 	it, att, err := s.attempt(ctx, sub.Agent, sub.ID)

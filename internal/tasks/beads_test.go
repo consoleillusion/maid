@@ -41,7 +41,7 @@ func newBeads(t *testing.T) *Beads {
 func contract(t *testing.T, p Port) {
 	// Purpose: check the behaviour every task port adapter must have.
 	ctx := context.Background()
-	a, err := p.Create(ctx, NewItem{Title: "a", Maid: Meta{Kind: KindCode, Implements: []string{"REQ-WI-001"}, Owns: []string{"x/**"}}})
+	a, err := p.Create(ctx, NewItem{Title: "a", Maid: Meta{Kind: KindCode, Implements: []string{"calc#add"}, Owns: []string{"x/**"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,10 +56,10 @@ func contract(t *testing.T, p Port) {
 	if len(ready) != 1 || ready[0].ID != a {
 		t.Fatalf("ready = %+v", ready)
 	}
-	if ready[0].Maid.Implements[0] != "REQ-WI-001" || ready[0].Maid.Owns[0] != "x/**" {
+	if ready[0].Maid.Implements[0] != "calc#add" || ready[0].Maid.Owns[0] != "x/**" {
 		t.Fatalf("metadata lost: %+v", ready[0].Maid)
 	}
-	// REQ-WI-004: exactly one of several concurrent claims wins.
+	// Exactly one of several concurrent claims wins.
 	var wg sync.WaitGroup
 	wins := make(chan string, 4)
 	for _, agent := range []string{"w1", "w2", "w3", "w4"} {
@@ -96,13 +96,11 @@ func contract(t *testing.T, p Port) {
 	}
 }
 
-// REQ-WI-003 REQ-WI-004
 func TestMemoryContract(t *testing.T) {
 	// Purpose: the in-memory port obeys the port contract.
 	contract(t, NewMemory())
 }
 
-// REQ-WI-003 REQ-WI-004
 func TestBeadsContract(t *testing.T) {
 	// Purpose: the Beads adapter obeys the port contract against real bd.
 	contract(t, newBeads(t))

@@ -12,7 +12,7 @@ func near(a, b float64) bool {
 	return math.Abs(a-b) < eps
 }
 
-// REQ-SC-015 REQ-SC-013 scenario: examples table
+// scenario: examples table
 func TestComputeExamples(t *testing.T) {
 	// Purpose: every row of the examples table gives its score.
 	cases := []struct {
@@ -32,7 +32,7 @@ func TestComputeExamples(t *testing.T) {
 	}
 }
 
-// REQ-SC-002 REQ-SC-005 scenario: components are reported
+// scenario: components are reported
 func TestComputeComponents(t *testing.T) {
 	// Purpose: the report lists six components in order with their values.
 	r := Compute(Inputs{AcceptancePassed: 2, AcceptanceTotal: 2, Added: 10, Budget: 100, AllTestsPass: true}, Balanced())
@@ -51,7 +51,7 @@ func TestComputeComponents(t *testing.T) {
 	}
 }
 
-// REQ-SC-001 REQ-SC-013 scenario: penalty and reward limits
+// scenario: penalty and reward limits
 func TestComputeLimits(t *testing.T) {
 	// Purpose: penalties are capped, so the score never goes below 0.
 	in := Inputs{AcceptancePassed: 1, AcceptanceTotal: 1, Added: 1000, Budget: 100, RuntimeDepsAdded: 5, ComplexityAdded: 50}
@@ -61,7 +61,7 @@ func TestComputeLimits(t *testing.T) {
 	}
 }
 
-// REQ-SC-014 scenario: balanced weights
+// scenario: balanced weights
 func TestBalanced(t *testing.T) {
 	// Purpose: the balanced weights have the values in the design.
 	want := Weights{Size: 0.4, Deps: 0.3, Complexity: 0.3, Reduction: 0.2, Bench: 0.2}

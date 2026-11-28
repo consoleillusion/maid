@@ -10,5 +10,10 @@
     "attempts": 2,
     "max_changed_lines": 300
   },
-  "port_range": 100
+  "port_range": 100,
+  "code_review_graph": {
+    "command": [".maid/crg-venv/bin/code-review-graph"],
+    "args": ["serve"],
+    "enabled": true
+  }
 }

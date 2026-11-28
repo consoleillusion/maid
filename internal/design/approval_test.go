@@ -2,7 +2,7 @@ package design
 
 import "testing"
 
-// REQ-PH-007 scenario: accept without an approver
+// scenario: accept without an approver
 func TestAcceptWithoutApprover(t *testing.T) {
 	// Purpose: the agent can accept a chapter when the user delegated approval.
 	root := writeDesign(t, map[string]string{"01-a/alpha.md": goodChapter, "01-a/beta.md": betaChapter})

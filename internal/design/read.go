@@ -40,7 +40,7 @@ func (s *Store) Index(f Filter) []Entry {
 			Path: ch.Path, Summary: ch.FM.String("summary"), Links: ch.FM.List("links"),
 		}
 		for _, sec := range ch.Sections {
-			if sec.ItemID != "" {
+			if sec.Level >= 3 {
 				e.Items++
 			}
 		}
@@ -79,8 +79,8 @@ type Excerpt struct {
 	Text    string `json:"text"`
 }
 
-// Read returns excerpts for refs. A ref is a chapter ID, an item ID, or
-// chapter#anchor. With summaryOnly, chapters return only their summary.
+// Read returns excerpts for refs. A ref is a chapter ID or chapter#heading.
+// With summaryOnly, chapters return only their summary.
 func (s *Store) Read(refs []string, summaryOnly bool) ([]Excerpt, error) {
 	// Purpose: resolve each ref to the smallest text that answers it.
 	var out []Excerpt
@@ -138,20 +138,11 @@ func (s *Store) read(ref string, summaryOnly bool) (Excerpt, error) {
 		}
 		return excerpt(ref, ch, ch.BodyLine, text), nil
 	}
-	if it, ok := s.items[ref]; ok {
-		if it.Section != nil {
-			return excerpt(ref, it.Chapter, it.Section.Line, it.Section.Text), nil
-		}
-		return excerpt(ref, it.Chapter, it.Line, lineAt(it.Chapter, it.Line)), nil
-	}
 	chID, anchor, found := strings.Cut(ref, "#")
 	if found {
 		if ch := s.byID[chID]; ch != nil {
 			if sec := ch.Section(anchor); sec != nil {
 				return excerpt(ref, ch, sec.Line, sec.Text), nil
-			}
-			if line, ok := tableItems(ch)[anchor]; ok {
-				return excerpt(ref, ch, line, lineAt(ch, line)), nil
 			}
 		}
 	}
@@ -164,14 +155,4 @@ func excerpt(ref string, ch *Chapter, line int, text string) Excerpt {
 		Ref: ref, Path: ch.Path, Line: line, Text: text, Version: Version(text),
 		Style: ch.FM.String("style"), Status: ch.FM.String("status"),
 	}
-}
-
-func lineAt(ch *Chapter, line int) string {
-	// Purpose: return one body line by its file line number.
-	lines := strings.Split(ch.Body, "\n")
-	i := line - ch.BodyLine
-	if i < 0 || i >= len(lines) {
-		return ""
-	}
-	return lines[i]
 }

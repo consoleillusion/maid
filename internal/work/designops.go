@@ -34,7 +34,7 @@ func (s *Service) DesignOp(ctx context.Context, agent, action, reason string, op
 		reason = action + " " + res.Ref
 	}
 	msg := fmt.Sprintf("design(%s): %s\n\n%s by %s through maid.", res.Ref, firstLine(reason), action, agent)
-	paths := append([]string{res.Path}, res.Also...) // the chapter and the index files (REQ-DOC-019)
+	paths := append([]string{res.Path}, res.Also...) // the chapter and the index files
 	if changed, _ := gitx.Run(ctx, s.Root, append([]string{"status", "--porcelain", "--"}, paths...)...); changed == "" {
 		return res, nil // nothing changed, for example a status that was already set
 	}
@@ -49,7 +49,7 @@ func (s *Service) DesignOp(ctx context.Context, agent, action, reason string, op
 }
 
 // OnMaidBranch switches a clean checkout to the maid branch, so design
-// commits land there (REQ-ACC-023).
+// commits land there.
 func (s *Service) OnMaidBranch(ctx context.Context) error {
 	// Purpose: keep every maid commit on one branch.
 	if err := s.Git.EnsureBranch(ctx, s.Cfg.Branch); err != nil {
@@ -120,7 +120,7 @@ func (s *Service) SetStatusBatch(ctx context.Context, agent string, ids []string
 	if len(paths) == 0 {
 		return out, nil
 	}
-	// The commit names the agent that made the change (REQ-PH-007).
+	// The commit names the agent that made the change.
 	who := " (by " + agent + ")"
 	subject := fmt.Sprintf("design: %s %s%s", status, strings.Join(done, ", "), who)
 	if len(done) > 3 {

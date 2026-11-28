@@ -6,7 +6,7 @@ summary: >
   How maid decides to accept or reject a submission. Defines the merge queue,
   the checks it runs, the acceptance rule, protection of acceptance tests, and
   the rejection report that the build agent receives.
-links: [work-items, scoring, ADR-0003, ADR-0004]
+links: [work-items, scoring, merge-queue, acceptance-tests-first]
 ---
 
 # Acceptance and the merge queue
@@ -17,70 +17,70 @@ A submission is accepted when, on top of the latest main branch, its acceptance 
 
 ## Requirements
 
-### REQ-ACC-001 Submit
+### Submit
 When a build agent calls `work_submit`, maid shall add the commits in the attempt worktree to the merge queue.
 
-### REQ-ACC-002 One merge at a time
+### One merge at a time
 The merge queue shall process one submission at a time for each main branch.
 
-### REQ-ACC-003 Single queue worker
+### Single queue worker
 While more than one maid process runs in the same project, exactly one process shall run the merge queue, and the other processes shall only add submissions to it.
 
-### REQ-ACC-004 Rebase
+### Rebase
 When the merge queue takes a submission, it shall rebase the attempt branch onto the current main branch in a separate worktree.
 
-### REQ-ACC-005 Conflict
+### Conflict
 If the rebase has a conflict, then the merge queue shall reject the submission with the conflicting paths.
 
-### REQ-ACC-006 Checks
+### Checks
 When the rebase succeeds, the merge queue shall run, in order: the format check, the lint check, the owned-path check, the acceptance-test protection check, the acceptance tests of the work item, and the full test suite.
 
-### REQ-ACC-007 Accept
+### Accept
 If all checks pass and no test that passed on the maid branch fails, then the merge queue shall add the attempt to the maid branch as one commit whose message ends with the trailer `Maid-Task: <work item ID>`.
 
-### REQ-ACC-021 One branch
+### One branch
 maid shall commit every accepted attempt and every design change to one branch, the maid branch, whose name is the `branch` value in `maid.json` and is `maid-auto` by default.
 
-### REQ-ACC-022 Maid branch creation
+### Maid branch creation
 If the maid branch does not exist, then maid shall create it at the current commit of the checkout.
 
-### REQ-ACC-023 Design commits
+### Design commits
 When a design change starts and the checkout is not on the maid branch, maid shall switch the checkout to the maid branch if no tracked file has uncommitted changes, and otherwise shall refuse the change and return the command that switches the branch.
 
-### REQ-ACC-024 Old attempt branches
+### Old attempt branches
 When `maid init` runs, maid shall delete the branches that match `maid/*` and remove the worktrees of finished attempts.
 
-### REQ-ACC-008 Reject
+### Reject
 If a check fails, then the merge queue shall reject the submission and shall keep the main branch unchanged.
 
-### REQ-ACC-009 Rejection report
+### Rejection report
 When the merge queue rejects a submission, it shall return a rejection report that contains the failed check, the failed tests with their output truncated to a limit from the profile, the regressions, and the score.
 
-### REQ-ACC-010 Protected acceptance tests
+### Protected acceptance tests
 If a submission changes, deletes or skips an acceptance test of its own work item, then the merge queue shall reject the submission.
 
-### REQ-ACC-011 Test baseline
+### Test baseline
 The merge queue shall record the result of each test on the main branch after each merge, and shall use that record to detect regressions.
 
-### REQ-ACC-012 Flaky tests
+### Flaky tests
 If a test result differs between two runs on the same commit, then maid shall mark the test as flaky and shall exclude it from regression detection.
 
-### REQ-ACC-016 Flaky test question
-When maid marks a test as flaky, maid shall add a question for the design agent that names the test.
+### Flaky test report
+When maid marks a test as flaky, maid shall report the test through `maid_next` and shall record it in the state store.
 
-### REQ-ACC-013 Competing attempts
+### Competing attempts
 Where more than one attempt on the same work item passes all checks, the merge queue shall accept the attempt with the highest score and shall reject the others as superseded.
 
-### REQ-ACC-014 Review band
+### Review band
 Where the depth level is rigorous, if the score of a passing submission is inside the review band of the profile, then the merge queue shall hold the submission for human approval.
 
-### REQ-ACC-015 Record
+### Record
 When the merge queue accepts or rejects a submission, maid shall record the work item, the attempt, the agent, the checks, the score and the commit IDs in the state store.
 
-### REQ-ACC-017 Attempt environment
+### Attempt environment
 When maid runs the tests of an attempt, maid shall set the environment variables `MAID_ATTEMPT_ID`, `MAID_PORT_BASE` and `MAID_TMPDIR` to values that are unique to that attempt.
 
-### REQ-ACC-018 Serial tests
+### Serial tests
 Where the project decisions mark a test suite as serial, maid shall not run that suite for two attempts at the same time.
 
 ## Examples
@@ -89,7 +89,7 @@ Where the project decisions mark a test suite as serial, maid shall not run that
 Feature: Merge queue acceptance
 
   Scenario: Passing submission is merged
-    Given work item "WI-a1" has acceptance test "TestClaimIsAtomic"
+    Given work item "atomic claim" has acceptance test "TestClaimIsAtomic"
     And "TestClaimIsAtomic" fails on main
     When the build agent submits an attempt where "TestClaimIsAtomic" passes
     And no other test changes from pass to fail
@@ -102,18 +102,18 @@ Feature: Merge queue acceptance
     And the rejection report lists "TestReadyQueue" as a regression
 
   Scenario: Changed acceptance test is rejected
-    Given work item "WI-a1" has acceptance test "TestClaimIsAtomic"
+    Given work item "atomic claim" has acceptance test "TestClaimIsAtomic"
     When the build agent submits an attempt that changes "TestClaimIsAtomic"
     Then the merge queue rejects the attempt
 ```
 
-## Environment errors
+## Requirements: environment errors
 
-### REQ-ACC-019 Missing tools
+### Missing tools
 If a check cannot run because its command does not exist or cannot start, then the merge queue shall report an environment error with the command and the system error, and shall not count the attempt.
 
-### REQ-ACC-020 Tool check at start
+### Tool check at start
 When maid starts, maid shall check that the configured test, format and lint commands exist, and maid_next and maid_status shall report each missing command as a warning.
 
-### REQ-ACC-025 Redefined acceptance tests
+### Redefined acceptance tests
 When the merge queue checks a tests item for regressions, it shall not count the acceptance tests of that item, which fail until the code item is done.

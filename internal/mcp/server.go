@@ -1,5 +1,5 @@
 // Package mcp is maid's MCP server: JSON-RPC 2.0 over newline-delimited
-// stdio, with tools only (REQ-MCP-001). See design/05-interfaces/01-mcp.md.
+// stdio, with tools only. See design/implementation/interfaces.md.
 package mcp
 
 import (
@@ -66,6 +66,7 @@ func NewServer(t *Tools) *Server {
 // Serve reads requests until in is closed.
 func (s *Server) Serve(ctx context.Context, in io.Reader, out io.Writer) error {
 	// Purpose: run the JSON-RPC loop on stdio.
+	defer s.Tools.Close()
 	s.out = bufio.NewWriter(out)
 	sc := bufio.NewScanner(in)
 	sc.Buffer(make([]byte, 1024*1024), 64*1024*1024)
@@ -119,7 +120,7 @@ func (s *Server) handle(ctx context.Context, req request) {
 }
 
 func (s *Server) initialize(params json.RawMessage) any {
-	// Purpose: negotiate the protocol version and send the server instructions (REQ-MCP-002).
+	// Purpose: negotiate the protocol version and send the server instructions.
 	var p struct {
 		ProtocolVersion string `json:"protocolVersion"`
 		ClientInfo      struct {
@@ -150,7 +151,7 @@ func (s *Server) initialize(params json.RawMessage) any {
 }
 
 func (s *Server) maybeNotifyListChanged(ctx context.Context) {
-	// Purpose: tell the client when the phase changes the tool list (REQ-PH-005).
+	// Purpose: tell the client when the phase changes the tool list.
 	phase := s.Tools.Phase(ctx)
 	if phase != s.lastPhase {
 		s.lastPhase = phase
@@ -159,7 +160,7 @@ func (s *Server) maybeNotifyListChanged(ctx context.Context) {
 }
 
 func (s *Server) defaultAgent() string {
-	// Purpose: derive an agent ID from the client name and session (REQ-MCP-005).
+	// Purpose: derive an agent ID from the client name and session.
 	name := s.clientName
 	if name == "" {
 		name = "agent"

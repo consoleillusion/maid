@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-// REQ-DOC-001 REQ-DOC-014 REQ-DOC-018 scenario: maid's own design uses the layout
+// scenario: maid's own design uses the layout
 func TestOwnDesignLayout(t *testing.T) {
 	// Purpose: maid's own design has no position numbers and has index.md and index.typ.
 	root := filepath.Join("..", "..", Dir)

@@ -13,7 +13,7 @@ import (
 	"github.com/consoleillusion/maid/internal/glob"
 )
 
-// Edit is one exact text replacement in a file (REQ-WI-031).
+// Edit is one exact text replacement in a file.
 type Edit struct {
 	Path string `json:"path"`
 	Old  string `json:"old"`
@@ -21,7 +21,7 @@ type Edit struct {
 }
 
 // EditFile applies exact text replacements to owned files in the agent's
-// worktree (REQ-WI-031, REQ-WI-032). Either every edit is applied or none.
+// worktree. Either every edit is applied or none.
 func (s *Service) EditFile(ctx context.Context, agent, id string, edits []Edit) error {
 	// Purpose: change parts of owned files without sending whole files.
 	it, att, err := s.attempt(ctx, agent, id)
@@ -51,7 +51,7 @@ func (s *Service) EditFile(ctx context.Context, agent, id string, edits []Edit) 
 
 // planEdits computes the new content of each edited file without writing.
 func planEdits(worktree, id string, owns []string, edits []Edit) (map[string]string, error) {
-	// Purpose: check every edit before any file changes (REQ-WI-032).
+	// Purpose: check every edit before any file changes.
 	if len(edits) == 0 {
 		return nil, errors.New(`edits is empty; pass [{"path": "...", "old": "exact text", "new": "replacement"}]`)
 	}

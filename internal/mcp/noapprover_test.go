@@ -8,7 +8,7 @@ import (
 	"github.com/consoleillusion/maid/internal/guide"
 )
 
-// REQ-PH-007 scenario: no approver in the tool
+// scenario: no approver in the tool
 func TestSetStatusHasNoApprover(t *testing.T) {
 	// Purpose: design_set_status takes no approver.
 	for _, tool := range (&Tools{}).List(context.Background()) {
@@ -27,7 +27,7 @@ func TestSetStatusHasNoApprover(t *testing.T) {
 	t.Fatal("design_set_status is not listed")
 }
 
-// REQ-PH-007 scenario: no approver in the step
+// scenario: no approver in the step
 func TestStepDoesNotAskForApproval(t *testing.T) {
 	// Purpose: the step for draft chapters tells the agent to accept them, without asking the user.
 	tl := approvalProject(t)

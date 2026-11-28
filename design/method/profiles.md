@@ -7,7 +7,7 @@ summary: >
   sets of recommended defaults for stack, architecture, code style, tools,
   templates and score weights. The design agent can accept, customise or ignore
   a profile. Each choice becomes a decision record that the user can change.
-links: [scoring, chapter-format, style-registry, ADR-0006]
+links: [scoring, format, styles, chapters-and-styles]
 ---
 
 # Profiles and default decisions
@@ -60,7 +60,7 @@ The values in this example are illustrations.
 
 ## Built-in profiles
 
-maid v1 ships several built-in profiles. The proposed set:
+maid v1 ships several built-in profiles:
 
 | Profile | Kind | Main defaults |
 |---|---|---|
@@ -70,48 +70,48 @@ maid v1 ships several built-in profiles. The proposed set:
 | `script-python` | script or tool | Python, uv, pytest, ruff, no docs generator |
 | `generic` | any | No stack defaults. The design agent makes every decision. |
 
-The final list and values are decided when the profiles are implemented. Each profile is a draft item until then.
+A project can override any value in its design. Each profile carries a version, so a project keeps the rules that applied when it chose the profile.
 
 ## Requirements
 
-### REQ-PR-001 Versioned profiles
+### Versioned profiles
 Each profile shall have a name and an integer version, and a project shall reference a profile by name and version.
 
-### REQ-PR-002 Default decision record
+### Default decision record
 When maid applies a default for a choice that the user did not make, maid shall write a decision record with `origin: default`, the profile name and version, the reason, and the conditions to revisit the decision.
 
-### REQ-PR-003 Origin
+### Origin
 Each decision record shall have an `origin` field with one of the values `user`, `default` or `agent`.
 
-### REQ-PR-004 Change of a default
+### Change of a default
 When an agent wants to change a decision with `origin: default`, the agent shall write a new decision that supersedes it.
 
-### REQ-PR-005 Change of a user decision
+### Change of a user decision
 When an agent wants to change a decision with `origin: user`, the agent shall write a proposal and shall not change the decision.
 
-### REQ-PR-006 Ports
+### Ports
 Where a decision selects a component that the design marks as replaceable, the decision shall name the port in `design/` that the component implements.
 
-### REQ-PR-007 Revisit conditions
+### Revisit conditions
 When a requirement changes in a way that meets a revisit condition of a decision, maid shall report the decision through `maid_next`.
 
-### REQ-PR-008 Metrics adapter selection
+### Metrics adapter selection
 The design agent shall select a metrics adapter for each language in the project from the adapters that the profile allows, and shall record the selection as a decision.
 
-### REQ-PR-009 Enforcement
+### Enforcement
 maid shall run the formatter and the linter that the decisions select, as checks in the merge queue.
 
-### REQ-PR-010 Recommendation
+### Recommendation
 When the user does not give enough information for a decision, maid shall recommend the profile that best matches the project kind, with the reason for the match.
 
-### REQ-PR-011 Agent choice
+### Agent choice
 The design agent shall make each choice freely, with the user or alone when the user delegates it, and shall record each choice as a decision.
 
-### REQ-PR-012 Origin of a customised value
+### Origin of a customised value
 If the design agent changes a profile value, then the decision for that value shall have `origin: agent` and shall name the profile value that it replaces.
 
-### REQ-PR-013 No matching profile
+### No matching profile
 If no profile matches the project, then maid shall recommend the `generic` profile.
 
-### REQ-PR-014 Optional docs generator
+### Optional docs generator
 Where the selected decisions name a `docs/` generator, maid shall run it after each accepted merge; otherwise maid shall not require `docs/`.

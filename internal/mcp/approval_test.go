@@ -26,14 +26,14 @@ func approvalProject(t *testing.T) *Tools {
 		}
 	}
 	tl := &Tools{Svc: work.New(root, config.Default(), tasks.NewMemory())}
-	vision := `{"path":"a/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nIt adds numbers.\n"}`
+	vision := `{"path":"a/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### Goal\nIt adds numbers.\n"}`
 	if r := tl.Call(context.Background(), "design_create", json.RawMessage(vision), "a"); r["isError"] == true {
 		t.Fatalf("design_create: %v", r)
 	}
 	return tl
 }
 
-// REQ-PH-007 scenario: tool without approved_by
+// scenario: tool without approved_by
 func TestSetStatusWithoutApprover(t *testing.T) {
 	// Purpose: design_set_status accepts without approved_by and names the agent in the commit.
 	tl := approvalProject(t)
@@ -55,7 +55,7 @@ func TestSetStatusWithoutApprover(t *testing.T) {
 	}
 }
 
-// REQ-PH-007 scenario: the agent accepts chapters itself
+// scenario: the agent accepts chapters itself
 func TestStepOffersDelegation(t *testing.T) {
 	// Purpose: maid_next tells the agent to accept the chapters itself.
 	tl := approvalProject(t)

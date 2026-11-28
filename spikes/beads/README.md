@@ -1,6 +1,6 @@
 # Beads spike
 
-Purpose: check whether Beads can be maid's task store (ADR-0005, assumption A-003).
+Purpose: check whether Beads can be maid's task store .
 
 Run: `spikes/beads/run.sh [workdir]`. Requires `bd`, `git` and `python3`.
 

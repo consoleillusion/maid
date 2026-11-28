@@ -12,7 +12,7 @@ import (
 	"github.com/consoleillusion/maid/internal/design"
 )
 
-// REQ-WI-007 scenario: no attempt branch
+// scenario: no attempt branch
 func TestClaimMakesNoBranch(t *testing.T) {
 	// Purpose: an attempt works in a detached worktree; only main and maid-auto exist.
 	s, root := project(t)
@@ -30,7 +30,7 @@ func TestClaimMakesNoBranch(t *testing.T) {
 	}
 }
 
-// REQ-ACC-007 REQ-ACC-021 scenario: one commit per task on maid-auto
+// scenario: one commit per task on maid-auto
 func TestAcceptedAttemptIsOneCommit(t *testing.T) {
 	// Purpose: an accepted attempt becomes one commit with a task trailer on maid-auto only.
 	s, root := project(t)
@@ -66,7 +66,7 @@ func createOp(path string) func(*design.Store) (design.WriteResult, error) {
 	}
 }
 
-// REQ-ACC-023 scenario: design change switches to the maid branch
+// scenario: design change switches to the maid branch
 func TestDesignChangeSwitchesToMaidBranch(t *testing.T) {
 	// Purpose: a clean checkout is switched to maid-auto and the design commit lands there.
 	s, root := project(t)
@@ -81,7 +81,7 @@ func TestDesignChangeSwitchesToMaidBranch(t *testing.T) {
 	}
 }
 
-// REQ-ACC-023 scenario: uncommitted changes
+// scenario: uncommitted changes
 func TestDesignChangeRefusedWithLocalChanges(t *testing.T) {
 	// Purpose: maid does not switch a checkout that has uncommitted changes.
 	s, root := project(t)

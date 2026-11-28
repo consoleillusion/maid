@@ -9,7 +9,7 @@ import (
 	"github.com/consoleillusion/maid/internal/tasks"
 )
 
-// Packet is the context packet of a claimed work item (REQ-WI-013).
+// Packet is the context packet of a claimed work item.
 type Packet struct {
 	WorkItem     tasks.WorkItem    `json:"work_item"`
 	Attempt      int               `json:"attempt"`
@@ -23,8 +23,8 @@ type Packet struct {
 	Reads        []string          `json:"reads,omitempty"`
 	Conventions  string            `json:"conventions,omitempty"`
 	Commands     map[string]string `json:"commands"`
-	References   map[string]string `json:"references,omitempty"` // design text named in the criteria (REQ-WI-030)
-	Tokens       int               `json:"tokens"`               // estimate (REQ-WI-014)
+	References   map[string]string `json:"references,omitempty"` // design text named in the criteria
+	Tokens       int               `json:"tokens"`               // estimate
 }
 
 func (s *Service) packet(ctx context.Context, it tasks.WorkItem, att state.Attempt) (Packet, error) {
@@ -145,37 +145,14 @@ func estimateTokens(p Packet) int {
 }
 
 func isDesignRef(ref string) bool {
-	// Purpose: accept design file paths, chapter#anchor refs and item IDs, not plain words.
+	// Purpose: accept design file paths and chapter#heading refs, not plain words.
 	if strings.HasPrefix(ref, "design/") && strings.HasSuffix(ref, ".md") {
 		return true
 	}
 	if i := strings.Index(ref, "#"); i > 0 && i < len(ref)-1 {
 		return true
 	}
-	return isItemID(ref)
-}
-
-func isItemID(ref string) bool {
-	// Purpose: match item IDs such as REQ-WI-030, ADR-0008 and Q-001.
-	parts := strings.Split(ref, "-")
-	if len(parts) < 2 {
-		return false
-	}
-	for _, p := range parts[:len(parts)-1] {
-		if p == "" || strings.ToUpper(p) != p || strings.ToLower(p) == p {
-			return false
-		}
-	}
-	last := parts[len(parts)-1]
-	if last == "" {
-		return false
-	}
-	for _, c := range last {
-		if c < '0' || c > '9' {
-			return false
-		}
-	}
-	return true
+	return false
 }
 
 func contains(list []string, s string) bool {

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// REQ-DOC-019 scenario: index files are committed
+// scenario: index files are committed
 func TestDesignCommitIncludesIndex(t *testing.T) {
 	// Purpose: a chapter created through maid is committed with index.md and index.typ.
 	s, root := project(t)

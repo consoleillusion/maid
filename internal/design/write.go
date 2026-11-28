@@ -11,10 +11,10 @@ import (
 	"time"
 )
 
-// ErrAccepted means a direct write hit an accepted chapter (REQ-DOC-011).
+// ErrAccepted means a direct write hit an accepted chapter.
 var ErrAccepted = errors.New("chapter is accepted; write a proposal instead")
 
-// ErrStale means the section changed after the writer read it (REQ-DOC-012).
+// ErrStale means the section changed after the writer read it.
 var ErrStale = errors.New("section changed since you read it; read it again and retry")
 
 // WriteResult is returned by every write.
@@ -26,7 +26,7 @@ type WriteResult struct {
 	Also     []string  `json:"also,omitempty"` // other files the write changed, such as design/index.md
 }
 
-// writable reports whether direct writes to ch are allowed (REQ-DOC-010, REQ-DOC-011).
+// writable reports whether direct writes to ch are allowed.
 func writable(ch *Chapter) error {
 	// Purpose: block direct writes to accepted and superseded chapters.
 	switch ch.FM.String("status") {
@@ -75,7 +75,7 @@ func (s *Store) AppendSection(chapterID, content string) (WriteResult, error) {
 }
 
 // Propose appends a proposal to a chapter, which is allowed even when the
-// chapter is accepted (REQ-DOC-011).
+// chapter is accepted.
 func (s *Store) Propose(chapterID, title, content, agent string) (WriteResult, error) {
 	// Purpose: record a proposed change without changing accepted text.
 	ch, err := s.ResolveChapter(chapterID)
@@ -92,7 +92,7 @@ func (s *Store) Propose(chapterID, title, content, agent string) (WriteResult, e
 // statusLine matches the status line of a frontmatter block.
 var statusLine = regexp.MustCompile(`(?m)^status:[^\n]*$`)
 
-// SetStatus changes the status of a chapter (REQ-PH-007).
+// SetStatus changes the status of a chapter.
 func (s *Store) SetStatus(chapterID, status string) (WriteResult, error) {
 	// Purpose: record a status change.
 	ch, err := s.ResolveChapter(chapterID)
@@ -133,7 +133,7 @@ func (s *Store) SetStatus(chapterID, status string) (WriteResult, error) {
 
 // ChapterSpec is the input of CreateChapter.
 type ChapterSpec struct {
-	Path    string   `json:"path"` // relative to design/, e.g. foundation/vision.md
+	Path    string   `json:"path"`            // relative to design/, e.g. foundation/vision.md
 	ID      string   `json:"id,omitempty"`    // ignored; derived from Path
 	Title   string   `json:"title,omitempty"` // ignored; derived from Body
 	Style   string   `json:"style"`
@@ -143,13 +143,12 @@ type ChapterSpec struct {
 	Body    string   `json:"body"`
 }
 
-// chapterPath is part/name.md or a root file such as questions.md; names
-// start with a letter, so they carry no position numbers (REQ-DOC-001).
+// chapterPath is part/name.md; names start with a letter and carry no position numbers.
 var chapterPath = regexp.MustCompile(`^([a-z][a-z0-9-]*/)?[a-z][a-z0-9._-]*\.md$`)
 
 // CreateChapter writes a new chapter with status draft.
 func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
-	// Purpose: start a new chapter with values derived from path and body (REQ-DOC-001, REQ-DOC-002).
+	// Purpose: start a new chapter with values derived from path and body.
 	c.Path = path.Clean(strings.TrimPrefix(c.Path, "design/"))
 	if !chapterPath.MatchString(c.Path) || strings.Contains(c.Path, "..") {
 		return WriteResult{}, fmt.Errorf("invalid chapter path %q: use part/name.md, lowercase words joined by hyphens, with no numbers in front", c.Path)
@@ -194,55 +193,12 @@ func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
 	return res, err
 }
 
-// AddQuestion appends a row to the questions table and returns its ID.
-func (s *Store) AddQuestion(question, blocks, owner string) (string, WriteResult, error) {
-	// Purpose: record missing information instead of a guess (REQ-DOC-013).
-	ch := s.byID["questions"]
-	if ch == nil {
-		return "", WriteResult{}, errors.New("design has no questions chapter (id: questions)")
-	}
-	max := 0
-	for id := range tableItems(ch) {
-		var n int
-		if _, err := fmt.Sscanf(id, "Q-%d", &n); err == nil && n > max {
-			max = n
-		}
-	}
-	id := fmt.Sprintf("Q-%03d", max+1)
-	if owner == "" {
-		owner = "user"
-	}
-	row := fmt.Sprintf("| %s | %s | | %s | open |", id, cell(question), cell(blocks))
-	lines := strings.Split(strings.TrimRight(ch.Body, "\n"), "\n")
-	last := -1
-	for i, l := range lines {
-		if strings.HasPrefix(strings.TrimSpace(l), "|") {
-			last = i
-		}
-	}
-	if last < 0 {
-		lines = append(lines, "", "| ID | Question | Answer | Updated items | Status |", "|---|---|---|---|---|", row)
-	} else {
-		lines = append(lines[:last+1], append([]string{row}, lines[last+1:]...)...)
-	}
-	res, err := s.save(ch, strings.Join(lines, "\n")+"\n", id, Version(row))
-	return id, res, err
-}
-
-func cell(s string) string {
-	// Purpose: keep text safe inside a Markdown table cell.
-	return strings.ReplaceAll(strings.ReplaceAll(strings.TrimSpace(s), "|", "/"), "\n", " ")
-}
-
 func (s *Store) locate(ref string) (*Chapter, *Section, error) {
 	// Purpose: find the chapter and section that a ref names.
 	if canonical, err := s.Resolve(ref); err == nil {
 		ref = canonical
 	} else {
 		return nil, nil, err
-	}
-	if it, ok := s.items[ref]; ok && it.Section != nil {
-		return it.Chapter, it.Section, nil
 	}
 	chID, anchor, found := strings.Cut(ref, "#")
 	if found {
@@ -252,7 +208,7 @@ func (s *Store) locate(ref string) (*Chapter, *Section, error) {
 			}
 		}
 	}
-	return nil, nil, fmt.Errorf("unknown section %q: use an item ID or chapter#anchor", ref)
+	return nil, nil, fmt.Errorf("unknown section %q: use chapter#anchor", ref)
 }
 
 func (s *Store) save(ch *Chapter, body, ref, version string) (WriteResult, error) {

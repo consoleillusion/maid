@@ -30,7 +30,7 @@ type Result struct {
 	Failures    map[string]string `json:"failures"` // test ID -> truncated output
 }
 
-// MaxOutput is the number of bytes of output kept for reports (REQ-ACC-009).
+// MaxOutput is the number of bytes of output kept for reports.
 const MaxOutput = 4000
 
 // Run runs command in dir with env and parses the output with adapter.

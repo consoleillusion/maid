@@ -13,8 +13,10 @@ import (
 
 	"github.com/consoleillusion/maid/internal/config"
 	"github.com/consoleillusion/maid/internal/design"
+	"github.com/consoleillusion/maid/internal/graph"
 	"github.com/consoleillusion/maid/internal/guide"
 	"github.com/consoleillusion/maid/internal/mcp"
+	"github.com/consoleillusion/maid/internal/setup"
 	"github.com/consoleillusion/maid/internal/state"
 	"github.com/consoleillusion/maid/internal/style"
 	"github.com/consoleillusion/maid/internal/tasks"
@@ -237,7 +239,7 @@ func service(root string) (*work.Service, error) {
 }
 
 func initProject(ctx context.Context, root string) error {
-	// Purpose: create maid.json, .maid/, the Beads database and the .gitignore entry.
+	// Purpose: create maid.json, .maid/, the Beads database and the project assets.
 	if _, err := os.Stat(root + "/" + config.File); errors.Is(err, os.ErrNotExist) {
 		if err := config.Write(root, config.Default()); err != nil {
 			return err
@@ -250,10 +252,25 @@ func initProject(ctx context.Context, root string) error {
 	if err := ensureIgnored(root, "/.maid/"); err != nil {
 		return err
 	}
+	created, err := design.EnsureIndexFiles(root)
+	if err != nil {
+		return err
+	}
+	assets, err := setup.Ensure(root)
+	if err != nil {
+		return err
+	}
+	for _, p := range append(created, assets...) {
+		fmt.Println("wrote", p)
+	}
 	cfg, err := config.Load(root)
 	if err != nil {
 		return err
 	}
+	if err := graph.Ensure(ctx, root, &cfg); err != nil {
+		return fmt.Errorf("code review graph: %w", err)
+	}
+	fmt.Println("code review graph is available through MCP")
 	cleanAttemptBranches(ctx, root)
 	if err := work.New(root, cfg, nil).OnMaidBranch(ctx); err != nil {
 		fmt.Println("maid branch:", err)
@@ -272,7 +289,7 @@ func initProject(ctx context.Context, root string) error {
 }
 
 func cleanAttemptBranches(ctx context.Context, root string) {
-	// Purpose: remove the maid/* branches and their worktrees from the old layout (REQ-ACC-024).
+	// Purpose: remove the maid/* branches and their worktrees from the old layout.
 	out, err := exec.CommandContext(ctx, "git", "-C", root, "worktree", "list", "--porcelain").Output()
 	if err == nil {
 		path := ""

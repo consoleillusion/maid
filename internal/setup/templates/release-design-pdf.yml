@@ -1,0 +1,53 @@
+name: Release design PDF
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  upload-design-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the release tag
+        id: tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.0$ ]]; then
+            echo "Skip $TAG: only major and minor releases (vX.Y.0) get a PDF." >> "$GITHUB_STEP_SUMMARY"
+            echo "release=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.tag.outputs.release == 'yes'
+
+      - name: Install Typst
+        if: steps.tag.outputs.release == 'yes'
+        run: |
+          version=0.15.1
+          curl -fsSL -o typst.tar.xz \
+            "https://github.com/typst/typst/releases/download/v${version}/typst-x86_64-unknown-linux-musl.tar.xz"
+          tar -xJf typst.tar.xz
+          mkdir -p "$HOME/.local/bin"
+          install -m 755 "typst-x86_64-unknown-linux-musl/typst" "$HOME/.local/bin/typst"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Build the dark-mode PDF
+        id: pdf
+        if: steps.tag.outputs.release == 'yes'
+        run: |
+          pdf="$(scripts/compile-pdf.sh --dark-only)"
+          echo "path=$pdf" >> "$GITHUB_OUTPUT"
+
+      - name: Attach the PDF to the release
+        if: steps.tag.outputs.release == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+          PDF: ${{ steps.pdf.outputs.path }}
+        run: gh release upload "$TAG" "$PDF" --clobber

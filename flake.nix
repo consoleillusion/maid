@@ -28,7 +28,7 @@
             version = "0.1.0-dev";
             src = self;
             subPackages = [ "cmd/maid" ];
-            # maid uses only the Go standard library (ADR-0007).
+            # maid uses only the Go standard library .
             vendorHash = null;
             env.CGO_ENABLED = "0";
             # The tests need git, go and bd at run time; run them in the dev shell.

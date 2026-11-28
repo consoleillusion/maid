@@ -9,7 +9,7 @@ import (
 	"github.com/consoleillusion/maid/internal/tasks"
 )
 
-// REQ-ACC-019 scenario: missing formatter
+// scenario: missing formatter
 func TestMissingFormatterIsEnvironmentError(t *testing.T) {
 	// Purpose: a missing tool is an environment error that does not use an attempt.
 	s, _ := project(t)
@@ -44,7 +44,7 @@ func TestMissingFormatterIsEnvironmentError(t *testing.T) {
 	}
 }
 
-// REQ-ACC-020 scenario: missing tools listed
+// scenario: missing tools listed
 func TestMissingToolsListed(t *testing.T) {
 	// Purpose: MissingTools names each configured command that is not installed.
 	s, _ := project(t)

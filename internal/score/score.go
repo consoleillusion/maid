@@ -1,5 +1,5 @@
 // Package score calculates the 0-100 score of an attempt.
-// See design/02-method/04-scoring.md.
+// See design/method/scoring.md.
 package score
 
 import "math"
@@ -30,13 +30,13 @@ type Report struct {
 	Components []Component
 }
 
-// Balanced returns the balanced weights (REQ-SC-014).
+// Balanced returns the balanced weights.
 func Balanced() Weights {
 	// Purpose: give the default weights used when a project sets none.
 	return Weights{Size: 0.4, Deps: 0.3, Complexity: 0.3, Reduction: 0.2, Bench: 0.2}
 }
 
-// Compute calculates the score (REQ-SC-013).
+// Compute calculates the score.
 func Compute(in Inputs, w Weights) Report {
 	// Purpose: combine the components into a score from 0 to 100.
 	acc := acceptanceComponent(in)

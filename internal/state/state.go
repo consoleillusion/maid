@@ -2,7 +2,7 @@
 // baseline, the merge queue lock and the activity log.
 //
 // v1 uses JSON files with file locks instead of SQLite, because maid is
-// built on the Go standard library only (ADR-0007). The package is the
+// built on the Go standard library only. The package is the
 // state store port; a SQLite adapter can replace it.
 package state
 
@@ -46,7 +46,7 @@ func (s Store) Ensure() error {
 type Lock struct{ f *os.File }
 
 // Lock blocks until it holds the named lock. It works across processes
-// (REQ-ACC-002, REQ-ACC-003).
+// .
 func (s Store) Lock(name string) (*Lock, error) {
 	// Purpose: serialise work across maid processes with flock.
 	if err := s.Ensure(); err != nil {
@@ -70,7 +70,7 @@ func (l *Lock) Unlock() {
 	_ = l.f.Close()
 }
 
-// Baseline is the test result on the main branch (REQ-ACC-011).
+// Baseline is the test result on the main branch.
 type Baseline struct {
 	Commit string            `json:"commit"`
 	Tests  map[string]string `json:"tests"`
@@ -112,7 +112,7 @@ type Attempt struct {
 	Result    *Report   `json:"result,omitempty"`
 }
 
-// Report is the merge queue result of an attempt (REQ-ACC-009, REQ-ACC-015).
+// Report is the merge queue result of an attempt.
 type Report struct {
 	Accepted     bool              `json:"accepted"`
 	Reason       string            `json:"reason"`
@@ -126,7 +126,7 @@ type Report struct {
 	Commit       string            `json:"commit,omitempty"`
 	MainBefore   string            `json:"main_before,omitempty"`
 	Escalated    bool              `json:"escalated,omitempty"`
-	Environment  bool              `json:"environment,omitempty"` // a check could not run (REQ-ACC-019)
+	Environment  bool              `json:"environment,omitempty"` // a check could not run
 	Finished     time.Time         `json:"finished"`
 }
 

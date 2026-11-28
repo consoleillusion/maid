@@ -57,14 +57,13 @@ func text(t *testing.T, reply map[string]any) string {
 	return c["text"].(string)
 }
 
-// REQ-MCP-001 REQ-MCP-002 REQ-PH-002 REQ-PH-004
 func TestProtocol(t *testing.T) {
 	// Purpose: initialize, list tools for the phase, and call tools with hints.
 	out := session(t,
 		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","clientInfo":{"name":"test"},"capabilities":{}}}`,
 		`{"jsonrpc":"2.0","method":"notifications/initialized"}`,
 		`{"jsonrpc":"2.0","id":2,"method":"tools/list"}`,
-		`{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"design_read","arguments":{"refs":["REQ-WI-004"]}}}`,
+		`{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"design_read","arguments":{"refs":["acceptance#submit"]}}}`,
 		`{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"maid_next","arguments":{}}}`,
 		`{"jsonrpc":"2.0","id":5,"method":"nope"}`,
 	)
@@ -83,7 +82,7 @@ func TestProtocol(t *testing.T) {
 	if !strings.Contains(joined, "maid_next") || !strings.Contains(joined, "work_claim") {
 		t.Fatalf("every tool must be listed in every phase: %s", joined)
 	}
-	if read := text(t, out[2]); !strings.Contains(read, "REQ-WI-004 Atomic claim") || !strings.Contains(read, "\nnext: ") {
+	if read := text(t, out[2]); !strings.Contains(read, "### Submit") || !strings.Contains(read, "\nnext: ") {
 		t.Fatalf("design_read = %s", read)
 	}
 	if next := text(t, out[3]); !strings.Contains(next, `"phase"`) {
@@ -94,7 +93,6 @@ func TestProtocol(t *testing.T) {
 	}
 }
 
-// REQ-PH-007 REQ-DOC-010
 func TestDesignFlowOverMCP(t *testing.T) {
 	// Purpose: an agent with no file access can create, accept and advance the design.
 	root := t.TempDir()
@@ -116,7 +114,7 @@ func TestDesignFlowOverMCP(t *testing.T) {
 	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "0-bootstrap") {
 		t.Fatalf("maid_next = %s", txt)
 	}
-	vision := `{"path":"foundation/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nThe tool adds numbers.\n\n### NG-001 No floats\nThe tool does not add floats.\n"}`
+	vision := `{"path":"foundation/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### Goal\nThe tool adds numbers.\n\n### No floats\nThe tool does not add floats.\n"}`
 	if txt, isErr := call("design_create", vision); isErr {
 		t.Fatalf("design_create: %s", txt)
 	}
@@ -141,20 +139,16 @@ func (brokenTasks) List(context.Context, bool) ([]tasks.WorkItem, error) {
 	// Purpose: simulate a task store that cannot be read.
 	return nil, errors.New("schema v66, bd expects v74")
 }
-
-// REQ-PH-003
 func TestNextSurvivesTaskStoreError(t *testing.T) {
 	// Purpose: design phases still work when the task store fails.
 	root, _ := filepath.Abs(filepath.Join("..", ".."))
 	svc := work.New(root, config.Default(), brokenTasks{tasks.NewMemory()})
 	r := (&Tools{Svc: svc}).Call(context.Background(), "maid_next", json.RawMessage(`{}`), "a")
 	txt := r["content"].([]map[string]any)[0]["text"].(string)
-	if r["isError"] == true || !strings.Contains(txt, "1-intent") || !strings.Contains(txt, "task store unavailable") {
+	if r["isError"] == true || !strings.Contains(txt, `"phase"`) || !strings.Contains(txt, "task store unavailable") {
 		t.Fatalf("maid_next = %s", txt)
 	}
 }
-
-// G-007
 func TestStatusSurvivesTaskStoreError(t *testing.T) {
 	// Purpose: maid_status reports a task store error instead of failing.
 	root, _ := filepath.Abs(filepath.Join("..", ".."))
@@ -165,8 +159,6 @@ func TestStatusSurvivesTaskStoreError(t *testing.T) {
 		t.Fatalf("maid_status = %s", txt)
 	}
 }
-
-// REQ-PH-001
 func TestNextGivesReadyCalls(t *testing.T) {
 	// Purpose: maid_next returns calls with arguments that work as they are.
 	root, _ := filepath.Abs(filepath.Join("..", ".."))
@@ -186,12 +178,10 @@ func TestNextGivesReadyCalls(t *testing.T) {
 	}
 	r = tl.Call(ctx, "design_read", json.RawMessage(`{"refs":["design/foundation/vision.md","visoin"]}`), "a")
 	txt := r["content"].([]map[string]any)[0]["text"].(string)
-	if !strings.Contains(txt, "G-001") || !strings.Contains(txt, `"did_you_mean"`) || !strings.Contains(txt, "vision") {
+	if !strings.Contains(txt, "Goals") || !strings.Contains(txt, `"did_you_mean"`) || !strings.Contains(txt, "vision") {
 		t.Fatalf("design_read with a path and a typo = %s", txt)
 	}
 }
-
-// REQ-PH-007
 func TestBatchAccept(t *testing.T) {
 	// Purpose: one call accepts many chapters in one commit and reports refusals.
 	root := t.TempDir()
@@ -205,7 +195,7 @@ func TestBatchAccept(t *testing.T) {
 	tl := &Tools{Svc: work.New(root, config.Default(), tasks.NewMemory())}
 	ctx := context.Background()
 	for _, c := range []string{
-		`{"path":"a/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nIt adds.\n"}`,
+		`{"path":"a/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### Goal\nIt adds.\n"}`,
 		`{"path":"a/glossary.md","id":"glossary","title":"Glossary","style":"sbvr-se","summary":"Terms.","body":"# Glossary\n\n## Terms\n\n**sum**: a total.\n"}`,
 	} {
 		if r := tl.Call(ctx, "design_create", json.RawMessage(c), "a"); r["isError"] == true {
@@ -229,8 +219,6 @@ func TestBatchAccept(t *testing.T) {
 		t.Fatalf("phase = %s", n.Phase)
 	}
 }
-
-// REQ-PH-004
 func TestWorkToolsRefusedBeforePlan(t *testing.T) {
 	// Purpose: work tools are listed but refuse calls before phase 5, with the next step.
 	root, _ := filepath.Abs(filepath.Join("..", ".."))

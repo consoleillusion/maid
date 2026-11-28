@@ -2,7 +2,6 @@ package glob
 
 import "testing"
 
-// REQ-WI-008
 func TestMatch(t *testing.T) {
 	// Purpose: cover single-segment and multi-segment wildcards.
 	cases := []struct {
@@ -25,8 +24,6 @@ func TestMatch(t *testing.T) {
 		}
 	}
 }
-
-// REQ-WI-003
 func TestOverlap(t *testing.T) {
 	// Purpose: detect overlapping owned paths conservatively.
 	if !Overlap([]string{"internal/store/**"}, []string{"internal/store/a.go"}) {

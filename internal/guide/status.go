@@ -8,7 +8,7 @@ import (
 	"github.com/consoleillusion/maid/internal/work"
 )
 
-// Status is the maid_status response: what humans need to see progress (G-007).
+// Status is the maid_status response: what humans need to see progress.
 type Status struct {
 	Next      Next            `json:"next"`
 	Chapters  map[string]int  `json:"chapters_by_status"`

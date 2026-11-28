@@ -6,12 +6,12 @@ summary: >
   The defined terms of maid and the business rules that connect them. Every
   chapter uses these terms with these meanings. If a term is not here, add it
   before you use it in a requirement.
-links: [vision, chapter-format]
+links: [vision, format]
 ---
 
 # Glossary and business rules
 
-Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are in plain text. See `design/styles/sbvr-se.md`.
+Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are in plain text. See the style chapter at `specification/styles.md#sbvr-structured-english`.
 
 ## Terms
 
@@ -27,19 +27,15 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 
 **section**: a level-2 or level-3 heading in a **chapter**, with its content.
 
-**item**: a **section** that has a stable ID. A **requirement**, a **goal**, a **decision** and a **question** are each an **item**.
+**requirement**: a statement in a **chapter** that specifies a behaviour or a quality that the **project** must have.
 
-**requirement**: an **item** that states a behaviour or a quality that the **project** must have.
-
-**decision**: an **item** in `design/decisions/` that records a choice, its context and its consequences.
+**decision**: a **chapter** in `design/decisions/` that records a choice, its context and its consequences.
 
 **default decision**: a **decision** that maid makes from a **profile** because the user did not make the choice.
 
-**question**: an **item** in `questions.md` that records missing information.
+**style**: a named writing standard, such as Simplified Technical English or EARS.
 
-**style**: a named writing standard, such as STE or EARS.
-
-**style card**: a **chapter** in `design/styles/` that describes a **style** for writers.
+**style card**: a **section** in `specification/styles.md` that describes a **style** for writers.
 
 **validator**: a program that checks text against a **style**.
 
@@ -48,6 +44,8 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 **phase**: a stage of the progression of a **project**.
 
 **gate**: a set of conditions that maid checks before a **project** leaves a **phase**.
+
+**agent**: an AI agent or a human that calls maid.
 
 **design agent**: an agent that writes the **design**, the **work items** and the **acceptance criteria**.
 
@@ -86,7 +84,6 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 ## Fact types
 
 - **chapter** _is in_ **part**
-- **item** _is in_ **chapter**
 - **chapter** _uses_ **style**
 - **work item** _implements_ **requirement**
 - **work item** _has_ **acceptance criterion**
@@ -110,4 +107,4 @@ Notation: **term** is a noun concept. _verb phrase_ is a fact type. Keywords are
 - It is obligatory that maid rejects each **submission** that causes a **regression**.
 - It is prohibited that two **work items** that run at the same time _own_ the same file path.
 - It is obligatory that each **default decision** states the **profile** that it _comes from_.
-- It is obligatory that an agent records a **question** instead of a guess when information is missing.
+- It is obligatory that an **agent** asks the user instead of guessing when information is missing.

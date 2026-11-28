@@ -45,10 +45,10 @@ links: []
 
 # Vision
 
-### G-001 Goal
+### Goal
 The tool adds numbers.
 
-### NG-001 No floats
+### No floats
 The tool does not add floats.
 `
 
@@ -74,7 +74,7 @@ func tasklistProject(t *testing.T) (*work.Service, *tasks.Memory) {
 	return work.New(root, config.Default(), port), port
 }
 
-// REQ-PH-024 scenario: several ready tasks
+// scenario: several ready tasks
 func TestNextListsReadyTasks(t *testing.T) {
 	// Purpose: maid_next lists every ready work item with its id, title and kind.
 	svc, port := tasklistProject(t)
@@ -112,7 +112,7 @@ func TestNextListsReadyTasks(t *testing.T) {
 	}
 }
 
-// REQ-PH-024 scenario: no ready tasks
+// scenario: no ready tasks
 func TestNextListsNoTasks(t *testing.T) {
 	// Purpose: tasks is an empty list, not null, when nothing is ready.
 	svc, _ := tasklistProject(t)
@@ -128,7 +128,7 @@ func TestNextListsNoTasks(t *testing.T) {
 	}
 }
 
-// REQ-PH-025 scenario: plain prompts
+// scenario: plain prompts
 func TestInstructionsForPlainPrompts(t *testing.T) {
 	// Purpose: initialize tells agents to work on the tasks that maid_next lists.
 	const sentence = "Whenever the user asks you to work on this project, call maid_next and work on the tasks it lists."

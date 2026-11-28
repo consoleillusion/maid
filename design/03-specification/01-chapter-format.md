@@ -82,6 +82,21 @@ The file `design/index.md` shall contain the design title as a level-1 heading, 
 ### REQ-DOC-015 Links
 Each ID in the `links` field shall resolve to an existing chapter, item or decision.
 
+### REQ-DOC-016 Complete index
+maid shall report an error for each chapter in a part folder that `design/index.md` does not list, and for each entry in `design/index.md` whose file does not exist.
+
+### REQ-DOC-017 New chapters in the index
+When an agent creates a chapter, maid shall add a link to the chapter at the end of the list of its part in `design/index.md`, and shall add a level-2 heading for the part if `design/index.md` has none.
+
+### REQ-DOC-018 PDF build
+The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the reading order from `design/index.md`, include each chapter with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.
+
+### REQ-DOC-019 Index files
+When maid creates a chapter, maid shall create `design/index.md` and `design/index.typ` if they do not exist.
+
+### REQ-DOC-020 Part field
+If a chapter has a `part` field, then its value shall equal the name of the part folder that contains the chapter.
+
 ## Frontmatter reference
 
 | Field | Type | Meaning |

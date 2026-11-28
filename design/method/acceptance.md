@@ -117,3 +117,6 @@ If a check cannot run because its command does not exist or cannot start, then t
 
 ### REQ-ACC-020 Tool check at start
 When maid starts, maid shall check that the configured test, format and lint commands exist, and maid_next and maid_status shall report each missing command as a warning.
+
+### REQ-ACC-025 Redefined acceptance tests
+When the merge queue checks a tests item for regressions, it shall not count the acceptance tests of that item, because they must fail until the code item is done.

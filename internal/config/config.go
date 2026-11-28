@@ -28,15 +28,23 @@ type Budget struct {
 	MaxChangedLines int `json:"max_changed_lines"`
 }
 
+// CodeReviewGraph holds the command that starts the graph MCP server.
+type CodeReviewGraph struct {
+	Command []string `json:"command,omitempty"`
+	Args    []string `json:"args,omitempty"`
+	Enabled bool     `json:"enabled,omitempty"`
+}
+
 // Config is the content of maid.json.
 type Config struct {
-	Branch      string   `json:"branch"` // every maid commit goes here
-	Test        Test     `json:"test"`
-	FormatCheck []string `json:"format_check,omitempty"` // must exit 0 and print nothing
-	Lint        []string `json:"lint,omitempty"`         // must exit 0
-	Budget      Budget   `json:"budget"`
-	Bd          string   `json:"bd,omitempty"`
-	PortRange   int      `json:"port_range,omitempty"` // ports per attempt
+	Branch          string          `json:"branch"` // every maid commit goes here
+	Test            Test            `json:"test"`
+	FormatCheck     []string        `json:"format_check,omitempty"` // must exit 0 and print nothing
+	Lint            []string        `json:"lint,omitempty"`         // must exit 0
+	Budget          Budget          `json:"budget"`
+	Bd              string          `json:"bd,omitempty"`
+	PortRange       int             `json:"port_range,omitempty"` // ports per attempt
+	CodeReviewGraph CodeReviewGraph `json:"code_review_graph,omitempty"`
 }
 
 // Default returns the configuration for a Go project.

@@ -94,7 +94,10 @@ When an agent creates a chapter, maid shall add the path of the chapter to `desi
 The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the title and the reading order from `design/index.md`, start a part at each new part folder, include each file with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.
 
 ### REQ-DOC-019 Index files
-When maid creates a chapter, maid shall create `design/index.md` and `design/index.typ` if they do not exist.
+When maid creates a chapter, maid shall create `design/index.md` and `design/index.typ` if they do not exist, and shall commit them with the chapter.
+
+### REQ-DOC-021 Index is not a chapter
+The design store shall not load `design/index.md` as a chapter.
 
 ### REQ-DOC-020 Part field
 If a chapter has a `part` field, then its value shall equal the name of the part folder that contains the chapter.

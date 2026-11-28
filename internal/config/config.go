@@ -60,7 +60,7 @@ func Default() Config {
 		CodeReviewGraph: CodeReviewGraph{
 			Command: []string{"code-review-graph"},
 			Args:    []string{"serve"},
-			Enabled: true,
+			Enabled: false,
 		},
 	}
 }

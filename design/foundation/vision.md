@@ -63,18 +63,9 @@ The design is the source of truth. All agents and all humans read the same desig
 | SM-003 | Accepted commits that break a previously passing test | 0 |
 | SM-004 | Time for a new agent to start useful work after it connects | One `maid_next` call |
 
-## User time
+## **How maid feels to use**
 
-### G-010 Few user turns
-maid asks the user only for information that only the user has. It asks every question of a phase in one message. The design agent makes all other decisions and records them as decisions that the user can change. Each extra user turn costs the user time and costs an expensive model turn.
-
-## How maid feels to use
-
-### G-011 Plain prompts
-The user asks the agent to work on the project in plain words. maid tells the agent which tasks are available. The user does not need special syntax.
-
-### G-012 Guidance, not gates
-Metrics, automatic formatting, tests, documentation and code graphs show agents what a successful commit is. They do not slow development. See ADR-0008.
-
-### G-013 Any language
-maid measures any language with language-independent measures. Adapters add better measures for each language, a few languages first.
+- **Few user prompts:** maid asks the user only for information that only the user has. It asks every question of a phase in one message. The design agent makes all other decisions and records them as decisions that the user can change. Each extra user turn costs the user time and costs an expensive model turn.
+- **Plain prompts:** The user asks the agent to work on the project in plain words. maid tells the agent which tasks are available. The user does not need special syntax.
+- **Guidance, not gates:** Metrics, automatic formatting, tests, documentation and code graphs show agents what a successful commit is. They do not slow development. See ADR-0008.
+- **Any language:** maid measures any language with language-independent measures. Adapters add better measures for each language, a few languages first.

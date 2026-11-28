@@ -38,7 +38,7 @@ A chapter covers one area of the project. A chapter can be 1 to 20 pages. An age
 ## Requirements
 
 ### REQ-DOC-001 Chapter location
-The design store shall contain each chapter as exactly one Markdown file in exactly one part folder.
+The design store shall contain each chapter as exactly one Markdown file at `design/<part>/<chapter>.md`, where the part and chapter names are lowercase, hyphenated and do not start with a digit.
 
 ### REQ-DOC-002 Frontmatter
 Each chapter shall start with YAML frontmatter that contains the fields `id`, `title`, `part`, `status`, `style`, `owner`, `summary` and `links`.

@@ -144,9 +144,10 @@ func (s *Server) initialize(params json.RawMessage) any {
 		"serverInfo":      map[string]any{"name": "maid", "version": Version},
 		"instructions": fmt.Sprintf("maid (always written in lowercase) guides this project from design to accepted code. Current phase: %s. "+
 			"Call maid_next before anything else. It returns the step, the questions to ask the user, and ready-to-run tool calls in \"calls\". "+
+			"Whenever the user asks you to work on this project, call maid_next and work on the tasks it lists. "+
 			"Use maid's tools to read and change the design; you do not need file access for the design phases. "+
 			"Ask the user everything in ask_user in ONE message, never one question at a time, and act on all the answers together. "+
-			"design/ is the source of truth; read only the sections you need. Never guess missing information: record a question with design_question.", phase),
+			"design/ is the source of truth; read only the sections you need. Never guess missing information: ask the user instead.", phase),
 	}
 }
 

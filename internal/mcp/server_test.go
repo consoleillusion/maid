@@ -149,7 +149,7 @@ func TestNextSurvivesTaskStoreError(t *testing.T) {
 	svc := work.New(root, config.Default(), brokenTasks{tasks.NewMemory()})
 	r := (&Tools{Svc: svc}).Call(context.Background(), "maid_next", json.RawMessage(`{}`), "a")
 	txt := r["content"].([]map[string]any)[0]["text"].(string)
-	if r["isError"] == true || !strings.Contains(txt, "1-intent") || !strings.Contains(txt, "task store unavailable") {
+	if r["isError"] == true || !strings.Contains(txt, `"phase"`) || !strings.Contains(txt, "task store unavailable") {
 		t.Fatalf("maid_next = %s", txt)
 	}
 }

@@ -86,8 +86,8 @@ type StatusResult struct {
 }
 
 // SetStatusBatch changes the status of many chapters under one lock and
-// records them in one commit, so a user can approve a set at once.
-func (s *Service) SetStatusBatch(ctx context.Context, agent string, ids []string, status, approvedBy string) ([]StatusResult, error) {
+// records them in one commit.
+func (s *Service) SetStatusBatch(ctx context.Context, agent string, ids []string, status string) ([]StatusResult, error) {
 	// Purpose: accept or change many chapters with one call and one commit.
 	lock, err := s.State.Lock("design")
 	if err != nil {
@@ -104,7 +104,7 @@ func (s *Service) SetStatusBatch(ctx context.Context, agent string, ids []string
 	var out []StatusResult
 	var paths, done []string
 	for _, id := range ids {
-		res, err := ds.SetStatus(id, status, approvedBy)
+		res, err := ds.SetStatus(id, status)
 		if err != nil {
 			out = append(out, StatusResult{ID: id, Error: err.Error()})
 			continue
@@ -119,12 +119,8 @@ func (s *Service) SetStatusBatch(ctx context.Context, agent string, ids []string
 	if len(paths) == 0 {
 		return out, nil
 	}
-	// The commit names who approved the change, or the agent that made it
-	// when the user delegated approval (REQ-PH-007).
+	// The commit names the agent that made the change (REQ-PH-007).
 	who := " (by " + agent + ")"
-	if approvedBy != "" {
-		who = " (approved by " + approvedBy + ")"
-	}
 	subject := fmt.Sprintf("design: %s %s%s", status, strings.Join(done, ", "), who)
 	if len(done) > 3 {
 		subject = fmt.Sprintf("design: %s %d chapters%s", status, len(done), who)

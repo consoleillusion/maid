@@ -123,14 +123,14 @@ func TestDesignFlowOverMCP(t *testing.T) {
 	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "1-intent") || !strings.Contains(txt, "design_set_status") {
 		t.Fatalf("maid_next after create = %s", txt)
 	}
-	if txt, isErr := call("design_set_status", `{"id":"vision","status":"accepted","approved_by":"paul"}`); isErr {
+	if txt, isErr := call("design_set_status", `{"id":"vision","status":"accepted"}`); isErr {
 		t.Fatalf("design_set_status: %s", txt)
 	}
 	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "5-plan") {
 		t.Fatalf("maid_next after accept = %s", txt)
 	}
 	log, _ := exec.Command("git", "-C", root, "log", "--format=%s").Output()
-	if !strings.Contains(string(log), "design: accepted vision (approved by paul)") {
+	if !strings.Contains(string(log), "design: accepted vision (by haiku-1)") {
 		t.Fatalf("git log = %s", log)
 	}
 }
@@ -213,16 +213,16 @@ func TestBatchAccept(t *testing.T) {
 		}
 	}
 	n, _ := guide.Compute(ctx, tl.Svc, "", "a")
-	if len(n.AskUser) != 1 || !strings.Contains(n.AskUser[0], "vision, glossary") {
-		t.Fatalf("expected one question listing both chapters: %+v", n.AskUser)
+	if !strings.Contains(n.Step, "vision, glossary") {
+		t.Fatalf("expected one step listing both chapters: %q", n.Step)
 	}
-	r := tl.Call(ctx, "design_set_status", json.RawMessage(`{"ids":["vision","glossary","nope"],"status":"accepted","approved_by":"paul"}`), "a")
+	r := tl.Call(ctx, "design_set_status", json.RawMessage(`{"ids":["vision","glossary","nope"],"status":"accepted"}`), "a")
 	txt := r["content"].([]map[string]any)[0]["text"].(string)
 	if strings.Count(txt, `"ok": true`) != 2 || !strings.Contains(txt, `nothing in the design matches \"nope\"`) {
 		t.Fatalf("batch result = %s", txt)
 	}
 	log, _ := exec.Command("git", "-C", root, "log", "-1", "--format=%s").Output()
-	if !strings.Contains(string(log), "accepted vision, glossary (approved by paul)") {
+	if !strings.Contains(string(log), "accepted vision, glossary (by a)") {
 		t.Fatalf("last commit = %s", log)
 	}
 	if n, _ = guide.Compute(ctx, tl.Svc, "", "a"); n.Phase != "5-plan" {

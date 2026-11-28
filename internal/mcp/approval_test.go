@@ -55,15 +55,15 @@ func TestSetStatusWithoutApprover(t *testing.T) {
 	}
 }
 
-// REQ-PH-007 scenario: step offers delegation
+// REQ-PH-007 scenario: the agent accepts chapters itself
 func TestStepOffersDelegation(t *testing.T) {
-	// Purpose: maid_next tells the agent it may accept chapters itself.
+	// Purpose: maid_next tells the agent to accept the chapters itself.
 	tl := approvalProject(t)
 	n, err := guide.Compute(context.Background(), tl.Svc, "", "a")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(n.Step, "unless the user wants to approve") {
+	if !strings.Contains(n.Step, "accept them all with ONE design_set_status call") {
 		t.Errorf("step = %q", n.Step)
 	}
 }

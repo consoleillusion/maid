@@ -92,10 +92,9 @@ func (s *Store) Propose(chapterID, title, content, agent string) (WriteResult, e
 // statusLine matches the status line of a frontmatter block.
 var statusLine = regexp.MustCompile(`(?m)^status:[^\n]*$`)
 
-// SetStatus changes the status of a chapter. approvedBy names the person who
-// approved it; it may be empty when an agent accepts on the user's behalf (REQ-PH-007).
-func (s *Store) SetStatus(chapterID, status, approvedBy string) (WriteResult, error) {
-	// Purpose: record a status change, such as a human or delegated acceptance.
+// SetStatus changes the status of a chapter (REQ-PH-007).
+func (s *Store) SetStatus(chapterID, status string) (WriteResult, error) {
+	// Purpose: record a status change.
 	ch, err := s.ResolveChapter(chapterID)
 	if err != nil {
 		return WriteResult{}, err

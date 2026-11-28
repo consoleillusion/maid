@@ -141,19 +141,19 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_set_status", "Change the status of one or more chapters in one call and one commit. Pass ids (a list of chapter IDs or file paths). Use status accepted only for chapters that the user approved. Pass approved_by with the name of the person who approved them; leave it out when the user delegated approval to you. Chapters with check errors are refused and listed; the others still change. Example: {\"ids\": [\"vision\", \"glossary\"], \"status\": \"accepted\", \"approved_by\": \"Paul\"}",
+	{tool: Tool{"design_set_status", "Change the status of one or more chapters in one call and one commit. Pass ids (a list of chapter IDs or file paths). Set status accepted when a chapter is ready. Chapters with check errors are refused and listed; the others still change. Example: {\"ids\": [\"vision\", \"glossary\"], \"status\": \"accepted\"}",
 		obj(map[string]any{"ids": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "chapter IDs or paths"},
 			"id": str("one chapter ID; use ids for several"), "status": map[string]any{"type": "string", "enum": []string{"stub", "draft", "review", "accepted", "superseded"}},
-			"approved_by": str("the person who approved; leave out when the user delegated approval to you"), "agent": agentProp}, "status")},
+			"agent": agentProp}, "status")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
 			ids := lArg(a, "ids")
 			if id := sArg(a, "id"); id != "" {
 				ids = append(ids, id)
 			}
 			if len(ids) == 0 {
-				return nil, "", errors.New(`pass ids, for example {"ids": ["vision"], "status": "accepted", "approved_by": "Paul"}`)
+				return nil, "", errors.New(`pass ids, for example {"ids": ["vision"], "status": "accepted"}`)
 			}
-			res, err := t.Svc.SetStatusBatch(ctx, agent, ids, sArg(a, "status"), sArg(a, "approved_by"))
+			res, err := t.Svc.SetStatusBatch(ctx, agent, ids, sArg(a, "status"))
 			hint := "call maid_next"
 			for _, r := range res {
 				if !r.OK {

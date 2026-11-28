@@ -79,7 +79,7 @@ When maid receives a write to a section, maid shall reject the write if the sect
 If a writer does not have the information for a required section, then the writer shall write `TBD (Q-NNN)` and shall add question `Q-NNN` to `questions.md`.
 
 ### REQ-DOC-014 Reading order
-The file `design/index.md` shall contain only the design title as a level-1 heading and a numbered list of file paths, relative to `design/`, in reading order.
+The file `design/index.md` shall contain only the design title as a level-1 heading and a bulleted list of file paths, relative to `design/`, in reading order.
 
 ### REQ-DOC-015 Links
 Each ID in the `links` field shall resolve to an existing chapter, item or decision.

@@ -129,27 +129,13 @@ ask_user:
 
 Some MCP clients load the tool list once and ignore `tools/list_changed`. So maid lists every tool in every phase. Tools that the current phase does not allow refuse the call and return the next step.
 
-## Requirements: phases as tasks
-
-The phases in this chapter are the order of the tasks that `maid init` seeds. They guide agents. They do not block work. See the decision to treat everything as a task.
+## Requirements: agents and work items
 
 ### Task list
-When an agent calls maid_next, maid shall list every task that is ready for the agent, which can be none, one or several.
+When an agent calls `maid_next`, maid shall list every task that is ready for the agent, which can be none, one or several.
 
 ### Plain prompts
-The MCP server shall instruct agents to call maid_next whenever the user asks them to work on the project.
-
-### Seeded tasks
-When maid initialises a project, maid shall create tasks to record the current state, record the target state, write the design, plan the tasks and set up the project.
-
-### Design tasks
-When an agent submits a task of kind design, the merge queue shall accept it when the design check reports no errors and the chapters that the task names exist.
-
-### Roadmap before work items
-If the roadmap is missing or incomplete and work items do not exist, then `maid_next` shall direct the agent to complete the roadmap and the design chapters before the agent plans work items.
-
-### Work items from the roadmap
-When the roadmap is clear and work items do not exist, `maid_next` shall direct the agent to create work items from the accepted requirements that the roadmap names.
+The MCP server shall instruct agents to call `maid_next` whenever the user asks them to work on the project.
 
 ### Any agent can take work
 The MCP server shall hand tasks to any agent that connects through its tools.
@@ -158,7 +144,7 @@ The MCP server shall hand tasks to any agent that connects through its tools.
 The MCP server shall not restrict work items to a role or a named agent.
 
 ### Capable agent recommended
-When `maid_next` directs an agent to create work items from the roadmap, `maid_next` shall recommend a capable agent for the planning work.
+When an agent plans work items, maid shall recommend a capable agent for the planning work.
 
 ### No requirement for a capable agent
 The MCP server shall not require a capable agent to call `work_plan`.

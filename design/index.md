@@ -22,4 +22,3 @@
 - decisions/beads-task-store.md
 - decisions/chapters-and-styles.md
 - decisions/stdlib-only.md
-- decisions/everything-is-a-task.md

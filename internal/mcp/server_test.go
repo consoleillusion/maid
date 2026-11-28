@@ -123,9 +123,6 @@ func TestDesignFlowOverMCP(t *testing.T) {
 	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "1-intent") || !strings.Contains(txt, "design_set_status") {
 		t.Fatalf("maid_next after create = %s", txt)
 	}
-	if _, isErr := call("design_set_status", `{"id":"vision","status":"accepted"}`); !isErr {
-		t.Fatal("accepted without approved_by")
-	}
 	if txt, isErr := call("design_set_status", `{"id":"vision","status":"accepted","approved_by":"paul"}`); isErr {
 		t.Fatalf("design_set_status: %s", txt)
 	}

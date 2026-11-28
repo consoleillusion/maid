@@ -138,10 +138,10 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_set_status", "Change the status of one or more chapters in one call and one commit. Pass ids (a list of chapter IDs or file paths). Use status accepted ONLY for chapters the user explicitly approved in this conversation, and pass their name in approved_by. Chapters with check errors are refused and listed; the others still change. Example: {\"ids\": [\"vision\", \"glossary\"], \"status\": \"accepted\", \"approved_by\": \"Paul\"}",
+	{tool: Tool{"design_set_status", "Change the status of one or more chapters in one call and one commit. Pass ids (a list of chapter IDs or file paths). Use status accepted only for chapters that the user approved. Pass approved_by with the name of the person who approved them; leave it out when the user delegated approval to you. Chapters with check errors are refused and listed; the others still change. Example: {\"ids\": [\"vision\", \"glossary\"], \"status\": \"accepted\", \"approved_by\": \"Paul\"}",
 		obj(map[string]any{"ids": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "chapter IDs or paths"},
 			"id": str("one chapter ID; use ids for several"), "status": map[string]any{"type": "string", "enum": []string{"stub", "draft", "review", "accepted", "superseded"}},
-			"approved_by": str("the person who approved; required for accepted and superseded"), "agent": agentProp}, "status")},
+			"approved_by": str("the person who approved; leave out when the user delegated approval to you"), "agent": agentProp}, "status")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
 			ids := lArg(a, "ids")
 			if id := sArg(a, "id"); id != "" {
@@ -149,9 +149,6 @@ var defs = []def{
 			}
 			if len(ids) == 0 {
 				return nil, "", errors.New(`pass ids, for example {"ids": ["vision"], "status": "accepted", "approved_by": "Paul"}`)
-			}
-			if st := sArg(a, "status"); (st == "accepted" || st == "superseded") && sArg(a, "approved_by") == "" {
-				return nil, "", fmt.Errorf("approved_by is missing. Ask the user whether they accept %s. If they say yes, call design_set_status again with approved_by set to their name", strings.Join(ids, ", "))
 			}
 			res, err := t.Svc.SetStatusBatch(ctx, agent, ids, sArg(a, "status"), sArg(a, "approved_by"))
 			hint := "call maid_next"
@@ -330,7 +327,7 @@ func (t *Tools) Call(ctx context.Context, name string, raw json.RawMessage, defa
 		if err != nil {
 			return errorResult(err.Error() + "\nnext: call maid_next")
 		}
-		b, _ := json.MarshalIndent(v, "", " ")
+		b, _ := json.MarshalIndent(v, "", "  ")
 		return map[string]any{"content": []map[string]any{{"type": "text", "text": string(b) + "\nnext: " + hint}}}
 	}
 	return errorResult("unknown tool " + name)

@@ -114,8 +114,9 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 		return Next{
 			Phase: phase,
 			Step: fmt.Sprintf("Ask the user ONE question that lists all %d chapters waiting for approval (with their one-line summaries from design_index): "+
-				"do they accept all of them, or which do they want changed? Then record every accepted chapter with ONE design_set_status call. "+
-				"Change only the chapters they name, with design_write.", len(pending)),
+				"do they accept all of them, or which do they want changed? Change only the chapters they name, with design_write. "+
+				"Then record every accepted chapter with ONE design_set_status call and approved_by set to their name. "+
+				"Or, unless the user wants to approve, accept the chapters yourself with ONE design_set_status call and no approved_by, and tell the user which chapters you accepted.", len(pending)),
 			Why: why, Read: []string{"index"},
 			Tools:    []string{"design_index", "design_set_status", "design_read", "design_write", "design_question"},
 			DoneWhen: []string{"every chapter that the plan needs has status accepted"},

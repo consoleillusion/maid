@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -67,6 +68,9 @@ func TestTemplatesMatchRepository(t *testing.T) {
 		".github/workflows/release-design-pdf.yml": filepath.Join("..", "..", ".github", "workflows", "release-design-pdf.yml"),
 	}
 	for _, f := range files {
+		if f.Path == "scripts/compile-pdf.sh" {
+			continue // the repository script runs the template; see TestRepositoryScriptUsesTemplate
+		}
 		b, err := os.ReadFile(repo[f.Path])
 		if err != nil {
 			t.Fatal(err)
@@ -74,5 +78,37 @@ func TestTemplatesMatchRepository(t *testing.T) {
 		if !reflect.DeepEqual(b, f.Data) {
 			t.Errorf("%s differs from its embedded template", f.Path)
 		}
+	}
+}
+
+// scenario: repository build script delegates to the installed template
+func TestRepositoryScriptUsesTemplate(t *testing.T) {
+	// Purpose: the build logic exists in one script, which projects also get.
+	files, err := Files()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var template string
+	for _, f := range files {
+		if f.Path == "scripts/compile-pdf.sh" {
+			template = string(f.Data)
+		}
+	}
+	if template == "" {
+		t.Fatal("no embedded compile-pdf.sh template")
+	}
+	repo, err := os.ReadFile(filepath.Join("..", "..", "scripts", "compile-pdf.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := string(repo)
+	if !strings.Contains(got, "internal/setup/templates/compile-pdf.sh") || !strings.Contains(got, "MAID_ROOT") {
+		t.Errorf("repository script does not run the installed template:\n%s", got)
+	}
+	if strings.Contains(got, "typst compile") {
+		t.Errorf("repository script duplicates the build logic:\n%s", got)
+	}
+	if !strings.Contains(template, `root="${MAID_ROOT:-`) {
+		t.Errorf("template cannot run from another directory:\n%s", template)
 	}
 }

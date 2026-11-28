@@ -133,7 +133,7 @@ func TestIndexTypTemplate(t *testing.T) {
 		t.Fatal(err)
 	}
 	typ := string(b)
-	for _, want := range []string{`read("index.md")`, "@preview/cmarker", "@preview/merman", "render-with-metadata", "show-mermaid-blocks", `it.lang == "mermaid"`, "bottom + left", "Sans", "font:"} {
+	for _, want := range []string{`read("index.md")`, "@preview/cmarker", "@preview/merman", "render-with-metadata", "show-mermaid-blocks", `it.lang == "mermaid"`, "bottom + left", "Sans", "font:", "lower(title)", "lower(breadcrumb-part.get())"} {
 		if !strings.Contains(typ, want) {
 			t.Errorf("index.typ does not contain %q", want)
 		}

@@ -88,7 +88,7 @@ Each ID in the `links` field shall resolve to an existing chapter, item or decis
 maid shall report an error for each chapter in a part folder that `design/index.md` does not list, and for each entry in `design/index.md` whose file does not exist.
 
 ### REQ-DOC-017 New chapters in the index
-When an agent creates a chapter, maid shall add a link to the chapter at the end of the list of its part in `design/index.md`, and shall add a level-2 heading for the part if `design/index.md` has none.
+When an agent creates a chapter, maid shall add the path of the chapter to `design/index.md` after the last path in the same part folder, or at the end of the list when no path is in that folder.
 
 ### REQ-DOC-018 PDF build
 The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the reading order from `design/index.md`, include each chapter with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.

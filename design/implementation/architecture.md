@@ -54,6 +54,10 @@ Each MCP client starts its own maid process over stdio. A client can also connec
 - The state store writes each file atomically through a temporary file.
 - One process at a time runs the merge queue. The process holds an exclusive file lock. The operating system releases the lock if the process stops.
 
+## Project assets
+
+maid installs a small set of files in a new project. `design/index.typ` builds the book. `scripts/compile-pdf.sh` builds a light PDF and a dark PDF. `.github/workflows/release-design-pdf.yml` attaches the dark PDF to a major or minor release. `.gitattributes` marks PDFs as generated. maid does not overwrite these files when they already exist.
+
 ## State locations
 
 | State | Location | In git |

@@ -18,7 +18,8 @@ links: [styles, chapters-and-styles]
 ```text
 design/
   index.md                  design title and the files in reading order
-  index.typ                 builds one PDF of the design from index.md
+  index.typ                 builds the light and dark PDFs from index.md
+  cover_image.png           optional image on the title page
   foundation/
     <chapter-name>.md
   specification/
@@ -96,7 +97,28 @@ maid shall report an error for each chapter in a part folder that `design/index.
 When an agent creates a chapter, maid shall add the path of the chapter to `design/index.md` after the last path in the same part folder, or at the end of the list when no path is in that folder.
 
 ### PDF build
-The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the title and the reading order from `design/index.md`, start a part at each new part folder, number the parts with roman numerals and nothing else, include each file with the cmarker package, use a sans-serif font, and start with a title page that shows the title at the bottom left.
+The PDF build script shall create one light-mode PDF and one dark-mode PDF from the design with Typst.
+
+### PDF contents
+The file `design/index.typ` shall read the title and the reading order from `design/index.md`, start a part at each new part folder, number only the parts with roman numerals, include each chapter with the cmarker package, use a sans-serif font, and start with a title page that shows the title at the bottom left.
+
+### Dark mode
+The dark-mode PDF shall use `#222222` as its page background and light text.
+
+### Cover image
+When `design/cover_image.png` exists, the title page shall show that image above the title; otherwise the title page shall leave the cover area blank.
+
+### Release asset
+When a release is published with a tag of the form `v<major>.<minor>.0`, the release workflow shall attach the dark-mode PDF to that release.
+
+### Patch releases
+When a release tag has a patch number other than zero, the release workflow shall not attach a PDF.
+
+### Installed PDF assets
+maid shall install the PDF template, the PDF build script, the release workflow and the generated-artefact attributes in every project that it installs.
+
+### Generated PDFs
+The file `.gitattributes` shall mark `*.pdf` as a generated artefact.
 
 ### Page breadcrumb
 Each page of the PDF shall show a footer breadcrumb in the form `<design title> · <part name> · <chapter title>`.

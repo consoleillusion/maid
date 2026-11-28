@@ -1,7 +1,4 @@
 ---
-id: chapter-format
-title: Chapter format
-part: specification
 status: accepted
 style: ears
 owner: paul
@@ -165,7 +162,5 @@ REQ-DOC-014 shall change so that `design/index.md` contains the design title, th
 ### PDF
 REQ-DOC-018 shall change so that `design/index.typ` includes every Markdown file listed in `design/index.md`, in that order, with Typst's `cmarker` package. It shall produce an attractive PDF with a title page, a sans-serif font, part breaks numbered in roman numerals, and no numbers on chapters or sections.
 
-### REQ-DOC-023 Compile script
+### Compile script
 maid shall provide an npm script that compiles `design/index.typ` to the design PDF.
-
-Accepting this proposal requires changes to REQ-DOC-002, REQ-DOC-014, REQ-DOC-018, the frontmatter reference table, and the code that currently requires `id`, `title` and `part` in frontmatter.

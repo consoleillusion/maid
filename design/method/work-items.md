@@ -1,7 +1,7 @@
 ---
 id: work-items
 title: Work items, claims and context packets
-part: 02-method
+part: method
 status: accepted
 style: ears
 owner: paul

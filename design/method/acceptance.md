@@ -1,7 +1,7 @@
 ---
 id: acceptance
 title: Acceptance and the merge queue
-part: 02-method
+part: method
 status: accepted
 style: ears
 owner: paul

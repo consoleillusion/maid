@@ -1,7 +1,7 @@
 ---
 id: roadmap
 title: Roadmap
-part: 07-delivery
+part: delivery
 status: accepted
 style: ste
 owner: paul

@@ -1,7 +1,7 @@
 ---
 id: phases
 title: Phases and gates
-part: 02-method
+part: method
 status: accepted
 style: ears
 owner: paul

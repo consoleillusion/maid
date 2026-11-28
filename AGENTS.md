@@ -14,7 +14,7 @@ maid is an MCP server and CLI. You install it in a software project. It guides a
 
 ## How to start
 
-1. Read `design/index.md`. It lists every part and chapter with a summary.
+1. Read `design/index.md`. It lists every part and chapter in reading order. `maid_status` and `design_index` give the status and summary of each chapter.
 2. Read only the chapters that your task needs. Each chapter has a `summary` in its frontmatter. Read the summary before you read the chapter.
 3. Before you write in a chapter, read its style card in `design/styles/`. The chapter frontmatter names the style.
 
@@ -24,7 +24,7 @@ maid is an MCP server and CLI. You install it in a software project. It guides a
 2. Do not change a chapter or an item with `status: accepted`. Write a proposal instead. Until maid exists, a proposal is a section `## Proposal: <title>` at the end of the chapter, with `status: proposed` in its first line.
 3. You can change items with `status: stub` or `status: draft`.
 4. Keep stable IDs. Never reuse an ID. Never renumber.
-5. Follow `design/06-engineering/01-conventions.md` for code and commits.
+5. Follow `design/engineering/conventions.md` for code and commits.
 6. One logical change per commit.
 
 ## When maid is available

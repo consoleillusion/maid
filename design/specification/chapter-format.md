@@ -1,7 +1,7 @@
 ---
 id: chapter-format
 title: Chapter format
-part: 03-specification
+part: specification
 status: accepted
 style: ears
 owner: paul

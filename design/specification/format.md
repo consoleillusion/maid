@@ -123,6 +123,9 @@ Each page of the PDF shall show a footer breadcrumb in the form `<design title> 
 ### Breadcrumb sources
 The breadcrumb shall take the design title from `design/index.md`, the part name from the folder of the current chapter, and the chapter title from its level-1 heading.
 
+### Contents breadcrumb
+The PDF footer shall show `Contents` as the chapter title on the contents page.
+
 ### Installed template
 maid shall create the same breadcrumb template in every project that it installs.
 

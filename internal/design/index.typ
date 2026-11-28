@@ -142,6 +142,7 @@
     #h(1fr) #counter(page).display()
   ]])
 
+#breadcrumb-chapter.update("Contents")
 #text(20pt, weight: "semibold")[Contents]
 #v(0.8em)
 #outline(title: none, depth: 2, indent: auto)

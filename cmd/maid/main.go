@@ -13,6 +13,7 @@ import (
 
 	"github.com/consoleillusion/maid/internal/config"
 	"github.com/consoleillusion/maid/internal/design"
+	"github.com/consoleillusion/maid/internal/graph"
 	"github.com/consoleillusion/maid/internal/guide"
 	"github.com/consoleillusion/maid/internal/mcp"
 	"github.com/consoleillusion/maid/internal/setup"
@@ -266,6 +267,10 @@ func initProject(ctx context.Context, root string) error {
 	if err != nil {
 		return err
 	}
+	if err := graph.Ensure(ctx, root, &cfg); err != nil {
+		return fmt.Errorf("code review graph: %w", err)
+	}
+	fmt.Println("code review graph is available through MCP")
 	cleanAttemptBranches(ctx, root)
 	if err := work.New(root, cfg, nil).OnMaidBranch(ctx); err != nil {
 		fmt.Println("maid branch:", err)

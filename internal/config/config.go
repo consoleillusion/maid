@@ -32,7 +32,7 @@ type Budget struct {
 type CodeReviewGraph struct {
 	Command []string `json:"command,omitempty"`
 	Args    []string `json:"args,omitempty"`
-	Enabled bool     `json:"enabled,omitempty"`
+	Enabled bool     `json:"enabled"`
 }
 
 // Config is the content of maid.json.
@@ -57,6 +57,11 @@ func Default() Config {
 		Lint:        []string{"go", "vet", "./..."},
 		Budget:      Budget{Attempts: 2, MaxChangedLines: 300},
 		PortRange:   100,
+		CodeReviewGraph: CodeReviewGraph{
+			Command: []string{"code-review-graph"},
+			Args:    []string{"serve"},
+			Enabled: true,
+		},
 	}
 }
 
@@ -82,6 +87,12 @@ func Load(root string) (Config, error) {
 	}
 	if c.PortRange <= 0 {
 		c.PortRange = 100
+	}
+	if len(c.CodeReviewGraph.Command) == 0 {
+		c.CodeReviewGraph.Command = []string{"code-review-graph"}
+	}
+	if len(c.CodeReviewGraph.Args) == 0 {
+		c.CodeReviewGraph.Args = []string{"serve"}
 	}
 	return c, nil
 }

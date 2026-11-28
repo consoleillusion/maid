@@ -166,3 +166,13 @@ The MCP server shall hand tasks to any agent that connects through its tools.
 
 ### No role restriction
 The MCP server shall not restrict work items to a role or a named agent.
+
+## Proposal: Recommend a capable agent for planning
+
+status: proposed · by opencode-978a9f · 2026-11-28
+
+### Capable agent recommended
+When `maid_next` directs an agent to create work items from the roadmap, `maid_next` shall recommend a capable agent for the planning work.
+
+### No requirement for a capable agent
+The MCP server shall not require a capable agent to call `work_plan`.

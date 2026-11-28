@@ -161,7 +161,7 @@ When an agent that holds the claim on a work item sends a list of text replaceme
 If the old text of a replacement occurs zero times or more than once in the file, then maid shall refuse the whole edit, keep the file unchanged and return the number of matches.
 
 ### REQ-WI-033 Tolerant patches
-When an agent submits a unified diff, maid shall recount the line numbers of each hunk before it applies the patch.
+When an agent submits a unified diff, maid shall recount the line numbers of each hunk and ignore whitespace differences in context lines before it applies the patch.
 
 ### REQ-WI-034 Minimal changes first
 maid shall tell agents to change existing files with work_edit or a patch, and to use work_write only for new files and full rewrites.

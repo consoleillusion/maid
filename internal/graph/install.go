@@ -29,7 +29,7 @@ func Ensure(ctx context.Context, root string, cfg *config.Config) error {
 	if len(cfg.CodeReviewGraph.Args) == 0 {
 		cfg.CodeReviewGraph.Args = []string{"serve"}
 	}
-	command, found, err := resolveCommand(cfg.CodeReviewGraph.Command)
+	command, found, err := resolveCommand(root, cfg.CodeReviewGraph.Command)
 	if err != nil {
 		return err
 	}
@@ -49,11 +49,15 @@ func Ensure(ctx context.Context, root string, cfg *config.Config) error {
 	return buildGraph(ctx, command, root)
 }
 
-func resolveCommand(command []string) (string, bool, error) {
+func resolveCommand(root string, command []string) (string, bool, error) {
 	// Purpose: find the configured code-review-graph executable.
 	name := command[0]
 	if strings.ContainsRune(name, os.PathSeparator) {
-		info, err := os.Stat(name)
+		path := name
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(root, path)
+		}
+		info, err := os.Stat(path)
 		if err != nil || info.IsDir() || info.Mode().Perm()&0o111 == 0 {
 			return "", false, nil
 		}
@@ -75,15 +79,15 @@ func installInProject(ctx context.Context, root string) (string, error) {
 	venv := filepath.Join(root, ".maid", "crg-venv")
 	pip := filepath.Join(venv, "bin", "pip")
 	if _, err := os.Stat(pip); errors.Is(err, os.ErrNotExist) {
-		if err := run(ctx, python, "-m", "venv", venv); err != nil {
+		if err := run(ctx, root, python, "-m", "venv", venv); err != nil {
 			return "", fmt.Errorf("create Python environment: %w", err)
 		}
 	}
-	if err := run(ctx, pip, "install", packageName); err != nil {
+	if err := run(ctx, root, pip, "install", packageName); err != nil {
 		return "", fmt.Errorf("install %s: %w", packageName, err)
 	}
-	command := filepath.Join(venv, "bin", packageName)
-	if _, err := os.Stat(command); err != nil {
+	command := filepath.Join(".maid", "crg-venv", "bin", packageName)
+	if _, err := os.Stat(filepath.Join(root, command)); err != nil {
 		return "", fmt.Errorf("%s was not installed: %w", packageName, err)
 	}
 	return command, nil
@@ -91,15 +95,17 @@ func installInProject(ctx context.Context, root string) (string, error) {
 
 func buildGraph(ctx context.Context, command, root string) error {
 	// Purpose: build the graph for the project root.
-	if err := run(ctx, command, "build", "--repo", root); err != nil {
+	if err := run(ctx, root, command, "build", "--repo", root); err != nil {
 		return fmt.Errorf("build code graph: %w", err)
 	}
 	return nil
 }
 
-func run(ctx context.Context, name string, args ...string) error {
+func run(ctx context.Context, dir, name string, args ...string) error {
 	// Purpose: run one external command and include its output in errors.
-	out, err := exec.CommandContext(ctx, name, args...).CombinedOutput()
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Dir = dir
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s %s: %w: %s", name, strings.Join(args, " "), err, strings.TrimSpace(string(out)))
 	}

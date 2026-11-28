@@ -96,7 +96,7 @@ func TestEnsureInstallsIntoProjectEnvironment(t *testing.T) {
 	if err := Ensure(context.Background(), root, &cfg); err != nil {
 		t.Fatal(err)
 	}
-	want := filepath.Join(root, ".maid", "crg-venv", "bin", "code-review-graph")
+	want := filepath.Join(".maid", "crg-venv", "bin", "code-review-graph")
 	if len(cfg.CodeReviewGraph.Command) == 0 || cfg.CodeReviewGraph.Command[0] != want {
 		t.Fatalf("command = %v; want %q", cfg.CodeReviewGraph.Command, want)
 	}
@@ -108,7 +108,7 @@ func TestEnsureInstallsIntoProjectEnvironment(t *testing.T) {
 	if !strings.Contains(text, "-m venv") || !strings.Contains(text, "install code-review-graph") {
 		t.Fatalf("install commands missing from log: %q", text)
 	}
-	if _, err := os.Stat(want); err != nil {
+	if _, err := os.Stat(filepath.Join(root, want)); err != nil {
 		t.Fatalf("installed command is missing: %v", err)
 	}
 }

@@ -16,16 +16,24 @@ import (
 
 // Next is the maid_next response (design/05-interfaces/01-mcp.md).
 type Next struct {
-	Phase    string   `json:"phase"`
-	Step     string   `json:"step"`
-	Why      string   `json:"why"`
-	Read     []string `json:"read,omitempty"`
-	Tools    []string `json:"tools"`
-	DoneWhen []string `json:"done_when,omitempty"`
-	AskUser  []string `json:"ask_user,omitempty"`
-	Blocked  []string `json:"blocked,omitempty"`
-	Warnings []string `json:"warnings,omitempty"`
-	Calls    []Call   `json:"calls,omitempty"` // ready-to-run tool calls for this step
+	Phase    string        `json:"phase"`
+	Step     string        `json:"step"`
+	Why      string        `json:"why"`
+	Read     []string      `json:"read,omitempty"`
+	Tools    []string      `json:"tools"`
+	DoneWhen []string      `json:"done_when,omitempty"`
+	AskUser  []string      `json:"ask_user,omitempty"`
+	Blocked  []string      `json:"blocked,omitempty"`
+	Warnings []string      `json:"warnings,omitempty"`
+	Calls    []Call        `json:"calls,omitempty"` // ready-to-run tool calls for this step
+	Tasks    []TaskSummary `json:"tasks"`           // work items the agent may claim
+}
+
+// TaskSummary is one ready work item in maid_next (REQ-PH-024).
+type TaskSummary struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+	Kind  string `json:"kind"`
 }
 
 // Call is a tool call that the agent can make as it is.

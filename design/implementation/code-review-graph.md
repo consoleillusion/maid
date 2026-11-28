@@ -14,7 +14,7 @@ maid exposes the local code graph from code-review-graph through its MCP server.
 ## Requirements: install
 
 ### Installed by init
-During init, maid shall install code-review-graph and shall build the graph in the project root.
+When init runs, maid shall install code-review-graph and shall build the graph in the project root.
 
 ### Existing command
 If code-review-graph is already on PATH, then maid shall record that command and shall use it.

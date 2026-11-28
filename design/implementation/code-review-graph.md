@@ -56,3 +56,22 @@ Scenario: A graph tool call is forwarded
   Then code-review-graph receives the same arguments
   And the client receives the upstream result
 ```
+
+## Proposal: Diagram output and spec-to-code links
+
+status: proposed · by opencode-978a9f · 2026-11-28
+
+### Diagram commands
+maid shall record that `code-review-graph visualize` generates interactive HTML, static SVG, JSON, GraphML, Cypher and Obsidian exports from the project graph.
+
+### External diagram generation
+The MCP bridge shall not expose `visualize` as a tool.
+
+### Mermaid prompt target
+Where a client supports prompts, maid shall expose the upstream `architecture_map` prompt as a target for Mermaid architecture diagrams.
+
+### Markdown indexing limit
+The code graph shall not index `design/*.md` as document sections.
+
+### Traceability source
+Where an agent needs the code for a design section, maid shall use the work item `implements` path, its acceptance tests and the verify gate until the code graph has a design edge.

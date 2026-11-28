@@ -130,7 +130,6 @@
     #place(top + center, image("./cover_image.png", width: 100%, height: auto))
   ]
   #place(bottom + left, dx: 2.3cm, dy: -2.5cm)[
-    #text(11pt, fill: muted, datetime.today().display("[day] [month repr:long] [year]"))
     #v(0.6em)
     #text(36pt, weight: "bold", fill: ink, title)
   ]

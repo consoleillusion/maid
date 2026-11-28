@@ -58,7 +58,7 @@ If a submission changes a file outside the `owns` patterns of the work item, the
 If a work item has the number of rejected attempts that its budget allows, then maid shall set the work item to `escalated` and shall offer it to a design agent.
 
 ### Escalation result
-When a design agent takes an escalated work item, the design agent shall split the work item, clarify the linked items, or correct the acceptance tests through a proposal.
+When a design agent takes an escalated work item, the design agent shall split the work item, clarify the linked items, or correct the acceptance tests.
 
 ### Parallel attempts
 Where the profile enables parallel attempts, maid shall allow up to N attempts on the same work item at the same time, and the merge queue shall accept only the attempt with the highest score.

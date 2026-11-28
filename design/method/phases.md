@@ -53,7 +53,7 @@ When an agent sets a chapter to accepted, maid shall accept the chapter if it ha
 When the design agent plans, the design agent shall create work items for every accepted requirement that is not implemented, in one plan.
 
 ### Current and target state
-The design agent shall record the current state and the target state of each area side by side in the roadmap.
+The design agent shall record a non-empty current state and a non-empty target state of each area side by side in the roadmap.
 
 ### No repeated questions
 When the user has answered a question or given an approval, maid shall record the answer in the design, and agents shall not ask it again.
@@ -145,31 +145,17 @@ When maid initialises a project, maid shall create tasks to record the current s
 ### Design tasks
 When an agent submits a task of kind design, the merge queue shall accept it when the design check reports no errors and the chapters that the task names exist.
 
-## Proposal: Guide flow from roadmap to tasks
-
-status: proposed · by opencode-978a9f · 2026-11-28
-
 ### Roadmap before work items
 If the roadmap is missing or incomplete and work items do not exist, then `maid_next` shall direct the agent to complete the roadmap and the design chapters before the agent plans work items.
 
-### Clear roadmap
-The roadmap shall record a non-empty current state and a non-empty target state for each area of the project.
-
 ### Work items from the roadmap
 When the roadmap is clear and work items do not exist, `maid_next` shall direct the agent to create work items from the accepted requirements that the roadmap names.
-
-### Ready tasks for the caller
-When work items exist, `maid_next` shall list every ready work item that the calling agent may claim.
 
 ### Any agent can take work
 The MCP server shall hand tasks to any agent that connects through its tools.
 
 ### No role restriction
 The MCP server shall not restrict work items to a role or a named agent.
-
-## Proposal: Recommend a capable agent for planning
-
-status: proposed · by opencode-978a9f · 2026-11-28
 
 ### Capable agent recommended
 When `maid_next` directs an agent to create work items from the roadmap, `maid_next` shall recommend a capable agent for the planning work.

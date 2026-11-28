@@ -39,7 +39,7 @@ Many agents and humans read the design, and each needs only a part of it. Small 
 
 Chosen option: "Parts and chapters by area", because the design is a living specification of the whole project, not a record of each change. Sections are addressable, so a context packet can include one section of a large chapter.
 
-Each chapter declares one style. Embedded blocks can use another style. The starting styles are STE, EARS, SBVR Structured English and Gherkin, which have validators. ACE is registered with advice-only enforcement. AGENTS.md is the entry point, because many agents read it already. Change proposals for accepted items follow the idea of OpenSpec changes.
+Each chapter declares one style. Embedded blocks can use another style. The starting styles are STE, EARS, SBVR Structured English and Gherkin, which have validators. ACE is registered with advice-only enforcement. AGENTS.md is the entry point, because many agents read it already.
 
 ### Consequences
 

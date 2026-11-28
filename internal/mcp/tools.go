@@ -116,7 +116,7 @@ var defs = []def{
 			}
 			return map[string]any{"findings": f, "count": len(f)}, hint, nil
 		}},
-	{tool: Tool{"design_write", "Replace one design section (heading included). Pass base_version from design_read; the write fails if the section changed since. Accepted chapters cannot be written; use design_propose.",
+	{tool: Tool{"design_write", "Replace one design section (heading included). Pass base_version from design_read; the write fails if the section changed since. Any chapter can be written, including an accepted one.",
 		obj(map[string]any{"ref": str("chapter name#heading slug"), "content": str("the new section text, starting with its heading"),
 			"base_version": str("version from design_read"), "reason": str("why, one line"), "agent": agentProp}, "ref", "content", "base_version", "reason")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
@@ -125,7 +125,7 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_append", "Add a new section at the end of a design chapter that is not accepted.",
+	{tool: Tool{"design_append", "Add a new section at the end of a design chapter, including an accepted one.",
 		obj(map[string]any{"chapter": str("chapter ID"), "content": str("section text, starting with a heading"), "reason": str("why, one line"), "agent": agentProp}, "chapter", "content")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
 			res, err := t.Svc.DesignOp(ctx, agent, "append", sArg(a, "reason"), func(ds *design.Store) (design.WriteResult, error) {
@@ -167,7 +167,7 @@ var defs = []def{
 			}
 			return map[string]any{"results": res}, hint, err
 		}},
-	{tool: Tool{"design_propose", "Propose a change to a chapter, including an accepted one. The proposal is appended as a section for the owner to review.",
+	{tool: Tool{"design_propose", "Append an optional proposal section to a chapter for review. Agents may also change any chapter directly with design_write or design_append.",
 		obj(map[string]any{"chapter": str("chapter ID"), "title": str("short title"), "content": str("the proposed change and its reason"), "agent": agentProp}, "chapter", "title", "content")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
 			res, err := t.Svc.DesignOp(ctx, agent, "propose", sArg(a, "title"), func(ds *design.Store) (design.WriteResult, error) {

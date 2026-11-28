@@ -69,11 +69,8 @@ The design store shall make each level-2 and level-3 heading addressable as `<ch
 ### Status values
 The `status` field of a chapter shall have one of these values: `stub`, `draft`, `review`, `accepted`, `superseded`.
 
-### Write rule for open items
-While a chapter has status `stub` or `draft`, maid shall accept a direct write to it from any agent.
-
-### Write rule for accepted items
-While a chapter has status `accepted`, maid shall reject a direct write to it and shall accept a proposal instead.
+### Write rule
+maid shall accept a direct write to a chapter from any agent, whatever the status of the chapter.
 
 ### Version check
 When maid receives a write to a section, maid shall reject the write if the section changed after the version that the writer read.

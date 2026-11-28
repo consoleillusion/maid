@@ -27,16 +27,16 @@ flowchart LR
   cli --> state & tasks & repo
 ```
 
-Each MCP client starts its own maid process over stdio. A client can also connect to one shared `maid serve` process over streamable HTTP. Both modes use the same shared state.
+Each MCP client starts its own maid process over stdio and uses tools. One shared `maid serve` process over streamable HTTP is a target; the modes would use the same shared state.
 
 ## Components
 
 | Component | Responsibility |
 |---|---|
-| MCP server | Exposes tools, resources and prompts. Adds the next-step hint to each response. |
+| MCP server | Exposes tools and adds the next-step hint to each response. |
 | CLI | Gives humans the same operations and reports as the MCP server. |
 | Guide | Derives the current phase. Evaluates gates. Builds the `maid_next` response. |
-| Design store | Parses `design/`. Resolves section paths. Applies write rules and version checks. Regenerates the index. |
+| Design store | Parses `design/`. Resolves section paths. Applies version checks. Regenerates the index. |
 | Validator runner | Runs style validators on chapters and code blocks. |
 | Task port | Interface to the task store. The v1 adapter is Beads. See the task store port below. |
 | Workspace manager | Creates and removes git worktrees and branches for attempts. |
@@ -45,7 +45,7 @@ Each MCP client starts its own maid process over stdio. A client can also connec
 | Tool runner | Runs the formatter, linter, test runner and metrics adapters that the decisions select. Parses their results into common formats. |
 | Scorer | Calculates the score from the tool runner results. |
 | State store | JSON files in `.maid/` with file locks. Holds attempts, test baselines, the queue lock and the activity log. A SQLite adapter can replace it. |
-| Reporter | Builds `maid status` output and the HTML report. |
+| Reporter | Builds `maid status` output. |
 
 ## Process model
 
@@ -149,9 +149,7 @@ Date: 2026-11-27. bd version 1.3.4, embedded Dolt mode. Reproduce with `spikes/b
 | `bd close` refuses when the actor is not the assignee | The merge queue cannot close an item as itself. | The adapter sets `BEADS_ACTOR` to the claim owner when it closes an item. |
 | Beads changes quickly | The CLI contract can change. | Pin a minimum `bd` version. Run adapter contract tests in CI. |
 
-## Proposal: Align architecture with stdio-only implementation
-
-status: proposed · by opencode-978a9f · 2026-11-28
+## Requirements
 
 ### stdio in milestone 1
 The MCP server shall use stdio and tools in milestone 1.
@@ -163,7 +161,7 @@ Where streamable HTTP is added, the MCP server shall accept only loopback connec
 The scorer shall calculate scores in `internal/score`. Merge queue use of the score shall be a target.
 
 ### Current reporter component
-The reporter shall build `maid status`. The HTML report shall be a target.
+The reporter shall build `maid status`.
 
 ### Current task store
 The task store shall use Beads through its CLI. Export to `.beads/issues.jsonl` and commit shall be a target.

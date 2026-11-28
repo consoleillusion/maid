@@ -21,11 +21,10 @@ maid is an MCP server and CLI. You install it in a software project. It guides a
 ## Rules
 
 1. Do not guess. If information is missing, ask the user and record the answer in the relevant design section. Do not create a separate register of questions.
-2. Do not change a chapter with `status: accepted`. Write a proposal instead. A proposal is a section `## Proposal: <title>` at the end of the chapter, with `status: proposed` in its first line.
-3. You can change chapters with `status: stub` or `status: draft`.
-4. Name chapters and sections after what they are. Refer to work items by their titles; task store IDs are opaque handles for the database only. Never renumber parts.
-5. Follow `design/implementation/conventions.md` for code and commits.
-6. One logical change per commit.
+2. You can change any chapter, including one with `status: accepted`. Read it first and pass its version when you write.
+3. Name chapters and sections after what they are. Refer to work items by their titles; task store IDs are opaque handles for the database only. Never renumber parts.
+4. Follow `design/implementation/conventions.md` for code and commits.
+5. One logical change per commit.
 
 ## When maid is available
 

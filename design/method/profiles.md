@@ -86,9 +86,6 @@ Each decision record shall have an `origin` field with one of the values `user`,
 ### Change of a default
 When an agent wants to change a decision with `origin: default`, the agent shall write a new decision that supersedes it.
 
-### Change of a user decision
-When an agent wants to change a decision with `origin: user`, the agent shall write a proposal and shall not change the decision.
-
 ### Ports
 Where a decision selects a component that the design marks as replaceable, the decision shall name the port in `design/` that the component implements.
 

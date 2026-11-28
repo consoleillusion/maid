@@ -29,12 +29,15 @@ func TestWriteSectionVersionCheck(t *testing.T) {
 	}
 }
 
-func TestAcceptedChapterNeedsProposal(t *testing.T) {
-	// Purpose: accepted chapters reject direct writes but take proposals.
+func TestAcceptedChapterAcceptsDirectWrites(t *testing.T) {
+	// Purpose: accepted chapters take direct writes; proposals stay optional.
 	root := writeDesign(t, map[string]string{"01-a/alpha.md": goodChapter, "01-a/beta.md": betaChapter})
 	s, _ := Load(root)
-	if _, err := s.AppendSection("beta", "## New\nText."); !errors.Is(err, ErrAccepted) {
-		t.Fatalf("err = %v", err)
+	if _, err := s.AppendSection("beta", "## New\nText."); err != nil {
+		t.Fatalf("append: %v", err)
+	}
+	if s.Chapter("beta").Section("new") == nil {
+		t.Fatal("section missing")
 	}
 	if _, err := s.Propose("beta", "Add a rule", "Add a rule because ...", "agent-1"); err != nil {
 		t.Fatal(err)

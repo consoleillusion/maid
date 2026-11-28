@@ -11,9 +11,6 @@ import (
 	"time"
 )
 
-// ErrAccepted means a direct write hit an accepted chapter.
-var ErrAccepted = errors.New("chapter is accepted; write a proposal instead")
-
 // ErrStale means the section changed after the writer read it.
 var ErrStale = errors.New("section changed since you read it; read it again and retry")
 
@@ -26,25 +23,12 @@ type WriteResult struct {
 	Also     []string  `json:"also,omitempty"` // other files the write changed, such as design/index.md
 }
 
-// writable reports whether direct writes to ch are allowed.
-func writable(ch *Chapter) error {
-	// Purpose: block direct writes to accepted and superseded chapters.
-	switch ch.FM.String("status") {
-	case "accepted", "superseded":
-		return ErrAccepted
-	}
-	return nil
-}
-
 // WriteSection replaces the text of one section, heading included.
 // baseVersion must be the version that the writer read.
 func (s *Store) WriteSection(ref, content, baseVersion string) (WriteResult, error) {
 	// Purpose: change one section with an optimistic version check.
 	ch, sec, err := s.locate(ref)
 	if err != nil {
-		return WriteResult{}, err
-	}
-	if err := writable(ch); err != nil {
 		return WriteResult{}, err
 	}
 	if baseVersion != Version(sec.Text) {
@@ -60,24 +44,21 @@ func (s *Store) WriteSection(ref, content, baseVersion string) (WriteResult, err
 
 // AppendSection adds content at the end of a chapter.
 func (s *Store) AppendSection(chapterID, content string) (WriteResult, error) {
-	// Purpose: add a new section to a chapter that is not accepted.
+	// Purpose: add a new section to any chapter, including an accepted one.
 	ch, err := s.ResolveChapter(chapterID)
 	if err != nil {
 		return WriteResult{}, err
 	}
 	chapterID = ch.ID
-	if err := writable(ch); err != nil {
-		return WriteResult{}, err
-	}
 	content = strings.TrimRight(content, "\n")
 	body := strings.TrimRight(ch.Body, "\n") + "\n\n" + content + "\n"
 	return s.save(ch, body, chapterID, Version(content))
 }
 
-// Propose appends a proposal to a chapter, which is allowed even when the
-// chapter is accepted.
+// Propose appends a proposal section to a chapter. It is optional: agents can
+// change any chapter directly with WriteSection or AppendSection.
 func (s *Store) Propose(chapterID, title, content, agent string) (WriteResult, error) {
-	// Purpose: record a proposed change without changing accepted text.
+	// Purpose: record an attributed change suggestion in a chapter.
 	ch, err := s.ResolveChapter(chapterID)
 	if err != nil {
 		return WriteResult{}, err

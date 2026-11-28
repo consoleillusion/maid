@@ -91,7 +91,10 @@ maid shall report an error for each chapter in a part folder that `design/index.
 When an agent creates a chapter, maid shall add the path of the chapter to `design/index.md` after the last path in the same part folder, or at the end of the list when no path is in that folder.
 
 ### REQ-DOC-018 PDF build
-The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the title and the reading order from `design/index.md`, start a part at each new part folder, include each file with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.
+The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the title and the reading order from `design/index.md`, start a part at each new part folder, number the parts with roman numerals and nothing else, include each file with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.
+
+### REQ-DOC-022 Unnumbered headings
+Chapter and section headings shall not contain position numbers. Numbered lists are allowed only for sequences such as steps, tasks and roadmap milestones.
 
 ### REQ-DOC-019 Index files
 When maid creates a chapter, maid shall create `design/index.md` and `design/index.typ` if they do not exist, and shall commit them with the chapter.

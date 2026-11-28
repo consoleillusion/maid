@@ -1,6 +1,10 @@
 ---
+id: chapter-format
+title: Chapter format
+part: specification
 status: accepted
 style: ears
+owner: paul
 summary: >
   How design/ is organised into parts, chapters and sections. Defines the
   frontmatter, stable IDs, status values and write rules that every chapter
@@ -33,82 +37,72 @@ Projects that use maid use the same structure.
 
 A chapter covers one area of the project. A chapter can be 1 to 20 pages. An agent normally reads sections, not whole chapters.
 
-What the ./design dir should be
-
-- its the source of truth for describing what the project should be.
-- it should be comprehensive so it can be considered the source of truth.
-- Chapters should be grouped into parts so that it has the structure ./design/<part>/<chapter>.md
-- dont number the chapters and file names. Use roman numerals for the parts to group the chapters. If you number them it gets out of sync quickly and makes it harder to rearrange and is harder to read.
-- ./design/index.md should contain links to each of the chapters grouped into parts by heading sections.
-- ./design/index.typ should include all the markdown files in the appropriate order using typst's cmarker plugin and should produce an attractive pdf when compiled.
-- an npm script should exist to compile this typst file
-
 ## Requirements
 
-### Chapter location
+### REQ-DOC-001 Chapter location
 The design store shall contain each chapter as exactly one Markdown file at `design/<part>/<chapter>.md`, where the part and chapter names are lowercase, hyphenated and do not start with a digit.
 
-### Frontmatter
-Each chapter shall start with YAML frontmatter that contains the fields `status`, `style`, `summary` and `links`.
+### REQ-DOC-002 Frontmatter
+Each chapter shall start with YAML frontmatter that contains the fields `id`, `title`, `status`, `style`, `owner`, `summary` and `links`.
 
-### Summary length
+### REQ-DOC-003 Summary length
 The `summary` field shall contain at most 60 words.
 
-### Declared style
+### REQ-DOC-004 Declared style
 Each chapter shall declare exactly one style in the `style` field, and the value shall match a style ID in the style registry.
 
-### Embedded styles
+### REQ-DOC-005 Embedded styles
 Where a chapter contains a fenced code block with a language tag that is a registered style ID, maid shall validate that block against that style instead of the chapter style.
 
-### Stable IDs
+### REQ-DOC-006 Stable IDs
 Each requirement, decision, work item and open question shall have an ID that is unique in the project and that never changes.
 
-### No ID reuse
+### REQ-DOC-007 No ID reuse
 If an item is removed, then maid shall keep its ID reserved and shall not assign the ID to another item.
 
-### Addressable sections
+### REQ-DOC-008 Addressable sections
 The design store shall make each level-2 and level-3 heading addressable as `<chapter-id>#<anchor>`, where the anchor is the item ID when the heading starts with an ID.
 
-### Status values
+### REQ-DOC-009 Status values
 The `status` field of a chapter or an item shall have one of these values: `stub`, `draft`, `review`, `accepted`, `superseded`.
 
-### Write rule for open items
+### REQ-DOC-010 Write rule for open items
 While a chapter or an item has status `stub` or `draft`, maid shall accept a direct write to it from any agent.
 
-### Write rule for accepted items
+### REQ-DOC-011 Write rule for accepted items
 While a chapter or an item has status `accepted`, maid shall reject a direct write to it and shall accept a proposal instead.
 
-### Version check
+### REQ-DOC-012 Version check
 When maid receives a write to a section, maid shall reject the write if the section changed after the version that the writer read.
 
-### Unknown information
+### REQ-DOC-013 Unknown information
 If a writer does not have the information for a required section, then the writer shall write `TBD (Q-NNN)` and shall add question `Q-NNN` to `questions.md`.
 
-### Reading order
+### REQ-DOC-014 Reading order
 The file `design/index.md` shall contain only the design title as a level-1 heading and a bulleted list of file paths, relative to `design/`, in reading order.
 
-### Links
+### REQ-DOC-015 Links
 Each ID in the `links` field shall resolve to an existing chapter, item or decision.
 
-### Complete index
+### REQ-DOC-016 Complete index
 maid shall report an error for each chapter in a part folder that `design/index.md` does not list, and for each entry in `design/index.md` whose file does not exist.
 
-### New chapters in the index
+### REQ-DOC-017 New chapters in the index
 When an agent creates a chapter, maid shall add the path of the chapter to `design/index.md` after the last path in the same part folder, or at the end of the list when no path is in that folder.
 
-### PDF build
+### REQ-DOC-018 PDF build
 The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the title and the reading order from `design/index.md`, start a part at each new part folder, number the parts with roman numerals and nothing else, include each file with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.
 
-### Unnumbered headings
+### REQ-DOC-022 Unnumbered headings
 The design store shall contain no chapter or section heading that starts with a position number; numbered lists are only for sequences such as steps, tasks and roadmap milestones.
 
-### Index files
+### REQ-DOC-019 Index files
 When maid creates a chapter, maid shall create `design/index.md` and `design/index.typ` if they do not exist, and shall commit them with the chapter.
 
-### Index is not a chapter
+### REQ-DOC-021 Index is not a chapter
 The design store shall not load `design/index.md` as a chapter.
 
-### Part field
+### REQ-DOC-020 Part field
 If a chapter has a `part` field, then its value shall equal the name of the part folder that contains the chapter.
 
 ## Frontmatter reference
@@ -148,3 +142,30 @@ stateDiagram-v2
 ```
 
 A human or a configured review agent moves an item from `review` to `accepted`.
+
+## Proposal: Define the design directory and derive chapter metadata
+status: proposed
+
+The design in `design/` is the comprehensive specification of what the project shall be. Agents and humans shall use it as the single source of truth. This repeats G-002 at the place where agents learn the file layout.
+
+### Purpose and completeness
+The design directory shall hold everything that defines the project. A reader shall not need another specification to know what the project shall be. Generated documents shall trace back to the design.
+
+### Part and chapter paths
+Chapters shall be grouped into parts at `design/<part>/<chapter>.md`. The part is the folder name. The chapter ID is the file name without `.md`. The chapter title is the level-1 heading in that file.
+
+Chapter frontmatter shall not contain `id`, `title` or `part`. It shall contain only `status`, `style`, `owner`, `summary` and `links`. Item IDs shall stay in section headings, as REQ-DOC-006 requires.
+
+### Unnumbered names
+Part folders and chapter files shall not start with a position number. Part order shall be shown with roman numerals in `design/index.md` and in the PDF. Chapter files and chapter headings shall carry no position number. One ordered index keeps rearrangement cheap and avoids numbers that drift out of sync.
+
+### Index
+REQ-DOC-014 shall change so that `design/index.md` contains the design title, then level-2 headings for parts in roman numerals, then a link to every chapter under its part. The link order is the reading order. REQ-DOC-016 and REQ-DOC-017 shall keep enforcing completeness and insertion position.
+
+### PDF
+REQ-DOC-018 shall change so that `design/index.typ` includes every Markdown file listed in `design/index.md`, in that order, with Typst's `cmarker` package. It shall produce an attractive PDF with a title page, a sans-serif font, part breaks numbered in roman numerals, and no numbers on chapters or sections.
+
+### REQ-DOC-023 Compile script
+maid shall provide an npm script that compiles `design/index.typ` to the design PDF.
+
+Accepting this proposal requires changes to REQ-DOC-002, REQ-DOC-014, REQ-DOC-018, the frontmatter reference table, and the code that currently requires `id`, `title` and `part` in frontmatter.

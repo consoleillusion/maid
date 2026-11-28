@@ -189,6 +189,9 @@ func (s *Service) evaluate(ctx context.Context, it tasks.WorkItem, att state.Att
 		return fail("build", msg)
 	}
 	rep.Regressions = regressions(base, res)
+	if it.Maid.Kind == tasks.KindTests {
+		rep.Regressions = withoutAcceptance(rep.Regressions, it)
+	}
 	if len(rep.Regressions) > 0 {
 		rep.FailedTests = pick(res.Failures, rep.Regressions)
 		return fail("regressions", fmt.Sprintf("%d previously passing tests fail", len(rep.Regressions)))
@@ -203,6 +206,26 @@ func (s *Service) evaluate(ctx context.Context, it tasks.WorkItem, att state.Att
 	rep.Accepted, rep.Reason = true, "all checks passed"
 	s.pendingBaseline = &state.Baseline{Commit: newHead, Tests: res.Tests, Flaky: base.Flaky}
 	return rep, newHead
+}
+
+// withoutAcceptance drops the item's own acceptance tests from regressions:
+// a tests item may redefine an existing test, which then fails (REQ-ACC-025).
+func withoutAcceptance(ids []string, it tasks.WorkItem) []string {
+	// Purpose: let a tests item change what an existing test expects.
+	own := map[string]bool{}
+	for _, t := range it.Maid.AcceptanceTests {
+		for _, n := range t.Names {
+			own[n] = true
+		}
+	}
+	var out []string
+	for _, id := range ids {
+		if i := strings.LastIndex(id, "#"); i >= 0 && own[id[i+1:]] {
+			continue
+		}
+		out = append(out, id)
+	}
+	return out
 }
 
 // acceptanceResult checks the acceptance tests for the kind of item.

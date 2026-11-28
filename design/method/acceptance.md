@@ -2,7 +2,7 @@
 id: acceptance
 title: Acceptance and the merge queue
 part: method
-status: draft
+status: accepted
 style: ears
 owner: paul
 summary: >

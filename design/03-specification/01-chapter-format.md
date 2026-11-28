@@ -2,7 +2,7 @@
 id: chapter-format
 title: Chapter format
 part: 03-specification
-status: accepted
+status: draft
 style: ears
 owner: paul
 summary: >

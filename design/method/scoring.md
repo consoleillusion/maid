@@ -1,7 +1,7 @@
 ---
 id: scoring
 title: Score
-part: 02-method
+part: method
 status: accepted
 style: ears
 owner: paul

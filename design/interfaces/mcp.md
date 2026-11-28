@@ -1,7 +1,7 @@
 ---
 id: mcp-interface
 title: MCP interface
-part: 05-interfaces
+part: interfaces
 status: accepted
 style: ears
 owner: paul

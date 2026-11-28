@@ -82,7 +82,7 @@ func designNext(ds *design.Store, items []tasks.WorkItem) Next {
 			Tools: []string{"design_create", "design_check"}, DoneWhen: []string{"design/ contains a vision chapter with at least one goal and one non-goal"},
 			AskUser: []string{"What is this project for, and what is out of scope?"},
 			Calls: []Call{{Tool: "design_create", When: "after the user answers; replace the goal and non-goal text with theirs",
-				Arguments: map[string]any{"path": "01-foundation/01-vision.md", "id": "vision", "title": "Vision", "style": "ste",
+				Arguments: map[string]any{"path": "foundation/vision.md", "id": "vision", "title": "Vision", "style": "ste",
 					"summary": "Why the project exists and what it must and must not do.",
 					"body":    "# Vision\n\n## Goals\n\n### G-001 <goal>\n<one or two sentences>\n\n## Non-goals\n\n### NG-001 <non-goal>\n<one or two sentences>\n"}}},
 		}
@@ -233,14 +233,26 @@ func Pending(ds *design.Store) []string {
 }
 
 func notAccepted(ds *design.Store) []string {
-	// Purpose: list chapters in numbered parts that are not accepted yet.
+	// Purpose: list part chapters that are not accepted yet, in reading order (REQ-DOC-014).
+	open := func(ch *design.Chapter) bool {
+		st := ch.FM.String("status")
+		return design.PartOf(ch.Path) != "" && st != "accepted" && st != "superseded"
+	}
 	var out []string
-	for _, ch := range ds.Chapters {
-		part := ch.FM.String("part")
-		if part == "" || part[0] < '0' || part[0] > '9' {
-			continue // styles, decisions, index, questions
+	if ds.HasIndex() {
+		byPath := map[string]*design.Chapter{}
+		for _, ch := range ds.Chapters {
+			byPath[ch.Path] = ch
 		}
-		if st := ch.FM.String("status"); st != "accepted" && st != "superseded" {
+		for _, e := range ds.Order() {
+			if ch := byPath[e.Path]; ch != nil && open(ch) {
+				out = append(out, ch.ID)
+			}
+		}
+		return out
+	}
+	for _, ch := range ds.Chapters {
+		if open(ch) {
 			out = append(out, ch.ID)
 		}
 	}

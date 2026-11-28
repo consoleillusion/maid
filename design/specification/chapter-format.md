@@ -1,8 +1,8 @@
 ---
 id: chapter-format
 title: Chapter format
-part: 03-specification
-status: accepted
+part: specification
+status: draft
 style: ears
 owner: paul
 summary: >
@@ -20,7 +20,7 @@ links: [style-registry, ADR-0006]
 
 ```text
 design/
-  index.md                    front page: title, introduction, chapters in reading order
+  index.md                    design title and the files in reading order
   index.typ                   builds one PDF of the design from index.md
   questions.md                open questions
   <part-name>/
@@ -30,6 +30,8 @@ design/
 ```
 
 Part and chapter names are lowercase words joined by hyphens. They do not contain position numbers. The order of the parts and chapters is the order in `index.md`. The number in an ADR file name is the ID of the decision, not a position.
+
+`index.md` holds only information that no other file holds: the design title and the reading order. It has no frontmatter. Titles, statuses and summaries stay in the frontmatter of each file. Part names come from the folder names.
 
 Projects that use maid use the same structure.
 
@@ -77,7 +79,7 @@ When maid receives a write to a section, maid shall reject the write if the sect
 If a writer does not have the information for a required section, then the writer shall write `TBD (Q-NNN)` and shall add question `Q-NNN` to `questions.md`.
 
 ### REQ-DOC-014 Reading order
-The file `design/index.md` shall contain the design title as a level-1 heading, an introduction and, for each part, a level-2 heading with a numbered list of links to the chapters of the part in reading order.
+The file `design/index.md` shall contain only the design title as a level-1 heading and a bulleted list of file paths, relative to `design/`, in reading order.
 
 ### REQ-DOC-015 Links
 Each ID in the `links` field shall resolve to an existing chapter, item or decision.
@@ -86,13 +88,19 @@ Each ID in the `links` field shall resolve to an existing chapter, item or decis
 maid shall report an error for each chapter in a part folder that `design/index.md` does not list, and for each entry in `design/index.md` whose file does not exist.
 
 ### REQ-DOC-017 New chapters in the index
-When an agent creates a chapter, maid shall add a link to the chapter at the end of the list of its part in `design/index.md`, and shall add a level-2 heading for the part if `design/index.md` has none.
+When an agent creates a chapter, maid shall add the path of the chapter to `design/index.md` after the last path in the same part folder, or at the end of the list when no path is in that folder.
 
 ### REQ-DOC-018 PDF build
-The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the reading order from `design/index.md`, include each chapter with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.
+The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the title and the reading order from `design/index.md`, start a part at each new part folder, number the parts with roman numerals and nothing else, include each file with the cmarker package, use a sans-serif font and start with a title page that shows the title at the bottom left.
+
+### REQ-DOC-022 Unnumbered headings
+The design store shall contain no chapter or section heading that starts with a position number; numbered lists are only for sequences such as steps, tasks and roadmap milestones.
 
 ### REQ-DOC-019 Index files
-When maid creates a chapter, maid shall create `design/index.md` and `design/index.typ` if they do not exist.
+When maid creates a chapter, maid shall create `design/index.md` and `design/index.typ` if they do not exist, and shall commit them with the chapter.
+
+### REQ-DOC-021 Index is not a chapter
+The design store shall not load `design/index.md` as a chapter.
 
 ### REQ-DOC-020 Part field
 If a chapter has a `part` field, then its value shall equal the name of the part folder that contains the chapter.

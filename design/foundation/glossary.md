@@ -1,7 +1,7 @@
 ---
 id: glossary
 title: Glossary and business rules
-part: 01-foundation
+part: foundation
 status: accepted
 style: sbvr-se
 owner: paul

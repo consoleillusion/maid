@@ -8,9 +8,11 @@ maid is an MCP server and CLI that you install in a software project. When you p
 
 ## Status
 
-Milestone 1 is implemented: the design store and checks, plans with separate tests items, claims with isolated worktrees and context packets, the merge queue, `maid_next`, and an MCP server (stdio, tools). See [`design/07-delivery/01-roadmap.md`](design/07-delivery/01-roadmap.md).
+Milestone 1 is implemented: the design store and checks, plans with separate tests items, claims with isolated worktrees and context packets, the merge queue, `maid_next`, and an MCP server (stdio, tools). See [`design/delivery/roadmap.md`](design/delivery/roadmap.md).
 
-The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md).
+maid commits all its work to one branch, `maid-auto`: one commit for each accepted task, with a `Maid-Task:` trailer, and one commit for each design change. Merge `maid-auto` into your main branch when you want.
+
+The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md). To build it as one PDF, run `typst compile design/index.typ` (Typst 0.15 or later; the first build downloads the cmarker package).
 
 ## Install and run
 
@@ -34,7 +36,7 @@ maid status
 
 Add maid to your MCP client as a stdio server with the command `maid mcp`, run in the project root. With Nix, `nix shell /path/to/maid#maid /path/to/maid#bd -c maid mcp` builds maid and bd from the flake, so the server always matches the checked-out commit. Keep the MCP command's stdout clean: anything else printed there breaks the protocol. Then tell the agent to call `maid_next`.
 
-The agent can write and accept design chapters through maid's tools alone. To accept a chapter yourself, run `maid accept CHAPTER`. Build and test agents also need to edit files and run `git commit` in their worktree, so use an agent with file and shell access, such as Claude Code, or the Claude desktop app with the project folder added.
+The agent can write and accept design chapters through maid's tools alone. To accept a chapter yourself, run `maid accept CHAPTER`. Build and test agents can work through maid's tools alone: `work_read`, `work_edit`, `work_run`, then `work_submit`. Agents with file and shell access can also edit and commit in their worktree directly.
 
 ## Development
 

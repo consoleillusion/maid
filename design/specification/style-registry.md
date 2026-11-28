@@ -1,7 +1,7 @@
 ---
 id: style-registry
 title: Style registry
-part: 03-specification
+part: specification
 status: accepted
 style: ears
 owner: paul

@@ -1,7 +1,7 @@
 ---
 id: task-store
 title: Task store port and Beads adapter
-part: 04-architecture
+part: architecture
 status: accepted
 style: ste
 owner: paul

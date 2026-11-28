@@ -1,106 +1,73 @@
 ---
 id: index
-title: maid design index
+title: maid design
 part: design
-status: draft
+status: accepted
 style: ste
 owner: paul
-summary: >
-  The catalog of the maid design: every part and chapter with its status and
-  summary, and the reading path for each role. maid will generate this file
-  (REQ-DOC-014). Until then, keep it up to date by hand.
+summary: Front page of the design and the reading order of its chapters.
 links: []
 ---
 
-# maid design index
+# maid design
 
-`design/` is the source of truth for maid. Read the summary of a chapter before you read the chapter. Read only what your task needs.
+`design/` is the specification of maid and the source of truth. This page lists the chapters in reading order. Read the summary of a chapter before you read the chapter. Read only what your task needs. `maid_status` shows the status of each chapter. `typst compile design/index.typ` builds the design as one PDF.
 
-## Reading paths
+## Foundation
 
-| Role | Read first | Then |
-|---|---|---|
-| Human, first time | vision, phases | questions |
-| Design agent | `AGENTS.md`, vision, glossary, chapter-format, the style card of the chapter you write | the chapters of your phase |
-| Build agent | `AGENTS.md`, your context packet | conventions |
-| Reviewer | the proposal, the item it changes, the linked decisions | — |
+1. [Vision](foundation/vision.md)
+2. [Glossary](foundation/glossary.md)
+3. [Constraints](foundation/constraints.md)
 
-## Parts and chapters
+## Method
 
-### 01 Foundation
+1. [Phases](method/phases.md)
+2. [Work items](method/work-items.md)
+3. [Acceptance](method/acceptance.md)
+4. [Scoring](method/scoring.md)
+5. [Profiles](method/profiles.md)
 
-| Chapter | Status | Style | Summary |
-|---|---|---|---|
-| [vision](01-foundation/01-vision.md) | draft | ste | Why maid exists, its goals, non-goals and success measures. |
-| [glossary](01-foundation/02-glossary.md) | draft | sbvr-se | Defined terms and business rules. |
-| [constraints](01-foundation/03-constraints.md) | draft | ste | Fixed constraints and testable assumptions. |
+## Specification
 
-### 02 Method
+1. [Chapter format](specification/chapter-format.md)
+2. [Style registry](specification/style-registry.md)
 
-| Chapter | Status | Style | Summary |
-|---|---|---|---|
-| [phases](02-method/01-phases.md) | draft | ears | The progression from bootstrap to verified code, gates, depth levels, `maid_next`. |
-| [work-items](02-method/02-work-items.md) | draft | ears | Work item fields, claims, leases, escalation, context packets. |
-| [acceptance](02-method/03-acceptance.md) | draft | ears | The merge queue and the acceptance rule. |
-| [scoring](02-method/04-scoring.md) | draft | ears | The 0–100 score that ranks passing attempts. |
-| [profiles](02-method/05-profiles.md) | draft | ears | Recommended defaults that agents can accept, customise or ignore. |
+## Architecture
 
-### 03 Specification
+1. [Architecture overview](architecture/overview.md)
+2. [Task store](architecture/task-store.md)
 
-| Chapter | Status | Style | Summary |
-|---|---|---|---|
-| [chapter-format](03-specification/01-chapter-format.md) | draft | ears | Parts, chapters, sections, frontmatter, IDs, status and write rules. |
-| [style-registry](03-specification/02-style-registry.md) | draft | ears | Registered styles, style cards, validators and enforcement. |
+## Interfaces
 
-### 04 Architecture
+1. [MCP interface](interfaces/mcp.md)
 
-| Chapter | Status | Style | Summary |
-|---|---|---|---|
-| [architecture](04-architecture/01-overview.md) | draft | ste | Components, process model and state locations. |
-| [task-store](04-architecture/02-task-store.md) | draft | ste | The task port, the Beads adapter and the spike findings. |
+## Engineering
 
-### 05 Interfaces
+1. [Conventions](engineering/conventions.md)
 
-| Chapter | Status | Style | Summary |
-|---|---|---|---|
-| [mcp-interface](05-interfaces/01-mcp.md) | draft | ears | Tools, resources, prompts and the `maid_next` contract. |
+## Delivery
 
-### 06 Engineering
+1. [Roadmap](delivery/roadmap.md)
 
-| Chapter | Status | Style | Summary |
-|---|---|---|---|
-| [conventions](06-engineering/01-conventions.md) | draft | ste | How maid's own code is written, tested and committed. |
+## Decisions
 
-### 07 Delivery
+1. [ADR-0001 Write maid in Go](decisions/ADR-0001-go.md)
+2. [ADR-0002 Pull model](decisions/ADR-0002-pull-model.md)
+3. [ADR-0003 Merge queue](decisions/ADR-0003-merge-queue.md)
+4. [ADR-0004 Acceptance tests first](decisions/ADR-0004-acceptance-tests-first.md)
+5. [ADR-0005 Beads task store](decisions/ADR-0005-beads-task-store.md)
+6. [ADR-0006 Chapters and styles](decisions/ADR-0006-chapters-and-styles.md)
+7. [ADR-0007 Standard library only](decisions/ADR-0007-stdlib-only.md)
+8. [ADR-0008 Everything is a task](decisions/adr-0008-everything-is-a-task.md)
 
-| Chapter | Status | Style | Summary |
-|---|---|---|---|
-| [roadmap](07-delivery/01-roadmap.md) | draft | ste | Milestones, their requirements, and what is implemented now. |
+## Styles
 
-### Styles
+1. [Simplified Technical English](styles/ste.md)
+2. [EARS](styles/ears.md)
+3. [SBVR Structured English](styles/sbvr-se.md)
+4. [Gherkin](styles/gherkin.md)
+5. [Attempto Controlled English](styles/ace.md)
 
-| Card | Status | Summary |
-|---|---|---|
-| [ste](styles/ste.md) | draft | Simplified Technical English for prose. |
-| [ears](styles/ears.md) | draft | EARS patterns for requirements. |
-| [sbvr-se](styles/sbvr-se.md) | draft | SBVR Structured English for vocabulary and rules. |
-| [gherkin](styles/gherkin.md) | draft | Gherkin for acceptance criteria. |
-| [ace](styles/ace.md) | stub | Attempto Controlled English. Advice only. |
+## Questions
 
-### Decisions
-
-| ID | Status | Origin | Title |
-|---|---|---|---|
-| [ADR-0001](decisions/ADR-0001-go.md) | review | user | Write maid in Go and restart from the design |
-| [ADR-0002](decisions/ADR-0002-pull-model.md) | review | user | Agents pull work from maid; maid does not start agents |
-| [ADR-0003](decisions/ADR-0003-merge-queue.md) | review | user | Accept submissions automatically through a local merge queue |
-| [ADR-0004](decisions/ADR-0004-acceptance-tests-first.md) | review | agent | Acceptance criteria from the design agent, tests from a separate test agent |
-| [ADR-0005](decisions/ADR-0005-beads-task-store.md) | accepted | agent | Use Beads as the v1 task store, through its CLI, behind a port |
-| [ADR-0006](decisions/ADR-0006-chapters-and-styles.md) | review | user | Organise the design as parts and chapters, each with a declared style |
-| [ADR-0007](decisions/ADR-0007-stdlib-only.md) | review | agent | Build milestone 1 on the Go standard library only |
-
-New decisions use [the template](decisions/template.md).
-
-### Open questions
-
-See [questions.md](questions.md). All 13 are resolved.
+1. [Open questions](questions.md)

@@ -1,7 +1,7 @@
 ---
 id: architecture
 title: Architecture overview
-part: 04-architecture
+part: architecture
 status: accepted
 style: ste
 owner: paul

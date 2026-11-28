@@ -22,7 +22,8 @@ type WriteResult struct {
 	Path     string    `json:"path"`
 	Ref      string    `json:"ref"`
 	Version  string    `json:"version"`
-	Findings []Finding `json:"findings"` // check findings for the changed chapter
+	Findings []Finding `json:"findings"`       // check findings for the changed chapter
+	Also     []string  `json:"also,omitempty"` // other files the write changed, such as design/index.md
 }
 
 // writable reports whether direct writes to ch are allowed (REQ-DOC-010, REQ-DOC-011).
@@ -133,7 +134,7 @@ func (s *Store) SetStatus(chapterID, status, approvedBy string) (WriteResult, er
 
 // ChapterSpec is the input of CreateChapter.
 type ChapterSpec struct {
-	Path    string   `json:"path"` // relative to design/, e.g. 01-foundation/01-vision.md
+	Path    string   `json:"path"` // relative to design/, e.g. foundation/vision.md
 	ID      string   `json:"id"`
 	Title   string   `json:"title"`
 	Style   string   `json:"style"`
@@ -143,14 +144,16 @@ type ChapterSpec struct {
 	Body    string   `json:"body"`
 }
 
-var safePath = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*(/[a-z0-9][a-z0-9._-]*)*\.md$`)
+// chapterPath is part/name.md or a root file such as questions.md; names
+// start with a letter, so they carry no position numbers (REQ-DOC-001).
+var chapterPath = regexp.MustCompile(`^([a-z][a-z0-9-]*/)?[a-z][a-z0-9._-]*\.md$`)
 
 // CreateChapter writes a new chapter with status draft.
 func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
 	// Purpose: start a new chapter with valid frontmatter (REQ-DOC-001, REQ-DOC-002).
 	c.Path = path.Clean(strings.TrimPrefix(c.Path, "design/"))
-	if !safePath.MatchString(c.Path) || strings.Contains(c.Path, "..") {
-		return WriteResult{}, fmt.Errorf("invalid chapter path %q: use part/NN-name.md in lowercase", c.Path)
+	if !chapterPath.MatchString(c.Path) || strings.Contains(c.Path, "..") {
+		return WriteResult{}, fmt.Errorf("invalid chapter path %q: use part/name.md, lowercase words joined by hyphens, with no numbers in front", c.Path)
 	}
 	if c.ID == "" || c.Title == "" || c.Style == "" || c.Summary == "" {
 		return WriteResult{}, errors.New("id, title, style and summary are required")
@@ -183,7 +186,16 @@ func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
 	if err := atomicWrite(full, text); err != nil {
 		return WriteResult{}, err
 	}
-	return s.result(path.Join(Dir, c.Path), c.ID, Version(text))
+	var also []string
+	if PartOf(path.Join(Dir, c.Path)) != "" {
+		var err error
+		if also, err = s.addToIndex(c.Path, c.Title); err != nil {
+			return WriteResult{}, err
+		}
+	}
+	res, err := s.result(path.Join(Dir, c.Path), c.ID, Version(text))
+	res.Also = also
+	return res, err
 }
 
 // AddQuestion appends a row to the questions table and returns its ID.

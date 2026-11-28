@@ -1,7 +1,7 @@
 ---
 id: vision
 title: Vision and scope
-part: 01-foundation
+part: foundation
 status: accepted
 style: ste
 owner: paul

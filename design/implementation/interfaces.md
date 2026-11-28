@@ -30,7 +30,7 @@ maid has no roles. Any agent can call any tool. `maid_next` returns the next ste
 | Tool | Input | Output |
 |---|---|---|
 | `design_scaffold` | `depth`, `profile?`, `answers?` (free text or fields) | Created stubs and the questions that remain. |
-| `design_write` | `chapter`, `section`, `content`, `base_version`, `reason` | New version, or a conflict with the current text. |
+| `design_write` | `ref` (`chapter#heading`), `content`, `base_version`, `reason` | New version, or a conflict with the current text. |
 | `design_propose` | `chapter`, `title`, `content`, `reason` | Result of the proposal write. |
 | `design_review` | `proposal_id`, `decision` (`accept`, `reject`), `reason` | Result. |
 | `design_decide` | decision fields | New decision chapter. |

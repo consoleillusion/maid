@@ -107,7 +107,7 @@ Feature: Merge queue acceptance
     Then the merge queue rejects the attempt
 ```
 
-## Environment errors
+## Requirements: environment errors
 
 ### Missing tools
 If a check cannot run because its command does not exist or cannot start, then the merge queue shall report an environment error with the command and the system error, and shall not count the attempt.

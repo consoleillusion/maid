@@ -69,9 +69,9 @@ The maid repository shall contain a benchmark set of work items, each with known
 ### Calibrated weights
 Each built-in weight set shall rank every known good solution of the benchmark set above every known bad solution of the same work item.
 
-## Formula
+## Requirements: formula
 
-### Formula
+### Requirements: formula
 The scorer shall calculate the score with the formula in this section.
 
 ```text
@@ -147,7 +147,7 @@ func ComplexityAdded(oldFuncs, newFuncs map[string]int) int
            "review_band": [50, 70], "deny_deps": ["example.com/banned"] }
 ```
 
-## Any language
+## Requirements: any language
 
 ### Language-independent measures
 Where no metrics adapter exists for a language, the scorer shall use the changed lines from git and the dependency changes from the manifest files go.mod, package.json, Cargo.toml, pyproject.toml and requirements.txt.

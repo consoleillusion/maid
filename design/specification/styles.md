@@ -41,7 +41,7 @@ Based on ASD-STE100. maid checks the rules marked "checked". The full STE dictio
 
 ## EARS requirements
 
-Each requirement has a heading and one sentence. The heading names the behaviour. The sentence uses one of the patterns in the design format.
+Each requirement has a heading and one sentence. The heading names the behaviour. The sentence uses one of the patterns in the design format. A chapter that uses EARS places its requirements under a level-2 heading whose name starts with "Requirements"; maid validates the level-3 headings in those sections.
 
 ```text
 ### <short name>

@@ -45,7 +45,13 @@ A chapter covers one area of the project. A chapter can be 1 to 20 pages. An age
 The design store shall contain each chapter as exactly one Markdown file at `design/<part>/<chapter>.md`, where the part and chapter names are lowercase, hyphenated and do not start with a digit.
 
 ### Frontmatter
-Each chapter shall start with YAML frontmatter that contains the fields `status`, `style`, `owner`, `summary` and `links`. The chapter name shall be the file name without `.md`, the title shall be the level-1 heading, and the part shall be the folder name.
+Each chapter shall start with YAML frontmatter that contains the fields `status`, `style`, `owner`, `summary` and `links`.
+
+### Chapter identity
+The name of a chapter shall come from its file name, and its title shall come from its level-1 heading.
+
+### Part identity
+The part of a chapter shall come from the name of its folder.
 
 ### Summary length
 The `summary` field shall contain at most 60 words.
@@ -72,7 +78,10 @@ While a chapter has status `accepted`, maid shall reject a direct write to it an
 When maid receives a write to a section, maid shall reject the write if the section changed after the version that the writer read.
 
 ### Unknown information
-If a writer does not have the information for a required section, then the writer shall ask the user and shall record the answer in that section when it arrives. maid shall not create a separate register of questions.
+If a writer does not have the information for a required section, then the writer shall ask the user.
+
+### Record the answer
+When the answer arrives, the writer shall record it in that section. maid shall not create a separate register of questions.
 
 ### Reading order
 The file `design/index.md` shall contain only the design title as a level-1 heading and a bulleted list of file paths, relative to `design/`, in reading order.
@@ -90,7 +99,13 @@ When an agent creates a chapter, maid shall add the path of the chapter to `desi
 The file `design/index.typ` shall build the design as one PDF with Typst: it shall read the title and the reading order from `design/index.md`, start a part at each new part folder, number the parts with roman numerals and nothing else, include each file with the cmarker package, use a sans-serif font, and start with a title page that shows the title at the bottom left.
 
 ### Page breadcrumb
-Each page of the PDF shall show a footer breadcrumb in the form `<design title> · <part name> · <chapter title>`. The design title shall come from `design/index.md`, the part name shall come from the folder of the current chapter, and the chapter title shall come from the level-1 heading of the current chapter. maid shall create the same template in every project that it installs.
+Each page of the PDF shall show a footer breadcrumb in the form `<design title> · <part name> · <chapter title>`.
+
+### Breadcrumb sources
+The breadcrumb shall take the design title from `design/index.md`, the part name from the folder of the current chapter, and the chapter title from its level-1 heading.
+
+### Installed template
+maid shall create the same breadcrumb template in every project that it installs.
 
 ### Unnumbered headings
 The design store shall contain no chapter or section heading that starts with a position number; numbered lists are only for sequences such as steps, tasks and roadmap milestones.
@@ -137,7 +152,7 @@ A human or a configured review agent moves an item from `review` to `accepted`.
 
 Formalized English is not registered. maid has no validator that it can run for it. ACE stays registered with advice-only enforcement. The APE adapter is planned after v1.
 
-## Style requirements
+## Requirements: styles
 
 ### Registered styles only
 maid shall reject a chapter whose `style` value is not a registered style.

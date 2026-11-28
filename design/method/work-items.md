@@ -84,7 +84,7 @@ Where a work item has kind `tests`, its acceptance checks shall be: the tests co
 ### Review of tests
 Where the depth level is rigorous, the merge queue shall hold each accepted `tests` submission for review by the design agent or a human.
 
-## Context packet
+## Requirements: context packet
 
 ### Packet contents
 When an agent claims a work item, maid shall return a context packet that contains:
@@ -119,7 +119,7 @@ stateDiagram-v2
   accepted --> closed
 ```
 
-## Test stubs
+## Requirements: test stubs
 
 In compiled languages, a test that calls code that does not exist does not compile. A stub makes the tests compile and fail. A stub cannot implement the behaviour, because the merge queue rejects tests that pass on the main branch.
 
@@ -129,7 +129,7 @@ Where the code that the acceptance tests call does not exist on the main branch,
 ### Tests item ownership
 When maid creates a tests work item, maid shall give it ownership of its test files and of the owned files of its code item.
 
-## Work through maid only
+## Requirements: work through maid only
 
 An agent can complete a work item with maid's tools alone. It does not need file or shell access on the machine that runs maid.
 

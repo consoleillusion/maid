@@ -118,6 +118,10 @@
     #text(11pt, fill: luma(90), datetime.today().display("[day] [month repr:long] [year]"))
   ]
 ]
+#image(
+  "./robot_maid_grayscale_10pct.png",
+  width: 40%
+)
 
 #set page(paper: "a4", margin: (x: 2.3cm, y: 2.5cm), numbering: "1",
   footer: context [#text(8.5pt, fill: luma(110))[

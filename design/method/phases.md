@@ -6,7 +6,7 @@ summary: >
   The fixed progression that maid guides every project through, from bootstrap
   to verified code. Defines each phase, its outputs, its gate, the depth levels
   and how maid_next tells an agent what to do.
-links: [vision, work-items, acceptance, mcp]
+links: [vision, work-items, acceptance, interfaces]
 ---
 
 # Phases and gates
@@ -91,10 +91,13 @@ The build gate for a work item shall be the acceptance rule of the merge queue.
 ### Verify gate
 The verify gate shall require that each requirement in the work item traces to code and to passing tests.
 
-### Missing information
-If information is missing, then the agent shall ask the user, shall record the answer in the design, and shall continue with work that does not need the answer.
+### Ask for missing information
+If information is missing, then the agent shall ask the user.
 
-## Depth levels
+### Continue unblocked work
+While an answer is missing, the agent shall continue with work that does not need it.
+
+## Requirements: depth levels
 
 The user selects a depth level during bootstrap. The depth level sets which sections each gate requires.
 
@@ -114,7 +117,7 @@ phase: requirements
 step: Define requirements for the area "merge queue"
 why: Vision accepted; the goal "mechanical acceptance" has no requirements
 read: [vision, glossary, acceptance]
-tools: [design_write, design_question]
+tools: [design_write, design_set_status]
 done_when:
   - each goal links to at least one accepted requirement
   - each requirement passes the EARS validator
@@ -126,7 +129,7 @@ ask_user:
 
 Some MCP clients load the tool list once and ignore `tools/list_changed`. So maid lists every tool in every phase. Tools that the current phase does not allow refuse the call and return the next step.
 
-## Phases as tasks
+## Requirements: phases as tasks
 
 The phases in this chapter are the order of the tasks that `maid init` seeds. They guide agents. They do not block work. See the decision to treat everything as a task.
 

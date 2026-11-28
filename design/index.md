@@ -14,6 +14,7 @@
 - implementation/architecture.md
 - implementation/interfaces.md
 - implementation/conventions.md
+- implementation/code-review-graph.md
 - decisions/go.md
 - decisions/pull-model.md
 - decisions/merge-queue.md

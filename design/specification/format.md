@@ -209,3 +209,25 @@ An EARS requirement is the first paragraph after a requirement heading. The `<sy
 | Unwanted behaviour | If `<condition>`, then the `<system>` shall `<response>`. |
 | Optional feature | Where `<feature>`, the `<system>` shall `<response>`. |
 | Complex | A combination of the keywords above, in the order Where, While, When or If. |
+
+## Proposal: Title page layout and lowercase breadcrumbs
+
+status: proposed · by opencode · 2026-11-28
+
+### Lowercase breadcrumb
+The PDF footer shall show the design title, part name and chapter title in lowercase.
+
+### Cover image background
+When `design/cover_image.png` exists, the title page shall show that image centred at full page width behind the title.
+
+### Cover image overflow
+When the cover image is taller than the page, the title page shall clip the bottom of the image at the page edge.
+
+### Title position
+The title page shall place the title at the bottom-left page margin.
+
+### Single build script
+The repository PDF build script shall run the PDF build script that maid installs.
+
+### One copy of build logic
+The PDF build logic shall exist in exactly one shell script.

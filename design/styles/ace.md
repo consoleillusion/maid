@@ -1,7 +1,4 @@
 ---
-id: style-ace
-title: "Style card: Attempto Controlled English (ACE)"
-part: styles
 status: stub
 style: ste
 owner: paul

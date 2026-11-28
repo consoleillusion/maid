@@ -1,7 +1,4 @@
 ---
-id: roadmap
-title: Roadmap
-part: delivery
 status: accepted
 style: ste
 owner: paul
@@ -9,7 +6,7 @@ summary: >
   The milestones of maid, the requirements that each milestone delivers, and
   what is implemented now. Read this to see where the project is and what
   comes next.
-links: [phases, work-items, acceptance, mcp-interface, ADR-0007]
+links: [phases, work-items, acceptance, mcp, ADR-0007]
 ---
 
 # Roadmap

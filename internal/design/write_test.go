@@ -22,7 +22,7 @@ func TestWriteSectionVersionCheck(t *testing.T) {
 		t.Fatalf("findings: %+v", res.Findings)
 	}
 	b, _ := os.ReadFile(filepath.Join(root, "design/01-a/alpha.md"))
-	if !strings.Contains(string(b), "load every chapter") || !strings.HasPrefix(string(b), "---\nid: alpha\n") {
+	if !strings.Contains(string(b), "load every chapter") || !strings.HasPrefix(string(b), "---\nstatus: draft\n") {
 		t.Fatalf("file = %s", b)
 	}
 	if _, err := s.WriteSection("REQ-AL-001", "### REQ-AL-001 One\nThe design store shall x.", ex[0].Version); !errors.Is(err, ErrStale) {

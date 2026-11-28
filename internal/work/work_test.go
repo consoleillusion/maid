@@ -14,9 +14,6 @@ import (
 )
 
 const reqChapter = `---
-id: calc
-title: Calc
-part: 01-a
 status: accepted
 style: ears
 owner: paul

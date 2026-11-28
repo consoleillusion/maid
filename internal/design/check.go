@@ -21,7 +21,8 @@ type Finding struct {
 }
 
 // RequiredFields are the frontmatter fields every chapter must have (REQ-DOC-002).
-var RequiredFields = []string{"id", "title", "status", "style", "owner", "summary", "links"}
+// ID, title and part come from the path and the level-1 heading, not frontmatter.
+var RequiredFields = []string{"status", "style", "owner", "summary", "links"}
 
 // Statuses are the allowed status values (REQ-DOC-009).
 var Statuses = map[string]bool{"stub": true, "draft": true, "review": true, "accepted": true, "superseded": true}
@@ -56,25 +57,11 @@ func (s *Store) Check() []Finding {
 			}
 			seenItems[sec.ItemID] = ch.Path
 		}
-		out = append(out, checkPart(ch)...)
 		out = append(out, checkHeadings(ch)...)
 		out = append(out, s.checkLinks(ch)...)
 		out = append(out, checkStyle(ch)...)
 	}
 	return append(out, s.checkIndex()...)
-}
-
-func checkPart(ch *Chapter) []Finding {
-	// Purpose: check that the part field names the folder (REQ-DOC-020).
-	p := PartOf(ch.Path)
-	if p == "" {
-		return nil
-	}
-	var out []Finding
-	if fp := ch.FM.String("part"); fp != "" && fp != p {
-		out = append(out, Finding{ch.Path, 1, "REQ-DOC-020", style.Error, "part is " + fp + " but the chapter is in folder " + p})
-	}
-	return out
 }
 
 var numberedHeading = regexp.MustCompile(`^#{1,6}\s+\d`)

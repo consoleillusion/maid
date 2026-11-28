@@ -1,7 +1,4 @@
 ---
-id: ADR-0002
-title: Agents pull work from maid; maid does not start agents
-part: decisions
 status: accepted
 style: ste
 owner: paul
@@ -16,7 +13,7 @@ summary: >
   maid is a pull-based MCP server. Agents connect, call maid_next and claim
   work. Parallel work means more agents connect. An orchestrator that starts
   agents is out of scope for v1.
-links: [vision, constraints, architecture]
+links: [vision, constraints, overview]
 ---
 
 # ADR-0002 Agents pull work from maid; maid does not start agents

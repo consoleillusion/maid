@@ -1,7 +1,4 @@
 ---
-id: ADR-0007
-title: Build milestone 1 on the Go standard library only
-part: decisions
 status: accepted
 style: ste
 owner: paul
@@ -17,7 +14,7 @@ summary: >
   server for stdio tools, its own parser for the frontmatter YAML subset, and
   a JSON-file state store with file locks instead of SQLite. Tools are
   configured in maid.json until decisions select them.
-links: [architecture, conventions, mcp-interface, ADR-0001]
+links: [overview, conventions, mcp, ADR-0001]
 ---
 
 # ADR-0007 Build milestone 1 on the Go standard library only

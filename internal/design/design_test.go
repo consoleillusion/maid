@@ -22,9 +22,6 @@ func writeDesign(t *testing.T, files map[string]string) string {
 }
 
 const goodChapter = `---
-id: alpha
-title: Alpha
-part: 01-a
 status: draft
 style: ears
 owner: paul
@@ -44,9 +41,6 @@ When a chapter changes, maid shall regenerate the index.
 `
 
 const betaChapter = `---
-id: beta
-title: Beta
-part: 01-a
 status: accepted
 style: ste
 owner: paul
@@ -85,7 +79,7 @@ func TestLoadIndexRead(t *testing.T) {
 	if ex[0].Text != "### REQ-AL-002 Two\nWhen a chapter changes, maid shall regenerate the index." {
 		t.Fatalf("item text = %q", ex[0].Text)
 	}
-	if ex[1].Line != 14 {
+	if ex[1].Line != 11 {
 		t.Fatalf("section line = %d", ex[1].Line)
 	}
 	if ex[2].Text != "| Q-001 | A question |" || ex[3].Text != "Beta chapter." {
@@ -96,10 +90,10 @@ func TestLoadIndexRead(t *testing.T) {
 	}
 }
 
-// REQ-DOC-002 REQ-DOC-006 REQ-DOC-015 REQ-STY-001
+// REQ-DOC-009 REQ-DOC-006 REQ-DOC-015 REQ-STY-001
 func TestCheckFindsProblems(t *testing.T) {
-	// Purpose: report missing fields, bad style, duplicates and broken references.
-	bad := "---\nid: alpha\ntitle: X\npart: p\nstatus: wip\nstyle: klingon\nsummary: s\nlinks: [missing]\n---\n\n### REQ-AL-001 Dup\nThe store shall x.\n\nSee REQ-ZZ-999 and [x](nope.md).\n"
+	// Purpose: report bad status, bad style, duplicate items and broken references.
+	bad := "---\nstatus: wip\nstyle: klingon\nsummary: s\nlinks: [missing]\n---\n\n### REQ-AL-001 Dup\nThe store shall x.\n\nSee REQ-ZZ-999 and [x](nope.md).\n"
 	root := writeDesign(t, map[string]string{"01-a/alpha.md": goodChapter, "01-a/bad.md": bad})
 	s, err := Load(root)
 	if err != nil {
@@ -109,7 +103,7 @@ func TestCheckFindsProblems(t *testing.T) {
 	for _, f := range s.Check() {
 		got[f.Rule]++
 	}
-	want := map[string]int{"REQ-DOC-002": 1, "REQ-DOC-009": 1, "REQ-STY-001": 1, "REQ-DOC-006": 2, "REQ-DOC-015": 4}
+	want := map[string]int{"REQ-DOC-009": 1, "REQ-STY-001": 1, "REQ-DOC-006": 1, "REQ-DOC-015": 4}
 	for k, v := range want {
 		if got[k] != v {
 			t.Errorf("%s = %d, want %d (all %v)", k, got[k], v, got)

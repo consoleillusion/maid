@@ -1,7 +1,4 @@
 ---
-id: style-ste
-title: "Style card: Simplified Technical English (STE)"
-part: styles
 status: draft
 style: ste
 owner: paul

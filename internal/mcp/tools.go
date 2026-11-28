@@ -128,15 +128,15 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_create", "Create a new design chapter with status draft. path is relative to design/, for example foundation/vision.md: part/name.md, lowercase, no numbers. maid adds the chapter to design/index.md, which holds the reading order. Read the style card in design/styles/ before you write the body.",
-		obj(map[string]any{"path": str("part/name.md"), "id": str("chapter ID, lowercase"), "title": str("title"),
+	{tool: Tool{"design_create", "Create a new design chapter with status draft. path is relative to design/, for example foundation/vision.md: part/name.md, lowercase, no numbers. The chapter ID comes from the file name, the title from the '# Title' heading, and the part from the folder. maid adds the chapter to design/index.md, which holds the reading order. Read the style card in design/styles/ before you write the body.",
+		obj(map[string]any{"path": str("part/name.md"),
 			"style":   map[string]any{"type": "string", "enum": []string{"ste", "ears", "sbvr-se", "gherkin", "ace"}},
 			"summary": str("at most 60 words"), "links": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
-			"body": str("Markdown body, starting with '# Title'"), "owner": str("person who accepts changes"), "agent": agentProp}, "path", "id", "title", "style", "summary", "body")},
+			"body": str("Markdown body, starting with '# Title'"), "owner": str("person who accepts changes"), "agent": agentProp}, "path", "style", "summary", "body")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
-			spec := design.ChapterSpec{Path: sArg(a, "path"), ID: sArg(a, "id"), Title: sArg(a, "title"), Style: sArg(a, "style"),
+			spec := design.ChapterSpec{Path: sArg(a, "path"), Style: sArg(a, "style"),
 				Owner: sArg(a, "owner"), Summary: sArg(a, "summary"), Links: lArg(a, "links"), Body: rawArg(a, "body")}
-			res, err := t.Svc.DesignOp(ctx, agent, "create", "create chapter "+spec.ID, func(ds *design.Store) (design.WriteResult, error) {
+			res, err := t.Svc.DesignOp(ctx, agent, "create", "create chapter "+spec.Path, func(ds *design.Store) (design.WriteResult, error) {
 				return ds.CreateChapter(spec)
 			})
 			return res, writeHint(res), err

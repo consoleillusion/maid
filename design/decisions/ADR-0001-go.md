@@ -1,7 +1,4 @@
 ---
-id: ADR-0001
-title: Write maid in Go and restart from the design
-part: decisions
 status: accepted
 style: ste
 owner: paul
@@ -16,7 +13,7 @@ summary: >
   maid is written in Go and ships as one static binary for each platform. The
   existing TypeScript implementation is removed. Implementation restarts from
   design/.
-links: [constraints, conventions, architecture]
+links: [constraints, conventions, overview]
 ---
 
 # ADR-0001 Write maid in Go and restart from the design

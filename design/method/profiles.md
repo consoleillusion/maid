@@ -1,7 +1,4 @@
 ---
-id: profiles
-title: Profiles and default decisions
-part: method
 status: accepted
 style: ears
 owner: paul

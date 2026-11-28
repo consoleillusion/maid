@@ -134,8 +134,8 @@ func (s *Store) SetStatus(chapterID, status string) (WriteResult, error) {
 // ChapterSpec is the input of CreateChapter.
 type ChapterSpec struct {
 	Path    string   `json:"path"` // relative to design/, e.g. foundation/vision.md
-	ID      string   `json:"id"`
-	Title   string   `json:"title"`
+	ID      string   `json:"id,omitempty"`    // ignored; derived from Path
+	Title   string   `json:"title,omitempty"` // ignored; derived from Body
 	Style   string   `json:"style"`
 	Owner   string   `json:"owner"`
 	Summary string   `json:"summary"`
@@ -149,24 +149,21 @@ var chapterPath = regexp.MustCompile(`^([a-z][a-z0-9-]*/)?[a-z][a-z0-9._-]*\.md$
 
 // CreateChapter writes a new chapter with status draft.
 func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
-	// Purpose: start a new chapter with valid frontmatter (REQ-DOC-001, REQ-DOC-002).
+	// Purpose: start a new chapter with values derived from path and body (REQ-DOC-001, REQ-DOC-002).
 	c.Path = path.Clean(strings.TrimPrefix(c.Path, "design/"))
 	if !chapterPath.MatchString(c.Path) || strings.Contains(c.Path, "..") {
 		return WriteResult{}, fmt.Errorf("invalid chapter path %q: use part/name.md, lowercase words joined by hyphens, with no numbers in front", c.Path)
 	}
-	if c.ID == "" || c.Title == "" || c.Style == "" || c.Summary == "" {
-		return WriteResult{}, errors.New("id, title, style and summary are required")
+	if c.Style == "" || c.Summary == "" {
+		return WriteResult{}, errors.New("style and summary are required")
 	}
-	if s.byID[c.ID] != nil {
-		return WriteResult{}, fmt.Errorf("chapter id %q exists", c.ID)
+	id := chapterID(path.Join(Dir, c.Path))
+	if s.byID[id] != nil {
+		return WriteResult{}, fmt.Errorf("chapter id %q exists", id)
 	}
 	full := filepath.Join(s.Root, Dir, filepath.FromSlash(c.Path))
 	if _, err := os.Stat(full); err == nil {
 		return WriteResult{}, fmt.Errorf("%s exists", c.Path)
-	}
-	part := path.Dir(c.Path)
-	if part == "." {
-		part = "design"
 	}
 	owner := c.Owner
 	if owner == "" {
@@ -176,8 +173,8 @@ func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
 	if len(c.Links) > 0 {
 		links = "[" + strings.Join(c.Links, ", ") + "]"
 	}
-	text := fmt.Sprintf("---\nid: %s\ntitle: %s\npart: %s\nstatus: draft\nstyle: %s\nowner: %s\nsummary: >\n  %s\nlinks: %s\n---\n\n%s\n",
-		c.ID, quoteIfNeeded(c.Title), part, c.Style, owner, strings.ReplaceAll(strings.TrimSpace(c.Summary), "\n", "\n  "),
+	text := fmt.Sprintf("---\nstatus: draft\nstyle: %s\nowner: %s\nsummary: >\n  %s\nlinks: %s\n---\n\n%s\n",
+		c.Style, owner, strings.ReplaceAll(strings.TrimSpace(c.Summary), "\n", "\n  "),
 		links, strings.TrimRight(c.Body, "\n"))
 	if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
 		return WriteResult{}, err
@@ -192,7 +189,7 @@ func (s *Store) CreateChapter(c ChapterSpec) (WriteResult, error) {
 			return WriteResult{}, err
 		}
 	}
-	res, err := s.result(path.Join(Dir, c.Path), c.ID, Version(text))
+	res, err := s.result(path.Join(Dir, c.Path), id, Version(text))
 	res.Also = also
 	return res, err
 }
@@ -235,14 +232,6 @@ func (s *Store) AddQuestion(question, blocks, owner string) (string, WriteResult
 func cell(s string) string {
 	// Purpose: keep text safe inside a Markdown table cell.
 	return strings.ReplaceAll(strings.ReplaceAll(strings.TrimSpace(s), "|", "/"), "\n", " ")
-}
-
-func quoteIfNeeded(s string) string {
-	// Purpose: quote a YAML scalar that contains a colon or a hash.
-	if strings.ContainsAny(s, ":#") {
-		return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"`
-	}
-	return s
 }
 
 func (s *Store) locate(ref string) (*Chapter, *Section, error) {

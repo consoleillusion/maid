@@ -72,7 +72,7 @@ func (s *Store) Order() []IndexEntry {
 		if e.Title == "" {
 			for _, ch := range s.Chapters {
 				if ch.Path == e.Path {
-					e.Title = ch.FM.String("title")
+					e.Title = ch.Title
 				}
 			}
 		}

@@ -1,7 +1,4 @@
 ---
-id: constraints
-title: Constraints and assumptions
-part: foundation
 status: accepted
 style: ste
 owner: paul

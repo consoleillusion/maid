@@ -1,7 +1,4 @@
 ---
-id: conventions
-title: Engineering conventions for maid
-part: engineering
 status: accepted
 style: ste
 owner: paul

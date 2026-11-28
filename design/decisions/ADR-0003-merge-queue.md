@@ -1,7 +1,4 @@
 ---
-id: ADR-0003
-title: Accept submissions automatically through a local merge queue
-part: decisions
 status: accepted
 style: ste
 owner: paul

@@ -1,7 +1,4 @@
 ---
-id: ADR-NNNN
-title: "<short title of problem and solution>"
-part: decisions
 status: draft            # stub | draft | review | accepted | superseded
 style: ste
 owner: <person who accepts>

@@ -1,7 +1,4 @@
 ---
-id: style-ears
-title: "Style card: EARS requirements"
-part: styles
 status: draft
 style: ste
 owner: paul

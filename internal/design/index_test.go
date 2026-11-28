@@ -93,7 +93,7 @@ func TestIndexTypRomanParts(t *testing.T) {
 	}
 }
 
-// scenario: the PDF template supports both modes and a cover image
+// scenario: the PDF template supports both modes, a cover image and a lowercase footer
 func TestIndexTypModes(t *testing.T) {
 	// Purpose: the installed template builds a light and a dark book.
 	root := t.TempDir()
@@ -109,7 +109,7 @@ func TestIndexTypModes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, part := range []string{`sys.inputs.at("mode"`, `rgb("#222222")`, `cover_image.png`, "bottom + left"} {
+	for _, part := range []string{`sys.inputs.at("mode"`, `rgb("#222222")`, `cover_image.png`, "bottom + left", "width: 100%", "height: auto", `dx: 2.3cm`, `dy: -2.5cm`, "lower(title)", "lower(breadcrumb-part.get())", "lower(breadcrumb-chapter.get())"} {
 		if !strings.Contains(string(b), part) {
 			t.Errorf("index.typ does not contain %q", part)
 		}

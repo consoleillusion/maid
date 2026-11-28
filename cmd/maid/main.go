@@ -31,8 +31,8 @@ Usage:
   maid check  [-json]               check the design; exit 1 on errors
   maid index  [-json]
   maid read   [-summary] REF...     REF is a chapter ID, item ID or chapter#anchor
-  maid accept [-by NAME] CHAPTER... record that you accept chapters (default NAME: git user.name)
-  maid accept [-by NAME] -pending   accept every chapter that waits for approval
+  maid accept CHAPTER...            accept chapters
+  maid accept -pending              accept every chapter that is not accepted
   maid plan   FILE.json             create work items from a plan
   maid claim  -agent ID [WORK_ITEM]
   maid submit -agent ID [-model M] WORK_ITEM
@@ -84,8 +84,7 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 	summary := fs.Bool("summary", false, "chapter summaries only")
 	model := fs.String("model", "", "model name")
 	reason := fs.String("reason", "", "reason")
-	by := fs.String("by", "", "name of the person who approves")
-	pending := fs.Bool("pending", false, "accept every chapter that waits for approval")
+	pending := fs.Bool("pending", false, "accept every chapter that is not accepted")
 	if err := fs.Parse(args); err != nil {
 		return 2, err
 	}
@@ -147,14 +146,10 @@ func run(ctx context.Context, cmd string, args []string) (int, error) {
 			ids = guide.Pending(ds)
 		}
 		if len(ids) == 0 {
-			return 2, errors.New("usage: maid accept [-by NAME] CHAPTER... or maid accept -pending")
+			return 2, errors.New("usage: maid accept CHAPTER... or maid accept -pending")
 		}
-		name := *by
-		if name == "" {
-			out, _ := exec.Command("git", "-C", root, "config", "user.name").Output()
-			name = strings.TrimSpace(string(out))
-		}
-		res, err := svc.SetStatusBatch(ctx, "human:"+name, ids, "accepted", name)
+		out, _ := exec.Command("git", "-C", root, "config", "user.name").Output()
+		res, err := svc.SetStatusBatch(ctx, strings.TrimSpace(string(out)), ids, "accepted")
 		if err != nil {
 			return 1, err
 		}

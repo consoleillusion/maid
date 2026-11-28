@@ -52,11 +52,8 @@ func TestCreateChapterAddsToIndex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	idx := string(b)
-	found := "## Foundation\n\n1. [Vision](foundation/vision.md)\n2. [Glossary](foundation/glossary.md)\n"
-	method := "## Method\n\n1. [Phases](method/phases.md)\n"
-	if !strings.Contains(idx, found) || !strings.Contains(idx, method) || strings.Index(idx, found) > strings.Index(idx, method) {
-		t.Fatalf("index.md = %q", idx)
+	if want := "# Design\n\n- foundation/vision.md\n- foundation/glossary.md\n- method/phases.md\n"; string(b) != want {
+		t.Fatalf("index.md = %q, want %q", b, want)
 	}
 	if _, err := os.Stat(filepath.Join(root, "design/index.typ")); err != nil {
 		t.Error("design/index.typ was not created")

@@ -75,8 +75,8 @@ func Load(root string) (*Store, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !strings.HasSuffix(p, ".md") {
-			return nil
+		if d.IsDir() || !strings.HasSuffix(p, ".md") || p == filepath.Join(dir, IndexFile) {
+			return nil // index.md is the reading order, not a chapter (REQ-DOC-021)
 		}
 		ch, err := loadChapter(root, p)
 		if err != nil {

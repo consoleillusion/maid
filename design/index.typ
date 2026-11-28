@@ -26,32 +26,33 @@
 
 #let dir-of(p) = {
   let i = p.split("/")
-  i.slice(0, i.len() - 1).join("/")
+  if i.len() < 2 { "" } else { i.slice(0, i.len() - 1).join("/") }
 }
 
-// Read index.md: the title, then "## Part" headings and numbered chapter links.
+// Read index.md: the title, then the files in reading order. A part starts
+// at each new part folder; its name is the folder name.
 #let index-src = strip-frontmatter(read("index.md"))
 #let title = {
-  let m = index-src.match(regex("(?m)^# +(.+?)\s*$"))
+  let m = index-src.match(regex("(?m)^# +(.+?)\\s*$"))
   if m == none { "Design" } else { m.captures.at(0) }
 }
-#let intro = {
-  let after = index-src.split(regex("(?m)^# +.+$")).at(1, default: "")
-  after.split(regex("(?m)^## ")).at(0).trim()
+#let part-name(dir) = {
+  let w = dir.replace("-", " ")
+  upper(w.first()) + w.slice(1)
 }
 #let parts = {
   let out = ()
   for line in index-src.split("\n") {
-    let h = line.match(regex("^## +(.+?)\s*$"))
-    let c = line.match(regex("^\s*\d+[.)]\s+\[(.+?)\]\((.+?\.md)\)"))
-    if h != none {
-      out.push((name: h.captures.at(0), chapters: ()))
-    } else if c != none {
-      if out.len() == 0 { out.push((name: none, chapters: ())) }
-      let last = out.pop()
-      last.chapters.push((title: c.captures.at(0), path: normalise(c.captures.at(1))))
-      out.push(last)
+    let c = line.match(regex("^\\s*(?:[-*+]|\\d+[.)])\\s+(?:\\[.+?\\]\\((.+?\\.md)\\)|(\\S+\\.md))\\s*$"))
+    if c == none { continue }
+    let p = normalise(if c.captures.at(0) != none { c.captures.at(0) } else { c.captures.at(1) })
+    let dir = dir-of(p)
+    if out.len() == 0 or out.last().dir != dir {
+      out.push((dir: dir, name: if dir == "" { none } else { part-name(dir) }, chapters: ()))
     }
+    let last = out.pop()
+    last.chapters.push(p)
+    out.push(last)
   }
   out
 }
@@ -80,12 +81,11 @@
 #set text(font: sans, size: 10.5pt, lang: "en")
 #show raw: set text(font: mono, size: 9pt)
 #set par(justify: false, leading: 0.65em, spacing: 1.1em)
-#set heading(numbering: "1.1")
+// Only parts have numbers, in roman numerals; chapters and sections have none.
+#set heading(numbering: none)
 #show heading: set text(weight: "semibold")
 #show heading.where(level: 1): it => { pagebreak(weak: true); v(2em); text(26pt, it); v(1.5em) }
 #show heading.where(level: 2): it => { v(1.2em); text(16pt, it); v(0.4em) }
-#show heading.where(level: 4): set heading(numbering: none)
-#show heading.where(level: 5): set heading(numbering: none)
 #show table: set text(size: 9.5pt)
 #set table(stroke: 0.5pt + luma(180), inset: 6pt)
 #show table.cell.where(y: 0): set text(weight: "semibold")
@@ -104,27 +104,23 @@
 #set page(paper: "a4", margin: (x: 2.3cm, y: 2.5cm), numbering: "1",
   footer: context [#text(8.5pt, fill: luma(110))[#title #h(1fr) #counter(page).display()]])
 
-// Front page text from index.md, then the contents.
-#if intro != "" {
-  cmarker.render(intro, h1-level: 2, scope: (link: chapter-link("")))
-  v(2em)
-}
 #text(20pt, weight: "semibold")[Contents]
 #v(0.8em)
 #outline(title: none, depth: 2, indent: auto)
 
 #for part in parts {
-  if part.name != none { heading(level: 1, part.name) }
-  for ch in part.chapters {
-    let dir = dir-of(ch.path)
+  if part.name != none { heading(level: 1, numbering: "I", part.name) }
+  for path in part.chapters {
+    let dir = dir-of(path)
     let (meta, body) = cmarker.render-with-metadata(
-      read(ch.path),
+      read(path),
       metadata-block: "frontmatter-yaml",
-      h1-level: 2,
-      label-prefix: ch.path + ":",
+      // A file outside a part folder, such as questions.md, is a part of its own.
+      h1-level: if dir == "" { 1 } else { 2 },
+      label-prefix: path + ":",
       scope: (link: chapter-link(dir), image: chapter-image(dir)),
     )
-    [#metadata(ch.path)#label(ch.path)]
+    [#metadata(path)#label(path)]
     body
     if meta != none and "status" in meta {
       align(right, text(8.5pt, fill: luma(110))[Status: #meta.status])

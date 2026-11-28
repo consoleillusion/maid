@@ -10,7 +10,7 @@ func TestAcceptWithoutApprover(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.SetStatus("alpha", "accepted", ""); err != nil {
+	if _, err := s.SetStatus("alpha", "accepted"); err != nil {
 		t.Fatalf("SetStatus without approver: %v", err)
 	}
 	if got := s.Chapter("alpha").FM.String("status"); got != "accepted" {

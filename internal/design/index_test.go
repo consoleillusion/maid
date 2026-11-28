@@ -1,0 +1,131 @@
+package design
+
+import (
+	"io/fs"
+	"os"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strings"
+	"testing"
+)
+
+// REQ-DOC-014 REQ-DOC-017 REQ-DOC-019 scenario: bulleted index on create
+func TestIndexBullets(t *testing.T) {
+	// Purpose: index.md holds the title and bulleted paths, grouped by part folder.
+	root := t.TempDir()
+	for _, c := range [][3]string{{"foundation/vision.md", "vision", "Vision"}, {"method/phases.md", "phases", "Phases"}, {"foundation/glossary.md", "glossary", "Glossary"}} {
+		if err := createChapter(t, root, c[0], c[1], c[2]); err != nil {
+			t.Fatal(err)
+		}
+	}
+	b, err := os.ReadFile(filepath.Join(root, "design/index.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "# Design\n\n- foundation/vision.md\n- foundation/glossary.md\n- method/phases.md\n"
+	if string(b) != want {
+		t.Fatalf("index.md = %q, want %q", b, want)
+	}
+}
+
+// REQ-DOC-021 scenario: index is not a chapter
+func TestIndexNotLoaded(t *testing.T) {
+	// Purpose: index.md has no frontmatter and is not checked as a chapter.
+	root := writeDesign(t, map[string]string{
+		"index.md":             "# D\n\n- foundation/vision.md\n",
+		"foundation/vision.md": chapterText("vision", "foundation"),
+	})
+	s, _ := Load(root)
+	for _, c := range s.Chapters {
+		if c.Path == "design/index.md" {
+			t.Error("index.md is loaded as a chapter")
+		}
+	}
+	for _, f := range s.Check() {
+		if f.Path == "design/index.md" {
+			t.Errorf("finding for index.md: %+v", f)
+		}
+	}
+}
+
+// REQ-DOC-014 scenario: bulleted paths give the order
+func TestOrderBullets(t *testing.T) {
+	// Purpose: parts come from folders and titles from the chapters.
+	root := writeDesign(t, map[string]string{
+		"index.md":             "# D\n\n- method/phases.md\n- foundation/vision.md\n",
+		"method/phases.md":     chapterText("phases", "method"),
+		"foundation/vision.md": chapterText("vision", "foundation"),
+	})
+	s, _ := Load(root)
+	want := []IndexEntry{{Part: "Method", Title: "T", Path: "design/method/phases.md"}, {Part: "Foundation", Title: "T", Path: "design/foundation/vision.md"}}
+	if got := s.Order(); !reflect.DeepEqual(got, want) {
+		t.Errorf("Order() = %+v, want %+v", got, want)
+	}
+}
+
+// REQ-DOC-022 scenario: numbered heading
+func TestCheckNumberedHeading(t *testing.T) {
+	// Purpose: a heading that starts with a position number is an error.
+	ch := strings.Replace(chapterText("vision", "foundation"), "# T\n", "# T\n\n## 1. Scope\n\nText.\n", 1)
+	root := writeDesign(t, map[string]string{"index.md": "# D\n\n- foundation/vision.md\n", "foundation/vision.md": ch})
+	s, _ := Load(root)
+	if n := countFindings(s.Check(), "REQ-DOC-022"); n != 1 {
+		t.Errorf("%d REQ-DOC-022 errors, want 1", n)
+	}
+}
+
+// REQ-DOC-018 scenario: only parts are numbered, in roman numerals
+func TestIndexTypRomanParts(t *testing.T) {
+	// Purpose: the PDF numbers parts with roman numerals and nothing else.
+	root := t.TempDir()
+	if err := createChapter(t, root, "foundation/vision.md", "vision", "Vision"); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(root, "design/index.typ"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"#set heading(numbering: none)", `numbering: "I"`} {
+		if !strings.Contains(string(b), want) {
+			t.Errorf("index.typ does not contain %q", want)
+		}
+	}
+}
+
+// REQ-DOC-014 REQ-DOC-022 scenario: maid's own design has no position numbers
+func TestOwnIndexAndHeadings(t *testing.T) {
+	// Purpose: maid's index.md is bulleted paths, and no heading in its design is numbered.
+	root := filepath.Join("..", "..", Dir)
+	b, err := os.ReadFile(filepath.Join(root, "index.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	idx := string(b)
+	if strings.HasPrefix(idx, "---") || !strings.Contains(idx, "\n- foundation/vision.md\n") || regexp.MustCompile(`(?m)^\d+\.`).MatchString(idx) {
+		t.Errorf("design/index.md is not a title and bulleted paths:\n%s", idx)
+	}
+	numbered := regexp.MustCompile(`^#{1,6}\s+\d`)
+	err = filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".md") {
+			return err
+		}
+		c, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		fence := false
+		for i, l := range strings.Split(string(c), "\n") {
+			if strings.HasPrefix(l, "```") {
+				fence = !fence
+			}
+			if !fence && numbered.MatchString(l) {
+				t.Errorf("%s:%d numbered heading: %s", p, i+1, l)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+}

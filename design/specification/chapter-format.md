@@ -20,7 +20,7 @@ links: [style-registry, ADR-0006]
 
 ```text
 design/
-  index.md                    front page: title, introduction, chapters in reading order
+  index.md                    design title and the files in reading order
   index.typ                   builds one PDF of the design from index.md
   questions.md                open questions
   <part-name>/
@@ -30,6 +30,8 @@ design/
 ```
 
 Part and chapter names are lowercase words joined by hyphens. They do not contain position numbers. The order of the parts and chapters is the order in `index.md`. The number in an ADR file name is the ID of the decision, not a position.
+
+`index.md` holds only information that no other file holds: the design title and the reading order. It has no frontmatter. Titles, statuses and summaries stay in the frontmatter of each file. Part names come from the folder names.
 
 Projects that use maid use the same structure.
 

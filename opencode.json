@@ -1,0 +1,16 @@
+{
+  "mcp": {
+    "servers": {
+      "maid": {
+        "type": "local",
+        "command": [
+          "nix",
+          "develop",
+          "--command",
+          ".bin/maid",
+          "mcp"
+        ]
+      }
+    }
+  }
+}

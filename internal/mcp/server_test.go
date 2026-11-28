@@ -205,8 +205,8 @@ func TestBatchAccept(t *testing.T) {
 	tl := &Tools{Svc: work.New(root, config.Default(), tasks.NewMemory())}
 	ctx := context.Background()
 	for _, c := range []string{
-		`{"path":"01-a/01-vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nIt adds.\n"}`,
-		`{"path":"01-a/02-glossary.md","id":"glossary","title":"Glossary","style":"sbvr-se","summary":"Terms.","body":"# Glossary\n\n## Terms\n\n**sum**: a total.\n"}`,
+		`{"path":"a/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nIt adds.\n"}`,
+		`{"path":"a/glossary.md","id":"glossary","title":"Glossary","style":"sbvr-se","summary":"Terms.","body":"# Glossary\n\n## Terms\n\n**sum**: a total.\n"}`,
 	} {
 		if r := tl.Call(ctx, "design_create", json.RawMessage(c), "a"); r["isError"] == true {
 			t.Fatalf("create: %v", r)

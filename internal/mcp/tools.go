@@ -79,7 +79,7 @@ var defs = []def{
 			return ds.Index(design.Filter{Part: sArg(a, "part"), Status: sArg(a, "status"), Style: sArg(a, "style"), Link: sArg(a, "link")}),
 				"call design_read with the IDs you need", nil
 		}},
-	{tool: Tool{"design_read", "Read design text. Each ref can be a chapter ID (vision), a file path (design/01-foundation/01-vision.md), a chapter title, an item ID (REQ-WI-004, any case), or chapter#heading. Returns the smallest text for each ref with its version; refs that match nothing come back in not_found with suggestions. Example: {\"refs\": [\"vision\", \"REQ-WI-004\"]}",
+	{tool: Tool{"design_read", "Read design text. Each ref can be a chapter ID (vision), a file path (design/foundation/vision.md), a chapter title, an item ID (REQ-WI-004, any case), or chapter#heading. Returns the smallest text for each ref with its version; refs that match nothing come back in not_found with suggestions. Example: {\"refs\": [\"vision\", \"REQ-WI-004\"]}",
 		obj(map[string]any{"refs": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "chapter IDs, paths, titles, item IDs or chapter#heading"},
 			"detail": map[string]any{"type": "string", "enum": []string{"summary", "full"}, "description": "summary returns only chapter summaries"}}, "refs")},
 		run: func(ctx context.Context, t *Tools, a map[string]any, _ string) (any, string, error) {
@@ -128,8 +128,8 @@ var defs = []def{
 			})
 			return res, writeHint(res), err
 		}},
-	{tool: Tool{"design_create", "Create a new design chapter with status draft. path is relative to design/, for example 01-foundation/01-vision.md. Read the style card in design/styles/ before you write the body.",
-		obj(map[string]any{"path": str("part/NN-name.md"), "id": str("chapter ID, lowercase"), "title": str("title"),
+	{tool: Tool{"design_create", "Create a new design chapter with status draft. path is relative to design/, for example foundation/vision.md: part/name.md, lowercase, no numbers. maid adds the chapter to design/index.md, which holds the reading order. Read the style card in design/styles/ before you write the body.",
+		obj(map[string]any{"path": str("part/name.md"), "id": str("chapter ID, lowercase"), "title": str("title"),
 			"style":   map[string]any{"type": "string", "enum": []string{"ste", "ears", "sbvr-se", "gherkin", "ace"}},
 			"summary": str("at most 60 words"), "links": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
 			"body": str("Markdown body, starting with '# Title'"), "owner": str("person who accepts changes"), "agent": agentProp}, "path", "id", "title", "style", "summary", "body")},

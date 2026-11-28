@@ -21,7 +21,7 @@ type Finding struct {
 }
 
 // RequiredFields are the frontmatter fields every chapter must have (REQ-DOC-002).
-var RequiredFields = []string{"id", "title", "part", "status", "style", "owner", "summary", "links"}
+var RequiredFields = []string{"id", "title", "status", "style", "owner", "summary", "links"}
 
 // Statuses are the allowed status values (REQ-DOC-009).
 var Statuses = map[string]bool{"stub": true, "draft": true, "review": true, "accepted": true, "superseded": true}
@@ -56,8 +56,47 @@ func (s *Store) Check() []Finding {
 			}
 			seenItems[sec.ItemID] = ch.Path
 		}
+		out = append(out, checkPart(ch)...)
 		out = append(out, s.checkLinks(ch)...)
 		out = append(out, checkStyle(ch)...)
+	}
+	return append(out, s.checkIndex()...)
+}
+
+func checkPart(ch *Chapter) []Finding {
+	// Purpose: check that the part field names the folder (REQ-DOC-020).
+	p := PartOf(ch.Path)
+	if p == "" {
+		return nil
+	}
+	var out []Finding
+	if fp := ch.FM.String("part"); fp != "" && fp != p {
+		out = append(out, Finding{ch.Path, 1, "REQ-DOC-020", style.Error, "part is " + fp + " but the chapter is in folder " + p})
+	}
+	return out
+}
+
+func (s *Store) checkIndex() []Finding {
+	// Purpose: compare design/index.md with the chapters in part folders (REQ-DOC-016).
+	idx := path.Join(Dir, IndexFile)
+	if !s.HasIndex() {
+		if len(s.Chapters) == 0 {
+			return nil
+		}
+		return []Finding{{idx, 1, "REQ-DOC-016", style.Advice, "design/index.md is missing; create it with the chapters in reading order"}}
+	}
+	var out []Finding
+	listed := map[string]bool{}
+	for _, e := range s.Order() {
+		listed[e.Path] = true
+		if _, err := os.Stat(filepath.Join(s.Root, filepath.FromSlash(e.Path))); err != nil {
+			out = append(out, Finding{idx, 1, "REQ-DOC-016", style.Error, "index entry does not exist: " + e.Path})
+		}
+	}
+	for _, ch := range s.Chapters {
+		if PartOf(ch.Path) != "" && !isTemplate(ch) && !listed[ch.Path] {
+			out = append(out, Finding{ch.Path, 1, "REQ-DOC-016", style.Error, "chapter is not listed in design/index.md"})
+		}
 	}
 	return out
 }

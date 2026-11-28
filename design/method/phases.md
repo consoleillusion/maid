@@ -49,8 +49,8 @@ When the phase changes, the MCP server shall send a `tools/list_changed` notific
 ### REQ-PH-006 Deterministic gates
 The MCP server shall evaluate each gate condition with a deterministic check, and shall not accept a statement from an agent as evidence that a condition is met.
 
-### REQ-PH-007 Approval is the user's choice
-Where the user asks to approve the design, maid shall ask for one approval that covers every chapter of the phase; otherwise the design agent shall decide and record its decisions.
+### REQ-PH-007 Accepting chapters
+When an agent sets a chapter to accepted, maid shall accept the chapter if it has no check errors, and shall not ask for or record an approver.
 
 ### REQ-PH-022 Plan all work at once
 When the design agent plans, the design agent shall create work items for every accepted requirement that is not implemented, in one plan.

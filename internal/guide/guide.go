@@ -162,7 +162,7 @@ func buildNext(ctx context.Context, s *work.Service, agent string, items []tasks
 				Why: "You hold the claim on this item.", Tools: []string{"work_claim", "work_heartbeat", "work_submit", "work_release"},
 				DoneWhen: []string{"the merge queue accepts your submission"},
 				Calls: []Call{{Tool: "work_claim", Arguments: map[string]any{"id": it.ID}, When: "to get your context packet and worktree again"},
-					{Tool: "work_files", Arguments: map[string]any{"id": it.ID}, When: "if you have no file access: then work_read, work_write, work_run and work_commit"},
+					{Tool: "work_files", Arguments: map[string]any{"id": it.ID}, When: "if you have no file access: then work_read, work_edit, work_run and work_commit"},
 					{Tool: "work_submit", Arguments: map[string]any{"id": it.ID}, When: "after you commit"}},
 			}
 		}

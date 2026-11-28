@@ -21,7 +21,7 @@ A submission is accepted when, on top of the latest main branch, its acceptance 
 ## Requirements
 
 ### REQ-ACC-001 Submit
-When a build agent calls `work_submit`, maid shall add the attempt branch to the merge queue.
+When a build agent calls `work_submit`, maid shall add the commits in the attempt worktree to the merge queue.
 
 ### REQ-ACC-002 One merge at a time
 The merge queue shall process one submission at a time for each main branch.

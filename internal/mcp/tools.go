@@ -49,9 +49,9 @@ var agentProp = str("Your agent ID. Defaults to the client name plus a session I
 
 var defs = []def{
 	{tool: Tool{"maid_next", "The next step for you: phase, step, what to read, which tools to use, and when the step is done. Call this first.",
-		obj(map[string]any{"role": map[string]any{"type": "string", "enum": []string{"design", "build"}, "description": "design for design/test planning agents, build for build and test agents"}, "agent": agentProp})},
+		obj(map[string]any{"agent": agentProp})},
 		run: func(ctx context.Context, t *Tools, a map[string]any, agent string) (any, string, error) {
-			n, err := guide.Compute(ctx, t.Svc, sArg(a, "role"), agent)
+			n, err := guide.Compute(ctx, t.Svc, "", agent)
 			hint := "follow the step"
 			if len(n.Calls) > 0 {
 				hint = "make the calls in \"calls\" in order; their arguments are ready to use"

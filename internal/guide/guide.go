@@ -35,15 +35,16 @@ type Call struct {
 	When      string         `json:"when,omitempty"`
 }
 
-// Roles.
+// Roles are ignored: every agent gets the step that follows from the
+// project state (REQ-PH-001). The constants remain for callers.
 const (
 	RoleDesign = "design"
 	RoleBuild  = "build"
 )
 
-// Compute derives the next step for agent in role from the design, the task
+// Compute derives the next step for agent from the design, the task
 // store and local state (REQ-PH-001, REQ-PH-003).
-func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, error) {
+func Compute(ctx context.Context, s *work.Service, _, agent string) (Next, error) {
 	// Purpose: choose the single next action for an agent.
 	ds, err := s.Design()
 	if err != nil {
@@ -55,14 +56,8 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 		// The design phases do not need the task store, so report the
 		// problem instead of failing.
 		warnings = append(warnings, "task store unavailable: "+taskErr.Error())
-		if role == RoleBuild {
-			return Next{Phase: "6-build", Why: "The task store cannot be read.", Tools: []string{"maid_status"}, Warnings: warnings}, nil
-		}
 	}
 	questions := openQuestions(ds)
-	if role == RoleBuild {
-		return buildNext(ctx, s, agent, items), nil
-	}
 	n := designNext(ds, items)
 	n.AskUser = append(n.AskUser, questions...)
 	n.Warnings = warnings
@@ -70,7 +65,7 @@ func Compute(ctx context.Context, s *work.Service, role, agent string) (Next, er
 		n.Step = "Ask the user to fix the task store, then call maid_next again. " + n.Step
 	}
 	if n.Phase >= "6" {
-		if b := buildNext(ctx, s, agent, items); b.Step != "" && role == "" {
+		if b := buildNext(ctx, s, agent, items); b.Step != "" {
 			b.AskUser = append(b.AskUser, questions...)
 			return b, nil
 		}

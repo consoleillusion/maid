@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
+	"sync"
 
 	"github.com/consoleillusion/maid/internal/design"
+	"github.com/consoleillusion/maid/internal/graph"
 	"github.com/consoleillusion/maid/internal/guide"
 	"github.com/consoleillusion/maid/internal/tasks"
 	"github.com/consoleillusion/maid/internal/work"
@@ -15,7 +18,9 @@ import (
 
 // Tools implements maid's MCP tools on top of a work.Service.
 type Tools struct {
-	Svc *work.Service
+	Svc       *work.Service
+	graph     *graph.Client
+	graphOnce sync.Once
 }
 
 // Tool is a tool definition for tools/list.
@@ -300,13 +305,60 @@ func (t *Tools) Phase(ctx context.Context) string {
 	return n.Phase
 }
 
+func (t *Tools) graphClient(ctx context.Context) *graph.Client {
+	// Purpose: start the upstream graph server once for this tool set.
+	t.graphOnce.Do(func() {
+		if t.Svc == nil || !t.Svc.Cfg.CodeReviewGraph.Enabled {
+			return
+		}
+		opts := graph.Options{
+			Command: t.Svc.Cfg.CodeReviewGraph.Command,
+			Args:    t.Svc.Cfg.CodeReviewGraph.Args,
+			Repo:    t.Svc.Root,
+		}
+		client, err := graph.Start(ctx, opts)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "maid: code review graph:", err)
+			return
+		}
+		t.graph = client
+	})
+	return t.graph
+}
+
+// Close stops the upstream graph server.
+func (t *Tools) Close() error {
+	// Purpose: stop the graph child process when the MCP server stops.
+	if t.graph == nil {
+		return nil
+	}
+	return t.graph.Close()
+}
+
 // List returns every tool. Clients may not reload the list when the phase
 // changes, so phase rules are applied when a tool is called.
 func (t *Tools) List(ctx context.Context) []Tool {
 	// Purpose: list all tools in every phase.
 	out := make([]Tool, 0, len(defs))
+	names := map[string]bool{}
 	for _, d := range defs {
 		out = append(out, d.tool)
+		names[d.tool.Name] = true
+	}
+	client := t.graphClient(ctx)
+	if client == nil {
+		return out
+	}
+	upstream, err := client.Tools(ctx)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "maid: list code review graph tools:", err)
+		return out
+	}
+	for _, tool := range upstream {
+		if names[tool.Name] {
+			continue
+		}
+		out = append(out, Tool{Name: tool.Name, Description: tool.Description, InputSchema: tool.InputSchema})
 	}
 	return out
 }
@@ -339,6 +391,13 @@ func (t *Tools) Call(ctx context.Context, name string, raw json.RawMessage, defa
 		}
 		b, _ := json.MarshalIndent(v, "", "  ")
 		return map[string]any{"content": []map[string]any{{"type": "text", "text": string(b) + "\nnext: " + hint}}}
+	}
+	if client := t.graphClient(ctx); client != nil {
+		result, err := client.Call(ctx, name, raw)
+		if err != nil {
+			return errorResult(err.Error() + "\nnext: call maid_next")
+		}
+		return result
 	}
 	return errorResult("unknown tool " + name)
 }

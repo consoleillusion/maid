@@ -66,6 +66,7 @@ func NewServer(t *Tools) *Server {
 // Serve reads requests until in is closed.
 func (s *Server) Serve(ctx context.Context, in io.Reader, out io.Writer) error {
 	// Purpose: run the JSON-RPC loop on stdio.
+	defer s.Tools.Close()
 	s.out = bufio.NewWriter(out)
 	sc := bufio.NewScanner(in)
 	sc.Buffer(make([]byte, 1024*1024), 64*1024*1024)

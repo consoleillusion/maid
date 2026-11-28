@@ -69,7 +69,7 @@
   out
 }
 
-// The breadcrumb names the design, the current part and the current chapter.
+// The breadcrumb names the design, the current part and the current chapter in lowercase.
 #let breadcrumb-part = state("breadcrumb-part", "")
 #let breadcrumb-chapter = state("breadcrumb-chapter", "")
 #let chapter-title(path) = {
@@ -121,21 +121,23 @@
   }
 }
 
-// Title page: the cover image at the top when it exists, the title at the bottom left.
-#page(margin: (x: 2.5cm, y: 3cm), fill: page-fill, numbering: none)[
+// Title page: the cover image fills the page width behind the title.
+#page(margin: 0cm, fill: page-fill, numbering: none)[
   #if cover [
-    #place(top + center, image("./cover_image.png", width: 40%))
+    #place(top + center, image("./cover_image.png", width: 100%, height: auto))
   ]
-  #align(bottom + left)[
-    #text(36pt, weight: "bold", title)
-    #v(0.6em)
-    #text(11pt, fill: muted, datetime.today().display("[day] [month repr:long] [year]"))
+  #place(bottom + left, dx: 2.3cm, dy: -2.5cm)[
+    #text(36pt, weight: "bold", fill: ink)[
+      #title
+      #v(0.6em)
+      #text(11pt, fill: muted, datetime.today().display("[day] [month repr:long] [year]"))
+    ]
   ]
 ]
 
 #set page(paper: "a4", margin: (x: 2.3cm, y: 2.5cm), fill: page-fill, numbering: "1",
   footer: context [#text(8.5pt, fill: muted)[
-    #title #h(0.4em) · #h(0.4em) #breadcrumb-part.get() #h(0.4em) · #h(0.4em) #breadcrumb-chapter.get()
+    #lower(title) #h(0.4em) · #h(0.4em) #lower(breadcrumb-part.get()) #h(0.4em) · #h(0.4em) #lower(breadcrumb-chapter.get())
     #h(1fr) #counter(page).display()
   ]])
 

@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 style: ears
 owner: paul
 summary: >

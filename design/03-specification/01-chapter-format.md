@@ -20,13 +20,18 @@ links: [style-registry, ADR-0006]
 
 ```text
 design/
-  index.md                    generated catalog of parts and chapters
+  index.md                    front page: title, introduction, chapters in reading order
+  index.typ                   builds one PDF of the design from index.md
   questions.md                open questions
-  NN-<part-name>/
-    NN-<chapter-name>.md
+  <part-name>/
+    <chapter-name>.md
   styles/<style-id>.md        style cards
-  decisions/ADR-NNNN-<slug>.md
+  decisions/adr-NNNN-<slug>.md
 ```
+
+Part and chapter names are lowercase words joined by hyphens. They do not contain position numbers. The order of the parts and chapters is the order in `index.md`. The number in an ADR file name is the ID of the decision, not a position.
+
+Projects that use maid use the same structure.
 
 A chapter covers one area of the project. A chapter can be 1 to 20 pages. An agent normally reads sections, not whole chapters.
 

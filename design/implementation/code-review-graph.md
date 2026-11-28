@@ -23,7 +23,7 @@ If code-review-graph is already on PATH, then maid shall record that command and
 If no installer can install code-review-graph, then maid shall return an actionable environment error.
 
 ### Configured command
-maid.json shall hold the command and arguments that start code-review-graph.
+maid shall keep the command and arguments that start code-review-graph in maid.json.
 
 ## Requirements: MCP bridge
 

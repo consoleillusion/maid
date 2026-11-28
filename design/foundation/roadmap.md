@@ -54,3 +54,44 @@ Each area shows where the project is now and where it must be. The tasks for an 
 | Seeded tasks | `maid init` creates no tasks | `maid init` seeds the design tasks | `everything-is-a-task` |
 | Design tasks | Design work happens outside tasks | Design work is tasks of kind design, checked by the design check | `phases` |
 | Metrics for any language | Go adapter planned | Language-independent measures for every language; adapters for a few languages | `scoring` |
+
+## Proposal: Update current state to match code
+
+status: proposed · by opencode-978a9f · 2026-11-28
+
+### Milestone 1 current state
+
+| Area | Now |
+|---|---|
+| Design store, checks and writes | Done through MCP tools and the CLI. |
+| Style validators | Length, EARS patterns, SBVR keywords and Gherkin structure are checked. |
+| Task store | Beads through its CLI in stealth mode. Export to `.beads/issues.jsonl` and commit are open. |
+| Plans and tests items | Done, with separate tests items. |
+| Claims, packets and worktree tools | Done. |
+| Merge queue | Tests decide acceptance. `internal/score` calculates scores, but the queue does not use them. |
+| Guide | No roles. `maid_next` returns a phase, a step and ready-to-run calls. Listing every ready task and plain-prompt instructions are open. |
+| MCP server | stdio and tools, plus all 30 code-review-graph tools. |
+| Approval | Agents accept chapters directly. No approver is recorded. |
+
+### Milestone 2 current state
+
+| Area | Now |
+|---|---|
+| Score | `internal/score` computes a score. Minimum-score rejection, score in reports, score history and `maid.json` weights are open. |
+| Metrics | The Go adapter is stubbed. |
+
+### Milestone 2b current state
+
+| Area | Now |
+|---|---|
+| Task list | `maid_next` returns one `work_claim` call. Listing every ready task is open. |
+| Plain prompts | Server instructions say to call `maid_next` first. Plain-prompt guidance is open. |
+| Seeded tasks | `maid init` creates no tasks. |
+| Design tasks | Task kinds are `code`, `tests` and `docs`. Design tasks are open. |
+
+### Milestone 3 current state
+
+| Area | Now |
+|---|---|
+| Generated index | `design/index.md` and `design/index.typ` are generated. The HTML report is open. |
+| Robustness | Serial merges, parallel attempts, lease renewal and a flaky list exist. Automatic flaky detection is open. |

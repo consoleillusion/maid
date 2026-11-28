@@ -116,7 +116,7 @@ func TestDesignFlowOverMCP(t *testing.T) {
 	if txt, _ := call("maid_next", `{}`); !strings.Contains(txt, "0-bootstrap") {
 		t.Fatalf("maid_next = %s", txt)
 	}
-	vision := `{"path":"01-foundation/01-vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nThe tool adds numbers.\n\n### NG-001 No floats\nThe tool does not add floats.\n"}`
+	vision := `{"path":"foundation/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nThe tool adds numbers.\n\n### NG-001 No floats\nThe tool does not add floats.\n"}`
 	if txt, isErr := call("design_create", vision); isErr {
 		t.Fatalf("design_create: %s", txt)
 	}
@@ -184,7 +184,7 @@ func TestNextGivesReadyCalls(t *testing.T) {
 	if r["isError"] == true {
 		t.Fatalf("suggested call %s %s failed: %v", n.Calls[0].Tool, first, r)
 	}
-	r = tl.Call(ctx, "design_read", json.RawMessage(`{"refs":["design/01-foundation/01-vision.md","visoin"]}`), "a")
+	r = tl.Call(ctx, "design_read", json.RawMessage(`{"refs":["design/foundation/vision.md","visoin"]}`), "a")
 	txt := r["content"].([]map[string]any)[0]["text"].(string)
 	if !strings.Contains(txt, "G-001") || !strings.Contains(txt, `"did_you_mean"`) || !strings.Contains(txt, "vision") {
 		t.Fatalf("design_read with a path and a typo = %s", txt)

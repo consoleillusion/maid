@@ -26,7 +26,7 @@ func approvalProject(t *testing.T) *Tools {
 		}
 	}
 	tl := &Tools{Svc: work.New(root, config.Default(), tasks.NewMemory())}
-	vision := `{"path":"01-a/01-vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nIt adds numbers.\n"}`
+	vision := `{"path":"a/vision.md","id":"vision","title":"Vision","style":"ste","summary":"Why.","body":"# Vision\n\n### G-001 Goal\nIt adds numbers.\n"}`
 	if r := tl.Call(context.Background(), "design_create", json.RawMessage(vision), "a"); r["isError"] == true {
 		t.Fatalf("design_create: %v", r)
 	}

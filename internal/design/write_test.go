@@ -64,7 +64,7 @@ func TestCreateChapterAndQuestion(t *testing.T) {
 	// Purpose: new chapters pass the checks, and questions get the next ID.
 	root := writeDesign(t, map[string]string{"01-a/alpha.md": goodChapter, "01-a/beta.md": betaChapter})
 	s, _ := Load(root)
-	res, err := s.CreateChapter(ChapterSpec{Path: "01-foundation/01-vision.md", ID: "vision", Title: "Vision", Style: "ste",
+	res, err := s.CreateChapter(ChapterSpec{Path: "foundation/vision.md", ID: "vision", Title: "Vision", Style: "ste",
 		Summary: "Why the project exists.", Body: "# Vision\n\n### G-001 Goal\nThe tool adds numbers.\n"})
 	if err != nil {
 		t.Fatal(err)

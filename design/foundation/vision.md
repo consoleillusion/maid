@@ -38,7 +38,7 @@ The design is the source of truth. All agents and all humans read the same desig
 
 - **Guided progression:** When an agent connects to maid, maid tells the agent the current phase, the next step and the context to read.
 - **Design as the source of truth:** The design in `design/` is the single specification of the project. Code and tests trace to it. Generated documentation traces to it where the project has a generator.
-- **Any amount of input:** The user can give as much or as little information as they want. maid applies defaults for decisions that the user does not make. maid records each default as a decision that the user can change.
+- **Any amount of input:** The user can give as much or as little information as they want. The agent makes decisions the user does not wish to make. maid records each default as a decision that the user can change.
 - **Cheap parallel implementation:** A large agent does the design and the decomposition. Smaller agents do the implementation, in parallel. The total cost is a fraction of the cost of a large agent alone.
 - **Mechanical acceptance:** maid accepts or rejects work by measurement, not by the opinion of an agent. The primary measure is tests. Secondary measures are lines of code, dependencies and benchmarks.
 - **Modular context:** The design is divided into parts, chapters and sections. An agent can read one section without reading the rest.

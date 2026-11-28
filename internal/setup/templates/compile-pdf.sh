@@ -2,7 +2,7 @@
 # Purpose: build design/index.typ as a light PDF and a dark PDF.
 set -euo pipefail
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+root="${MAID_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$root"
 
 dark_only=0

@@ -52,7 +52,7 @@ While an agent holds a claim, the agent shall renew the lease before it expires.
 If a lease expires, then maid shall return the work item to ready and shall record the attempt as abandoned.
 
 ### REQ-WI-007 Isolated workspace
-When an agent claims a work item, maid shall create a git worktree on a new branch from the current main branch for that attempt.
+When an agent claims a work item, maid shall create a detached git worktree at the current commit of the maid branch for that attempt, and shall not create a branch for the attempt.
 
 ### REQ-WI-008 Owned paths
 If a submission changes a file outside the `owns` patterns of the work item, then the merge queue shall reject the submission.

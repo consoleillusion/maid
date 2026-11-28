@@ -29,12 +29,18 @@ Or run maid without installing it: `nix run github:consoleillusion/maid -- init`
 Without Nix, you need Go, git and [Beads](https://github.com/gastownhall/beads). `go install ./cmd/maid` puts the binary in `$(go env GOPATH)/bin` (usually `~/go/bin`). Add that folder to your `PATH`, or run maid with its full path.
 
 ```sh
-maid init          # maid.json, .maid/, Beads
+maid init          # maid.json, .maid/, Beads, code graph
 maid check         # check design/
 maid status
 ```
 
 Add maid to your MCP client as a stdio server with the command `maid mcp`, run in the project root. With Nix, `nix shell /path/to/maid#maid /path/to/maid#bd -c maid mcp` builds maid and bd from the flake, so the server always matches the checked-out commit. Keep the MCP command's stdout clean: anything else printed there breaks the protocol. Then tell the agent to call `maid_next`.
+
+## Code review graph
+
+`maid init` installs [code-review-graph](https://code-review-graph.com/) in the project environment at `.maid/crg-venv` and builds the graph for the repository. Python 3 is required at init time. If `code-review-graph` is already on `PATH`, maid records that command instead.
+
+The `maid` MCP server exposes all 30 code-review-graph tools under their upstream names, such as `get_minimal_context_tool`, `query_graph_tool` and `get_impact_radius_tool`. Agents do not need a second MCP server. `maid.json` stores the command, its `serve` arguments and an `enabled` flag under `code_review_graph`. Set `enabled` to `false` to turn the bridge off. The generated graph is local to the project.
 
 The agent can write and accept design chapters through maid's tools alone. To accept a chapter yourself, run `maid accept CHAPTER`. Build and test agents can work through maid's tools alone: `work_read`, `work_edit`, `work_run`, then `work_submit`. Agents with file and shell access can also edit and commit in their worktree directly.
 

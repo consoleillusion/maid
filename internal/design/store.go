@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -36,7 +37,9 @@ type Store struct {
 
 // Chapter is one Markdown file in the design.
 type Chapter struct {
-	ID       string
+	ID       string // derived from the file name
+	Title    string // derived from the level-1 heading
+	Part     string // derived from the containing folder
 	Path     string // relative to the project root, slash-separated
 	FM       frontmatter.Map
 	FMErr    error
@@ -126,11 +129,42 @@ func loadChapter(root, p string) (*Chapter, error) {
 	} else if ch.FM, err = frontmatter.Parse(fmText); err != nil {
 		ch.FMErr = err
 	}
-	if ch.FM != nil {
-		ch.ID = ch.FM.String("id")
-	}
 	ch.Sections = splitSections(body, bodyLine)
+	ch.ID = chapterID(rel)
+	ch.Title = chapterTitle(ch.Sections)
+	ch.Part = folderPart(ch.Path)
 	return ch, nil
+}
+
+// chapterID derives the chapter ID from its file name (REQ-DOC-001).
+func chapterID(p string) string {
+	// Purpose: use the file name without its extension as the chapter ID.
+	base := path.Base(p)
+	return strings.TrimSuffix(base, path.Ext(base))
+}
+
+// chapterTitle derives the chapter title from its level-1 heading.
+func chapterTitle(sections []*Section) string {
+	// Purpose: use the first level-1 heading as the chapter title.
+	for _, sec := range sections {
+		if sec.Level == 1 {
+			return strings.TrimSpace(sec.Heading)
+		}
+	}
+	return ""
+}
+
+// folderPart derives the part from the folder that contains the chapter.
+func folderPart(p string) string {
+	// Purpose: return the immediate folder name, including design, styles and decisions.
+	dir := path.Dir(strings.TrimPrefix(p, Dir+"/"))
+	if dir == "." {
+		return Dir
+	}
+	if i := strings.LastIndex(dir, "/"); i >= 0 {
+		return dir[i+1:]
+	}
+	return dir
 }
 
 func splitSections(body string, firstLine int) []*Section {

@@ -35,7 +35,7 @@ func (s *Store) Index(f Filter) []Entry {
 			continue
 		}
 		e := Entry{
-			ID: ch.ID, Title: ch.FM.String("title"), Part: ch.FM.String("part"),
+			ID: ch.ID, Title: ch.Title, Part: ch.Part,
 			Status: ch.FM.String("status"), Style: ch.FM.String("style"),
 			Path: ch.Path, Summary: ch.FM.String("summary"), Links: ch.FM.List("links"),
 		}

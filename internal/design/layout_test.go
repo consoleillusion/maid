@@ -10,11 +10,13 @@ import (
 	"github.com/consoleillusion/maid/internal/style"
 )
 
-const indexHead = "---\nid: index\ntitle: Design\nstatus: draft\nstyle: ste\nowner: paul\nsummary: Reading order.\nlinks: []\n---\n\n# Design\n\nThe design.\n\n"
+const indexHead = "---\nstatus: draft\nstyle: ste\nowner: paul\nsummary: Reading order.\nlinks: []\n---\n\n# Design\n\nThe design.\n\n"
 
 func chapterText(id, part string) string {
-	// Purpose: build a minimal valid chapter with the given part field.
-	return "---\nid: " + id + "\ntitle: T\npart: " + part + "\nstatus: draft\nstyle: ste\nowner: paul\nsummary: S.\nlinks: []\n---\n\n# T\n\nText.\n"
+	// Purpose: build a minimal valid chapter; id and part come from the path.
+	_ = id
+	_ = part
+	return "---\nstatus: draft\nstyle: ste\nowner: paul\nsummary: S.\nlinks: []\n---\n\n# T\n\nText.\n"
 }
 
 func createChapter(t *testing.T, root, path, id, title string) error {
@@ -59,7 +61,7 @@ func TestCreateChapterAddsToIndex(t *testing.T) {
 		t.Error("design/index.typ was not created")
 	}
 	s, _ := Load(root)
-	if p := s.Chapter("vision").FM.String("part"); p != "foundation" {
+	if p := s.Chapter("vision").Part; p != "foundation" {
 		t.Errorf("part = %q, want foundation", p)
 	}
 	if n := countFindings(s.Check(), "REQ-DOC-016"); n != 0 {
@@ -91,16 +93,16 @@ func TestCheckIndexComplete(t *testing.T) {
 	}
 }
 
-// REQ-DOC-020 scenario: wrong part field
-func TestCheckPartField(t *testing.T) {
-	// Purpose: the part field must name the folder.
+// REQ-DOC-001 scenario: part comes from the folder
+func TestPartComesFromFolder(t *testing.T) {
+	// Purpose: the part is the folder that contains the chapter file.
 	root := writeDesign(t, map[string]string{
 		"index.md":             indexHead + "## Foundation\n\n1. [Vision](foundation/vision.md)\n",
 		"foundation/vision.md": chapterText("vision", "method"),
 	})
 	s, _ := Load(root)
-	if n := countFindings(s.Check(), "REQ-DOC-020"); n != 1 {
-		t.Errorf("%d REQ-DOC-020 errors, want 1", n)
+	if got := s.Chapter("vision").Part; got != "foundation" {
+		t.Errorf("part = %q, want foundation", got)
 	}
 }
 
@@ -131,7 +133,7 @@ func TestIndexTypTemplate(t *testing.T) {
 		t.Fatal(err)
 	}
 	typ := string(b)
-	for _, want := range []string{`read("index.md")`, "@preview/cmarker", "render-with-metadata", "bottom + left", "Sans", "font:"} {
+	for _, want := range []string{`read("index.md")`, "@preview/cmarker", "@preview/merman", "render-with-metadata", "show-mermaid-blocks", `it.lang == "mermaid"`, "bottom + left", "Sans", "font:"} {
 		if !strings.Contains(typ, want) {
 			t.Errorf("index.typ does not contain %q", want)
 		}

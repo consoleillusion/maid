@@ -1,7 +1,4 @@
 ---
-id: style-sbvr-se
-title: "Style card: SBVR Structured English"
-part: styles
 status: draft
 style: ste
 owner: paul

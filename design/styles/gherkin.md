@@ -1,7 +1,4 @@
 ---
-id: style-gherkin
-title: "Style card: Gherkin"
-part: styles
 status: draft
 style: ste
 owner: paul

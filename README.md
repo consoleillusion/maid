@@ -13,7 +13,7 @@ Milestone 1 is implemented: the design store and checks, plans with separate tes
 
 maid commits all its work to one branch, `maid-auto`: one commit for each accepted task, with a `Maid-Task:` trailer, and one commit for each design change. Merge `maid-auto` into your main branch when you want.
 
-The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md). To build it as one PDF, run `typst compile design/index.typ` (Typst 0.15 or later; the first build downloads the cmarker package).
+The specification is in [`design/`](design/index.md). Start with [`design/index.md`](design/index.md). To build it as one PDF, run `typst compile design/index.typ` (Typst 0.15 or later; the first build downloads the cmarker and merman packages). Mermaid code fences render as diagrams.
 
 ## Install and run
 

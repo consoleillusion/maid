@@ -1,7 +1,4 @@
 ---
-id: architecture
-title: Architecture overview
-part: architecture
 status: accepted
 style: ste
 owner: paul
@@ -9,7 +6,7 @@ summary: >
   The components of maid, the process model, where state is kept, and how many
   maid processes in one project work together. Read this before you design or
   implement any component.
-links: [constraints, task-store, mcp-interface, acceptance, ADR-0001, ADR-0002, ADR-0005, ADR-0007]
+links: [constraints, task-store, mcp, acceptance, ADR-0001, ADR-0002, ADR-0005, ADR-0007]
 ---
 
 # Architecture overview

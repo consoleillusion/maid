@@ -10,8 +10,10 @@ import (
 )
 
 func chapter(id, part string) string {
-	// Purpose: build a minimal draft chapter.
-	return "---\nid: " + id + "\ntitle: T\npart: " + part + "\nstatus: draft\nstyle: ste\nowner: paul\nsummary: S.\nlinks: []\n---\n\n# T\n\nText.\n"
+	// Purpose: build a minimal draft chapter; id and part come from the path.
+	_ = id
+	_ = part
+	return "---\nstatus: draft\nstyle: ste\nowner: paul\nsummary: S.\nlinks: []\n---\n\n# T\n\nText.\n"
 }
 
 // REQ-DOC-014 scenario: pending in index order

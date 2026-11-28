@@ -1,7 +1,4 @@
 ---
-id: ADR-0004
-title: Acceptance criteria from the design agent, tests from a separate test agent
-part: decisions
 status: accepted
 style: ste
 owner: paul

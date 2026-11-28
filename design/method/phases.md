@@ -1,7 +1,4 @@
 ---
-id: phases
-title: Phases and gates
-part: method
 status: accepted
 style: ears
 owner: paul
@@ -9,7 +6,7 @@ summary: >
   The fixed progression that maid guides every project through, from bootstrap
   to verified code. Defines each phase, its outputs, its gate, the depth levels
   and how maid_next tells an agent what to do.
-links: [vision, work-items, acceptance, mcp-interface]
+links: [vision, work-items, acceptance, mcp]
 ---
 
 # Phases and gates

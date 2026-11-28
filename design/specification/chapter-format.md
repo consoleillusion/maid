@@ -28,7 +28,7 @@ design/
 
 Part and chapter names are lowercase words joined by hyphens. They do not contain position numbers. The order of the parts and chapters is the order in `index.md`. The number in an ADR file name is the ID of the decision, not a position.
 
-`index.md` holds only information that no other file holds: the design title and the reading order. It has no frontmatter. Titles, statuses and summaries stay in the frontmatter of each file. Part names come from the folder names.
+`index.md` holds only information that no other file holds: the design title and the reading order. It has no frontmatter. Statuses, styles, owners, summaries and links stay in the frontmatter of each file. Chapter IDs come from file names, titles from level-1 headings and parts from folder names.
 
 Projects that use maid use the same structure.
 
@@ -40,7 +40,7 @@ A chapter covers one area of the project. A chapter can be 1 to 20 pages. An age
 The design store shall contain each chapter as exactly one Markdown file at `design/<part>/<chapter>.md`, where the part and chapter names are lowercase, hyphenated and do not start with a digit.
 
 ### REQ-DOC-002 Frontmatter
-Each chapter shall start with YAML frontmatter that contains the fields `id`, `title`, `status`, `style`, `owner`, `summary` and `links`.
+Each chapter shall start with YAML frontmatter that contains the fields `status`, `style`, `owner`, `summary` and `links`. The chapter ID shall be the file name without `.md`, the title shall be the level-1 heading, and the part shall be the folder name.
 
 ### REQ-DOC-003 Summary length
 The `summary` field shall contain at most 60 words.
@@ -99,16 +99,10 @@ When maid creates a chapter, maid shall create `design/index.md` and `design/ind
 ### REQ-DOC-021 Index is not a chapter
 The design store shall not load `design/index.md` as a chapter.
 
-### REQ-DOC-020 Part field
-If a chapter has a `part` field, then its value shall equal the name of the part folder that contains the chapter.
-
 ## Frontmatter reference
 
 | Field | Type | Meaning |
 |---|---|---|
-| `id` | string | Chapter ID. Lowercase, hyphenated. Unique. |
-| `title` | string | Human title. |
-| `part` | string | Optional. Equal to the part folder name (REQ-DOC-020). |
 | `status` | enum | See REQ-DOC-009. |
 | `style` | string | Style ID from the style registry. |
 | `owner` | string | The person who accepts changes. |
@@ -140,27 +134,14 @@ stateDiagram-v2
 
 A human or a configured review agent moves an item from `review` to `accepted`.
 
-## Proposal: Define the design directory and derive chapter metadata
+## Proposal: Group the index by part and add a PDF script
 status: proposed
-
-The design in `design/` is the comprehensive specification of what the project shall be. Agents and humans shall use it as the single source of truth. This repeats G-002 at the place where agents learn the file layout.
-
-### Purpose and completeness
-The design directory shall hold everything that defines the project. A reader shall not need another specification to know what the project shall be. Generated documents shall trace back to the design.
-
-### Part and chapter paths
-Chapters shall be grouped into parts at `design/<part>/<chapter>.md`. The part is the folder name. The chapter ID is the file name without `.md`. The chapter title is the level-1 heading in that file.
-
-Chapter frontmatter shall not contain `id`, `title` or `part`. It shall contain only `status`, `style`, `owner`, `summary` and `links`. Item IDs shall stay in section headings, as REQ-DOC-006 requires.
-
-### Unnumbered names
-Part folders and chapter files shall not start with a position number. Part order shall be shown with roman numerals in `design/index.md` and in the PDF. Chapter files and chapter headings shall carry no position number. One ordered index keeps rearrangement cheap and avoids numbers that drift out of sync.
 
 ### Index
 REQ-DOC-014 shall change so that `design/index.md` contains the design title, then level-2 headings for parts in roman numerals, then a link to every chapter under its part. The link order is the reading order. REQ-DOC-016 and REQ-DOC-017 shall keep enforcing completeness and insertion position.
 
 ### PDF
-REQ-DOC-018 shall change so that `design/index.typ` includes every Markdown file listed in `design/index.md`, in that order, with Typst's `cmarker` package. It shall produce an attractive PDF with a title page, a sans-serif font, part breaks numbered in roman numerals, and no numbers on chapters or sections.
+REQ-DOC-018 shall change so that `design/index.typ` includes every Markdown file listed in `design/index.md`, in that order, with Typst's `cmarker` package. Fenced `mermaid` blocks in those files shall render as diagrams through Typst's `merman` package. The PDF shall have a title page, a sans-serif font, part breaks numbered in roman numerals, and no numbers on chapters or sections.
 
 ### Compile script
 maid shall provide an npm script that compiles `design/index.typ` to the design PDF.

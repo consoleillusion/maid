@@ -2,6 +2,7 @@
 // The chapter order comes from index.md, so this file does not change when
 // chapters are added. maid writes it; edit the style settings below freely.
 #import "@preview/cmarker:0.1.10"
+#import "@preview/merman:0.6.0": mermaid-profile, show-mermaid-blocks
 
 #let sans = ("Inter", "Noto Sans", "Source Sans 3", "IBM Plex Sans", "DejaVu Sans", "Liberation Sans", "Arial")
 #let mono = ("JetBrains Mono", "DejaVu Sans Mono")
@@ -90,7 +91,16 @@
 #set table(stroke: 0.5pt + luma(180), inset: 6pt)
 #show table.cell.where(y: 0): set text(weight: "semibold")
 #show link: set text(fill: rgb("#1f4e8c"))
-#show raw.where(block: true): block.with(fill: luma(245), inset: 8pt, radius: 3pt, width: 100%)
+// Mermaid fences become diagrams; other code keeps a grey block.
+#let diagrams = mermaid-profile(theme-preset: "editor", theme-appearance: "light")
+#let diagram = show-mermaid-blocks(profile: diagrams, document-context: true, width: 100%)
+#show raw.where(block: true): it => {
+  if it.lang == "mermaid" {
+    diagram(it)
+  } else {
+    block(fill: luma(245), inset: 8pt, radius: 3pt, width: 100%, it)
+  }
+}
 
 // Title page: the title in the bottom left.
 #page(margin: (x: 2.5cm, y: 3cm), numbering: none)[

@@ -91,7 +91,7 @@ func (s *Store) findChapter(q string) *Chapter {
 		switch {
 		case strings.ToLower(ch.ID) == lq, lp == p, rel == p,
 			strings.TrimSuffix(rel, ".md") == p, strings.HasSuffix(lp, "/"+p) && strings.Contains(p, "/"),
-			strings.ToLower(ch.FM.String("title")) == lq:
+			strings.ToLower(ch.Title) == lq:
 			if ch.ID != "" {
 				return ch
 			}

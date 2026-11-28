@@ -1,7 +1,4 @@
 ---
-id: task-store
-title: Task store port and Beads adapter
-part: architecture
 status: accepted
 style: ste
 owner: paul
@@ -9,7 +6,7 @@ summary: >
   The interface that maid uses for work items, dependencies, claims and leases,
   and how the v1 adapter maps it onto the Beads CLI. Includes the findings from
   the Beads spike.
-links: [work-items, architecture, ADR-0005]
+links: [work-items, overview, ADR-0005]
 ---
 
 # Task store port and Beads adapter

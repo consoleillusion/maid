@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Purpose: rebuild the MCP server binary from the current source before a push.
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+if ! command -v nix >/dev/null 2>&1; then
+  echo "pre-push: nix is required to rebuild .bin/maid" >&2
+  exit 1
+fi
+
+echo "pre-push: rebuilding .bin/maid" >&2
+nix develop --command go build -o .bin/maid ./cmd/maid
+echo "pre-push: rebuilt .bin/maid" >&2

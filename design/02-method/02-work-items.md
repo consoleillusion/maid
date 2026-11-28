@@ -2,7 +2,7 @@
 id: work-items
 title: Work items, claims and context packets
 part: 02-method
-status: accepted
+status: draft
 style: ears
 owner: paul
 summary: >

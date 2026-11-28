@@ -134,9 +134,8 @@ func TestFullLoop(t *testing.T) {
 		t.Fatal(err)
 	}
 	write(t, pk.Worktree, "calc/add_test.go", addTest)
+	write(t, pk.Worktree, "calc/calc.go", "package calc\n\n// Add is not implemented yet.\nfunc Add(a, b int) int { return 0 }\n")
 	commitAll(t, pk.Worktree, "tests")
-	write(t, root, "calc/calc.go", "package calc\n\n// Add is not implemented yet.\nfunc Add(a, b int) int { return 0 }\n")
-	commitAll(t, root, "stub")
 	rep, err = s.Submit(ctx, Submission{Agent: "tester", ID: pk.WorkItem.ID})
 	if err != nil {
 		t.Fatal(err)
@@ -163,7 +162,7 @@ func TestFullLoop(t *testing.T) {
 	if !rep.Accepted {
 		t.Fatalf("correct implementation rejected: %+v", rep)
 	}
-	if got := sh(t, root, "git", "show", "main:calc/calc.go"); !strings.Contains(got, "return a + b") {
+	if got := sh(t, root, "git", "show", rep.Commit+":calc/calc.go"); !strings.Contains(got, "return a + b") {
 		t.Fatalf("main not updated: %s", got)
 	}
 	it, _ := s.Tasks.Get(ctx, p.Code["add"])

@@ -76,7 +76,7 @@ func TestWorkThroughMaidOnly(t *testing.T) {
 	if err != nil || !rep.Accepted {
 		t.Fatalf("code item: %v %+v", err, rep)
 	}
-	if got := sh(t, root, "git", "show", "main:calc/calc.go"); !strings.Contains(got, "return a + b") {
+	if got := sh(t, root, "git", "show", rep.Commit+":calc/calc.go"); !strings.Contains(got, "return a + b") {
 		t.Fatalf("main = %s", got)
 	}
 }
@@ -109,7 +109,7 @@ func TestSubmitWithPatchAndFiles(t *testing.T) {
 	if err != nil || !rep.Accepted {
 		t.Fatalf("patch submission: %v %+v", err, rep)
 	}
-	if got := sh(t, root, "git", "show", "main:calc/calc.go"); !strings.Contains(got, "return a + b") {
+	if got := sh(t, root, "git", "show", rep.Commit+":calc/calc.go"); !strings.Contains(got, "return a + b") {
 		t.Fatalf("main = %s", got)
 	}
 }

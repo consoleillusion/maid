@@ -100,14 +100,17 @@
 #set document(title: title)
 #set text(font: sans, size: 10.5pt, lang: "en", fill: ink)
 #show raw: set text(font: mono, size: 9pt)
-#set par(justify: false, leading: 0.65em, spacing: 1.1em)
+#set par(justify: false, leading: 0.85em, spacing: 1.4em)
 // Only parts have numbers, in roman numerals; chapters and sections have none.
 #set heading(numbering: none)
 #show heading: set text(weight: "semibold")
-#show heading.where(level: 1): it => { pagebreak(weak: true); v(2em); text(26pt, it); v(1.5em) }
-#show heading.where(level: 2): it => { v(1.2em); text(16pt, it); v(0.4em) }
+#show heading.where(level: 1): it => { pagebreak(weak: true); v(1.2em); text(26pt, it); v(1.4em) }
+#show heading.where(level: 2): it => { v(1.6em); text(16pt, it); v(0.8em) }
+#show heading.where(level: 3): it => { v(1.2em); text(12pt, it); v(0.5em) }
+#set list(indent: 1.2em, body-indent: 0.6em, spacing: 0.5em)
+#set enum(indent: 1.2em, body-indent: 0.6em, spacing: 0.5em)
 #show table: set text(size: 9.5pt)
-#set table(stroke: 0.5pt + stroke-colour, inset: 6pt)
+#set table(stroke: 0.5pt + stroke-colour, inset: 8pt)
 #show table.cell.where(y: 0): set text(weight: "semibold")
 #show link: set text(fill: link-colour)
 // Mermaid fences become diagrams; other code keeps a grey block.
@@ -117,7 +120,7 @@
   if it.lang == "mermaid" {
     diagram(it)
   } else {
-    block(fill: code-fill, inset: 8pt, radius: 3pt, width: 100%, it)
+    block(fill: code-fill, inset: 10pt, radius: 3pt, width: 100%, spacing: 1em, it)
   }
 }
 
@@ -127,11 +130,9 @@
     #place(top + center, image("./cover_image.png", width: 100%, height: auto))
   ]
   #place(bottom + left, dx: 2.3cm, dy: -2.5cm)[
-    #text(36pt, weight: "bold", fill: ink)[
-      #title
-      #v(0.6em)
-      #text(11pt, fill: muted, datetime.today().display("[day] [month repr:long] [year]"))
-    ]
+    #text(11pt, fill: muted, datetime.today().display("[day] [month repr:long] [year]"))
+    #v(0.6em)
+    #text(36pt, weight: "bold", fill: ink, title)
   ]
 ]
 

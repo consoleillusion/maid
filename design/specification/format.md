@@ -231,3 +231,16 @@ The repository PDF build script shall run the PDF build script that maid install
 
 ### One copy of build logic
 The PDF build logic shall exist in exactly one shell script.
+
+## Proposal: PDF spacing
+
+status: proposed · by opencode · 2026-11-28
+
+### Paragraph spacing
+The PDF shall set paragraph leading to 0.85em and paragraph spacing to 1.4em.
+
+### Heading spacing
+The PDF shall place 1.6em before a level-2 heading and 0.8em after it.
+
+### Block spacing
+The PDF shall separate code blocks and tables from surrounding text with at least 1em of space.

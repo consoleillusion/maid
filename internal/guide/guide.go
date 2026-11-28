@@ -72,10 +72,28 @@ func Compute(ctx context.Context, s *work.Service, _, agent string) (Next, error
 	}
 	if n.Phase >= "6" {
 		if b := buildNext(ctx, s, agent, items); b.Step != "" {
-			return b, nil
+			n = b
 		}
 	}
+	n.Tasks = readyTasks(ctx, s, agent)
 	return n, nil
+}
+
+// readyTasks lists every ready work item that agent may claim.
+func readyTasks(ctx context.Context, s *work.Service, agent string) []TaskSummary {
+	// Purpose: fill the tasks field with an empty list or all claimable items.
+	out := make([]TaskSummary, 0)
+	ready, err := s.Tasks.Ready(ctx)
+	if err != nil {
+		return out
+	}
+	for _, it := range ready {
+		if it.Maid.Kind == "" || it.Maid.Escalated || it.Maid.TestsAuthor == agent {
+			continue
+		}
+		out = append(out, TaskSummary{ID: it.ID, Title: it.Title, Kind: it.Maid.Kind})
+	}
+	return out
 }
 
 func designNext(ds *design.Store, items []tasks.WorkItem) Next {

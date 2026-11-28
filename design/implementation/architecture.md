@@ -148,3 +148,22 @@ Date: 2026-11-27. bd version 1.3.4, embedded Dolt mode. Reproduce with `spikes/b
 | The Go library needs cgo for embedded Dolt, and the module requires a newer Go than maid may use | Linking breaks the single static binary. | Use the CLI. |
 | `bd close` refuses when the actor is not the assignee | The merge queue cannot close an item as itself. | The adapter sets `BEADS_ACTOR` to the claim owner when it closes an item. |
 | Beads changes quickly | The CLI contract can change. | Pin a minimum `bd` version. Run adapter contract tests in CI. |
+
+## Proposal: Align architecture with stdio-only implementation
+
+status: proposed · by opencode-978a9f · 2026-11-28
+
+### stdio in milestone 1
+The MCP server shall use stdio and tools in milestone 1.
+
+### HTTP target
+Where streamable HTTP is added, the MCP server shall accept only loopback connections.
+
+### Current scorer component
+The scorer shall calculate scores in `internal/score`. Merge queue use of the score shall be a target.
+
+### Current reporter component
+The reporter shall build `maid status`. The HTML report shall be a target.
+
+### Current task store
+The task store shall use Beads through its CLI. Export to `.beads/issues.jsonl` and commit shall be a target.

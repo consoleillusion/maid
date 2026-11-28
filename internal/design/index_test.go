@@ -109,7 +109,7 @@ func TestIndexTypModes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, part := range []string{`sys.inputs.at("mode"`, `rgb("#222222")`, `cover_image.png`, "bottom + left", "width: 100%", "height: auto", `dx: 2.3cm`, `dy: -2.5cm`, "lower(title)", "lower(breadcrumb-part.get())", "lower(breadcrumb-chapter.get())"} {
+	for _, part := range []string{`sys.inputs.at("mode"`, `rgb("#222222")`, `cover_image.png`, "bottom + left", "width: 100%", "height: auto", `dx: 2.3cm`, `dy: -2.5cm`, "lower(title)", "lower(breadcrumb-part.get())", "lower(breadcrumb-chapter.get())", "leading: 0.85em", "spacing: 1.4em", "v(1.6em)", "v(0.8em)", "spacing: 1em"} {
 		if !strings.Contains(string(b), part) {
 			t.Errorf("index.typ does not contain %q", part)
 		}
